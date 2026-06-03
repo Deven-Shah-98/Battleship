@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   chooseAIMove,
+  computeHeatmap,
   createAIState,
   updateAIAfterResult,
 } from "./ai";
@@ -114,5 +115,79 @@ describe("AI can finish a game", () => {
       state = updateAIAfterResult(next, board, move, result, !!sunkShip);
     }
     expect(allShipsSunk(board)).toBe(true);
+  });
+});
+
+describe("difficulty levels", () => {
+  it("easy fires only at untried cells", () => {
+    let board = placeShipsRandomly();
+    const seen = new Set<string>();
+    for (let i = 0; i < 20; i++) {
+      const { move } = chooseAIMove(board, createAIState(), "easy");
+      expect(coordKey(move) in board.shots).toBe(false);
+      expect(seen.has(coordKey(move))).toBe(false);
+      seen.add(coordKey(move));
+      board = receiveAttack(board, move).board;
+    }
+  });
+
+  it("hard never fires at a known miss or repeats a shot", () => {
+    let board = placeShipsRandomly();
+    const seen = new Set<string>();
+    for (let i = 0; i < 30; i++) {
+      const { move } = chooseAIMove(board, createAIState(), "hard");
+      const key = coordKey(move);
+      expect(board.shots[key]).toBeUndefined();
+      expect(seen.has(key)).toBe(false);
+      seen.add(key);
+      board = receiveAttack(board, move).board;
+    }
+  });
+
+  it("hard sinks a small fleet faster than random on average", () => {
+    const play = (difficulty: "easy" | "hard"): number => {
+      let total = 0;
+      const games = 12;
+      for (let g = 0; g < games; g++) {
+        let board = createEmptyBoard();
+        board = placeShip(board, { name: "Cruiser", size: 3 }, { row: 2, col: 2 }, "horizontal");
+        board = placeShip(board, { name: "Destroyer", size: 2 }, { row: 6, col: 7 }, "vertical");
+        let state = createAIState();
+        let shots = 0;
+        for (let i = 0; i < 200 && !allShipsSunk(board); i++) {
+          const { move, state: next } = chooseAIMove(board, state, difficulty);
+          const { board: nb, result, sunkShip } = receiveAttack(board, move);
+          board = nb;
+          state = updateAIAfterResult(next, board, move, result, !!sunkShip);
+          shots += 1;
+        }
+        total += shots;
+      }
+      return total / games;
+    };
+    expect(play("hard")).toBeLessThan(play("easy"));
+  });
+});
+
+describe("computeHeatmap", () => {
+  it("boosts cells in line with an unresolved hit", () => {
+    let board = createEmptyBoard();
+    board = placeShip(board, { name: "Cruiser", size: 3 }, { row: 4, col: 3 }, "horizontal");
+    // Register a hit at the middle of the cruiser without sinking it.
+    board = receiveAttack(board, { row: 4, col: 4 }).board;
+
+    const heat = computeHeatmap(board);
+    // Neighbours of the hit should outscore a far-away corner cell.
+    expect(heat[4][3]).toBeGreaterThan(heat[0][0]);
+    expect(heat[4][5]).toBeGreaterThan(heat[0][0]);
+  });
+
+  it("assigns zero probability to cells boxed in by misses", () => {
+    let board = createEmptyBoard();
+    board = placeShip(board, { name: "Cruiser", size: 3 }, { row: 5, col: 5 }, "horizontal");
+    // Surround the (0,0) corner with misses so no ship of size >= 2 can cover it.
+    board = { ...board, shots: { "0,1": "miss", "1,0": "miss" } };
+    const heat = computeHeatmap(board);
+    expect(heat[0][0]).toBe(0);
   });
 });

@@ -32,8 +32,36 @@ body {
 }
 
 .app__header {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
   margin-bottom: 16px;
+}
+
+.app__titles {
+  text-align: left;
+}
+
+.app__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.record {
+  font-size: 0.9rem;
+  color: var(--miss);
+  background: var(--panel);
+  border: 1px solid var(--sea-line);
+  border-radius: 6px;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+
+.icon-btn {
+  font-size: 0.85rem;
 }
 
 .app__header h1 {
@@ -191,18 +219,158 @@ button:disabled {
   background: var(--ship);
 }
 
-.cell--sunk {
-  background: var(--sunk);
-}
-
 .cell--hit {
   background: var(--hit);
   color: #fff;
+  animation: pop 0.28s ease-out;
 }
 
 .cell--miss {
   background: #0c2433;
   color: var(--miss);
+  animation: splash 0.28s ease-out;
+}
+
+.cell--sunk {
+  background: var(--sunk);
+  animation: pop 0.32s ease-out;
+}
+
+.cell--last {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  box-shadow: 0 0 8px var(--accent);
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.4;
+  }
+  60% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes splash {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.difficulty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.difficulty__label {
+  font-size: 0.9rem;
+  color: var(--miss);
+}
+
+.difficulty__options {
+  display: flex;
+  gap: 6px;
+}
+
+.chip {
+  text-transform: capitalize;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.chip--active {
+  background: var(--accent);
+  color: #042330;
+  border-color: var(--accent);
+  font-weight: 700;
+}
+
+.status__msg {
+  font-weight: 600;
+}
+
+.status__stats,
+.status__ships {
+  font-size: 0.9rem;
+  color: var(--miss);
+}
+
+.fleet {
+  margin-top: 12px;
+  background: var(--panel);
+  border: 1px solid var(--sea-line);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.fleet__title {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.fleet__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fleet__ship {
+  display: grid;
+  grid-template-columns: 84px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+
+.fleet__ship--sunk .fleet__name {
+  text-decoration: line-through;
+  color: var(--sunk);
+}
+
+.fleet__pips {
+  display: flex;
+  gap: 3px;
+}
+
+.pip {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--ship);
+}
+
+.pip--hit {
+  background: var(--hit);
+}
+
+.fleet__ship--sunk .pip {
+  background: var(--sunk);
+}
+
+.fleet__state {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: var(--sunk);
+  font-weight: 700;
 }
 
 .cell--preview {
@@ -254,6 +422,42 @@ button:disabled {
 
 @media (max-width: 720px) {
   :root {
-    --cell: 28px;
+    --cell: 30px;
+  }
+
+  .app__header {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .app__titles {
+    text-align: center;
+  }
+
+  .boards {
+    gap: 18px;
+  }
+
+  .status {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --cell: 27px;
+  }
+
+  .app {
+    padding: 16px 8px 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell--hit,
+  .cell--miss,
+  .cell--sunk {
+    animation: none;
   }
 }

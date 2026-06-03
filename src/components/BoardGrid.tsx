@@ -15,6 +15,8 @@ interface BoardGridProps {
   /** Cells to highlight as a placement preview. */
   previewCells?: Coord[];
   previewValid?: boolean;
+  /** Most recent shot fired on this board, ringed for visibility. */
+  lastShot?: Coord | null;
 }
 
 function cellClass(
@@ -23,6 +25,7 @@ function cellClass(
   showShips: boolean,
   previewKeys: Set<string>,
   previewValid: boolean,
+  lastShotKey: string | null,
 ): string {
   const key = coordKey(coord);
   const shot = board.shots[key];
@@ -37,6 +40,7 @@ function cellClass(
   }
   if (shot === "hit") classes.push("cell--hit");
   if (shot === "miss") classes.push("cell--miss");
+  if (lastShotKey && key === lastShotKey) classes.push("cell--last");
   return classes.join(" ");
 }
 
@@ -56,8 +60,10 @@ export default function BoardGrid({
   onCellHover,
   previewCells = [],
   previewValid = true,
+  lastShot = null,
 }: BoardGridProps) {
   const previewKeys = new Set(previewCells.map(coordKey));
+  const lastShotKey = lastShot ? coordKey(lastShot) : null;
   const rows = Array.from({ length: board.size }, (_, i) => i);
   const cols = Array.from({ length: board.size }, (_, i) => i);
 
@@ -88,6 +94,7 @@ export default function BoardGrid({
                   showShips,
                   previewKeys,
                   previewValid,
+                  lastShotKey,
                 )}
                 disabled={disabled || (mode === "tracking" && fired)}
                 aria-label={`${COLUMN_LABELS[c]}${r + 1}`}
