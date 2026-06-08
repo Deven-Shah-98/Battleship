@@ -400,7 +400,7 @@ export default function App() {
             lastShot={phase === "playing" ? lastPlayerShot : null}
           />
           {phase !== "setup" && (
-            <FleetStatus title="Enemy fleet" board={aiBoard} />
+            <FleetStatus title="Enemy fleet" board={aiBoard} revealHits={false} />
           )}
         </div>
       </main>
