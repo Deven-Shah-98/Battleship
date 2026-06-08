@@ -88,3 +88,45 @@ fail to find a free spot.
 ship cannot be placed, rather than hanging. In practice the standard 10×10 board
 with the classic fleet places well within that bound. A test verifies the full
 fleet is always placed without overlaps and within bounds.
+
+## 5. `Record` interface shadowed the built-in `Record<K, V>` utility type
+
+**Symptom**
+
+After adding a win/loss record, `tsc` errored on `Record<Difficulty, string>`
+with "Type 'GameRecord' is not generic" — the new local
+`interface Record { wins; losses }` shadowed TypeScript's global `Record` helper
+within the module, breaking every `Record<...>` usage.
+
+**Fix**
+
+Renamed the local interface to `GameRecord`. Lesson: avoid naming app types after
+built-in utility types (`Record`, `Partial`, `Readonly`, …).
+
+## 6. Hard AI must not "cheat" by reading ship positions
+
+**Symptom (avoided by design)**
+
+The AI receives the full player `Board` object, which includes ship cell
+coordinates. A naive probability AI could simply read those and play perfectly.
+
+**Fix**
+
+`computeHeatmap` only consumes information a fair opponent has: the grid of past
+shots (`board.shots`), which ships have already sunk (their cells are fully
+revealed to the attacker anyway), and the *sizes* of the ships still afloat. It
+never inspects the positions of un-hit ship cells. Tests assert it boxes out
+miss-surrounded cells (heat 0) and boosts cells in line with an unresolved hit.
+
+## 7. `useEffect` dependency completeness for the AI turn
+
+**Symptom**
+
+ESLint's `react-hooks/exhaustive-deps` flagged the AI effect after `difficulty`
+and `recordResult` were introduced.
+
+**Fix**
+
+Added `difficulty` and the memoised `recordResult`/`addLog` callbacks to the
+effect's dependency array. `recordResult` and `addLog` are wrapped in
+`useCallback` with empty deps so they are stable and don't retrigger the effect.
