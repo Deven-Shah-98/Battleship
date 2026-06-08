@@ -422,7 +422,9 @@ button:disabled {
 
 @media (max-width: 720px) {
   :root {
-    --cell: 30px;
+    /* Fluid cell: shrink to fit narrow screens, but never grow past 30px.
+       Reserved space = app padding (32) + board padding (12) + gaps (20). */
+    --cell: min(30px, calc((100vw - 64px) / 11));
   }
 
   .app__header {
@@ -446,7 +448,9 @@ button:disabled {
 
 @media (max-width: 420px) {
   :root {
-    --cell: 27px;
+    /* App padding drops to 8px each side here, so less is reserved (~50px).
+       Caps at 28px and shrinks down for ~320px-wide phones. */
+    --cell: min(28px, calc((100vw - 50px) / 11));
   }
 
   .app {
