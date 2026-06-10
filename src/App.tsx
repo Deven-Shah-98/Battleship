@@ -1,9 +1,18 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import BoardGrid from "./components/BoardGrid";
 import FleetStatus from "./components/FleetStatus";
+import Confetti from "./components/Confetti";
+import PassDevice from "./components/PassDevice";
+import PowerUpBar from "./components/PowerUpBar";
+import MatchHistoryPanel from "./components/MatchHistory";
+import ThemeSwitcher from "./components/ThemeSwitcher";
+import { addMatch } from "./utils/matchHistory";
+import { applyTheme, loadTheme, saveTheme } from "./utils/theme";
+import ShipDock from "./components/ShipDock";
 import {
   allShipsSunk,
   canPlaceShip,
+  coordKey,
   createEmptyBoard,
   placeShip,
   placeShipsRandomly,
@@ -18,13 +27,31 @@ import {
   type AIState,
   type Difficulty,
 } from "./game/ai";
-import { COLUMN_LABELS, SHIP_DEFS } from "./game/constants";
-import type { Board, Coord, Orientation } from "./game/types";
+import { COLUMN_LABELS, DEFAULT_POWERUPS, SHIP_DEFS } from "./game/constants";
+import type {
+  Board,
+  Coord,
+  GameMode,
+  MatchRecord,
+  Orientation,
+  PlayerMode,
+  PowerUpKind,
+  PowerUpState,
+  ThemeName,
+} from "./game/types";
 import { playSound, setMuted } from "./sound";
+import { seededRng, randomSeedString } from "./game/seed";
+import {
+  airstrikeTargets,
+  canUsePowerUp,
+  radarScan,
+  sonarPing,
+  spendPowerUp,
+} from "./game/powerups";
 
-type Phase = "setup" | "playing" | "gameover";
-type Turn = "player" | "ai";
-type Winner = "player" | "ai" | null;
+type Phase = "setup" | "setup-p2" | "playing" | "gameover";
+type Turn = "player" | "ai" | "p1" | "p2";
+type Winner = "player" | "ai" | "p1" | "p2" | null;
 
 interface GameRecord {
   wins: number;
@@ -36,9 +63,10 @@ const RECORD_KEY = "battleship.record";
 const MUTE_KEY = "battleship.muted";
 
 const DIFFICULTY_INFO: Record<Difficulty, string> = {
-  easy: "Fires at random — good for a relaxed game.",
+  easy: "Fires at random \u2014 good for a relaxed game.",
   medium: "Hunts on a grid, then chases hits.",
-  hard: "Probability-density targeting — plays to win.",
+  hard: "Probability-density targeting \u2014 plays to win.",
+  admiral: "Enhanced heatmap with miss analysis \u2014 ruthless.",
 };
 
 const coordLabel = (c: Coord): string => `${COLUMN_LABELS[c.col]}${c.row + 1}`;
@@ -65,18 +93,29 @@ function countShots(board: Board): { shots: number; hits: number } {
 }
 
 export default function App() {
+  /* ─── Settings ─── */
+  const [gameMode, setGameMode] = useState<GameMode>("classic");
+  const [playerMode, setPlayerMode] = useState<PlayerMode>("vs-ai");
+  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
+  const [enablePowerUps, setEnablePowerUps] = useState(false);
+  const [seedInput, setSeedInput] = useState("");
+  const [useSeed, setUseSeed] = useState(false);
+  const [activeSeed, setActiveSeed] = useState<string | null>(null);
+
+  /* ─── Game state ─── */
   const [phase, setPhase] = useState<Phase>("setup");
   const [playerBoard, setPlayerBoard] = useState<Board>(() =>
     createEmptyBoard(),
   );
   const [aiBoard, setAiBoard] = useState<Board>(() => createEmptyBoard());
+  // Hotseat: p2 board stores player 2's ships (attacked by p1)
+  const [p2Board, setP2Board] = useState<Board>(() => createEmptyBoard());
   const [orientation, setOrientation] = useState<Orientation>("horizontal");
   const [hover, setHover] = useState<Coord | null>(null);
   const [turn, setTurn] = useState<Turn>("player");
   const [aiState, setAiState] = useState<AIState>(() => createAIState());
   const [winner, setWinner] = useState<Winner>(null);
   const [log, setLog] = useState<string[]>([]);
-  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [muted, setMutedState] = useState<boolean>(() => {
     try {
       return localStorage.getItem(MUTE_KEY) === "1";
@@ -87,15 +126,55 @@ export default function App() {
   const [record, setRecord] = useState<GameRecord>(() => loadRecord());
   const [lastPlayerShot, setLastPlayerShot] = useState<Coord | null>(null);
   const [lastAIShot, setLastAIShot] = useState<Coord | null>(null);
+  const [theme, setThemeState] = useState<ThemeName>(() => loadTheme());
+  const [showHistory, setShowHistory] = useState(false);
+  const [aiThinking, setAiThinking] = useState(false);
+  const gameStartRef = useRef<number>(0);
+
+  /* ─── Power-ups ─── */
+  const [powerUps, setPowerUps] = useState<PowerUpState>({
+    ...DEFAULT_POWERUPS,
+  });
+  const [activePowerUp, setActivePowerUp] = useState<PowerUpKind | null>(null);
+  const [radarCells, setRadarCells] = useState<Set<string>>(new Set());
+  const [sonarOverlay, setSonarOverlay] = useState<{
+    center: Coord;
+    count: number;
+  } | null>(null);
+  const [airstrikeCells, setAirstrikeCells] = useState<Set<string>>(new Set());
+
+  /* ─── Salvo mode ─── */
+  const [salvoShotsRemaining, setSalvoShotsRemaining] = useState(0);
+  const [salvoShotsTotal, setSalvoShotsTotal] = useState(0);
+
+  /* ─── Hotseat ─── */
+  const [showPassDevice, setShowPassDevice] = useState(false);
+
+  /* ─── Confetti ─── */
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const nextDef = SHIP_DEFS[playerBoard.ships.length] ?? null;
   const allPlaced = playerBoard.ships.length === SHIP_DEFS.length;
+
+  // For hotseat p2 setup
+  const nextDefP2 = SHIP_DEFS[p2Board.ships.length] ?? null;
+  const allPlacedP2 = p2Board.ships.length === SHIP_DEFS.length;
 
   const playerStats = useMemo(() => countShots(aiBoard), [aiBoard]);
   const accuracy =
     playerStats.shots === 0
       ? 0
       : Math.round((playerStats.hits / playerStats.shots) * 100);
+
+  // Apply theme on mount and change
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
+  const changeTheme = useCallback((t: ThemeName) => {
+    setThemeState(t);
+    saveTheme(t);
+  }, []);
 
   // Keep the sound engine's mute flag in sync and persist the preference.
   useEffect(() => {
@@ -111,23 +190,48 @@ export default function App() {
     setLog((prev) => [message, ...prev].slice(0, 50));
   }, []);
 
-  const recordResult = useCallback((won: boolean) => {
-    setRecord((prev) => {
-      const next = won
-        ? { ...prev, wins: prev.wins + 1 }
-        : { ...prev, losses: prev.losses + 1 };
-      try {
-        localStorage.setItem(RECORD_KEY, JSON.stringify(next));
-      } catch {
-        /* ignore storage errors */
-      }
-      return next;
-    });
-  }, []);
+  const recordResult = useCallback(
+    (won: boolean, finalBoard?: Board) => {
+      setRecord((prev) => {
+        const next = won
+          ? { ...prev, wins: prev.wins + 1 }
+          : { ...prev, losses: prev.losses + 1 };
+        try {
+          localStorage.setItem(RECORD_KEY, JSON.stringify(next));
+        } catch {
+          /* ignore storage errors */
+        }
+        return next;
+      });
+
+      // Save to match history
+      const duration = (Date.now() - gameStartRef.current) / 1000;
+      const stats = countShots(finalBoard ?? aiBoard);
+      const acc =
+        stats.shots === 0
+          ? 0
+          : Math.round((stats.hits / stats.shots) * 100);
+      const matchRecord: MatchRecord = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        date: new Date().toISOString(),
+        won,
+        difficulty,
+        mode: gameMode,
+        playerMode,
+        shots: stats.shots,
+        hits: stats.hits,
+        accuracy: acc,
+        duration,
+        seed: activeSeed,
+      };
+      addMatch(matchRecord);
+    },
+    [aiBoard, difficulty, gameMode, playerMode, activeSeed],
+  );
 
   // Toggle orientation with the R key during setup.
   useEffect(() => {
-    if (phase !== "setup") return;
+    if (phase !== "setup" && phase !== "setup-p2") return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "r" || e.key === "R") {
         setOrientation((o) => (o === "horizontal" ? "vertical" : "horizontal"));
@@ -137,47 +241,116 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [phase]);
 
+  const activeBoard =
+    phase === "setup-p2" ? p2Board : playerBoard;
+  const activeNextDef =
+    phase === "setup-p2" ? nextDefP2 : nextDef;
+
   const previewCells: Coord[] =
-    phase === "setup" && nextDef && hover
-      ? shipCells(hover, nextDef.size, orientation)
+    (phase === "setup" || phase === "setup-p2") && activeNextDef && hover
+      ? shipCells(hover, activeNextDef.size, orientation)
       : [];
   const previewValid =
-    !!nextDef &&
+    !!activeNextDef &&
     !!hover &&
-    canPlaceShip(playerBoard, nextDef.size, hover, orientation);
+    canPlaceShip(activeBoard, activeNextDef.size, hover, orientation);
 
   const handlePlace = (coord: Coord) => {
-    if (phase !== "setup" || !nextDef) return;
-    if (!canPlaceShip(playerBoard, nextDef.size, coord, orientation)) return;
-    setPlayerBoard((b) => placeShip(b, nextDef, coord, orientation));
+    if (phase === "setup") {
+      if (!nextDef) return;
+      if (!canPlaceShip(playerBoard, nextDef.size, coord, orientation)) return;
+      setPlayerBoard((b) => placeShip(b, nextDef, coord, orientation));
+      playSound("place");
+    } else if (phase === "setup-p2") {
+      if (!nextDefP2) return;
+      if (!canPlaceShip(p2Board, nextDefP2.size, coord, orientation)) return;
+      setP2Board((b) => placeShip(b, nextDefP2, coord, orientation));
+      playSound("place");
+    }
+  };
+
+  const handleShipDrop = (coord: Coord) => {
+    handlePlace(coord);
   };
 
   const handleRandomFill = () => {
-    setPlayerBoard(placeShipsRandomly());
+    if (phase === "setup") {
+      setPlayerBoard(placeShipsRandomly());
+    } else if (phase === "setup-p2") {
+      setP2Board(placeShipsRandomly());
+    }
   };
 
   const handleResetPlacement = () => {
-    setPlayerBoard(createEmptyBoard());
+    if (phase === "setup") {
+      setPlayerBoard(createEmptyBoard());
+    } else if (phase === "setup-p2") {
+      setP2Board(createEmptyBoard());
+    }
   };
 
   const rotate = () =>
     setOrientation((o) => (o === "horizontal" ? "vertical" : "horizontal"));
 
   const startGame = () => {
+    if (playerMode === "hotseat") {
+      if (phase === "setup" && allPlaced) {
+        // Move to P2 setup
+        setPhase("setup-p2");
+        setOrientation("horizontal");
+        setHover(null);
+        return;
+      }
+      if (phase === "setup-p2" && allPlacedP2) {
+        // Start hotseat game
+        setTurn("p1");
+        setWinner(null);
+        setLastPlayerShot(null);
+        setLastAIShot(null);
+        const p1Shots = gameMode === "salvo" ? remainingShips(playerBoard) : 1;
+        setSalvoShotsRemaining(p1Shots);
+        setSalvoShotsTotal(p1Shots);
+        setLog(["Game on! Pass-and-play mode. Player 1 fires first."]);
+        setPhase("playing");
+        gameStartRef.current = Date.now();
+        setShowPassDevice(true);
+        return;
+      }
+      return;
+    }
+    // vs-ai
     if (!allPlaced) return;
-    setAiBoard(placeShipsRandomly());
+    const rng = useSeed && seedInput
+      ? seededRng(seedInput)
+      : undefined;
+    const seed = useSeed && seedInput ? seedInput : randomSeedString();
+    setActiveSeed(seed);
+    setAiBoard(rng ? placeShipsRandomly(undefined, undefined, rng) : placeShipsRandomly());
     setAiState(createAIState());
     setTurn("player");
     setWinner(null);
     setLastPlayerShot(null);
     setLastAIShot(null);
-    setLog([`Game on! Difficulty: ${difficulty}. Fire at the enemy waters.`]);
+    setPowerUps({ ...DEFAULT_POWERUPS });
+    setActivePowerUp(null);
+    setRadarCells(new Set());
+    setSonarOverlay(null);
+    setAirstrikeCells(new Set());
+    setShowConfetti(false);
+    const salvoCount = gameMode === "salvo" ? remainingShips(playerBoard) : 0;
+    setSalvoShotsRemaining(salvoCount);
+    setSalvoShotsTotal(salvoCount);
+    setLog([
+      `Game on! ${gameMode === "salvo" ? "Salvo" : "Classic"} mode, difficulty: ${difficulty}. ${gameMode === "salvo" ? `You have ${salvoCount} shots.` : "Fire at the enemy waters."}${useSeed && seedInput ? ` Seed: ${seed}` : ""}`,
+    ]);
     setPhase("playing");
+    gameStartRef.current = Date.now();
   };
 
   const newGame = () => {
     setPlayerBoard(createEmptyBoard());
     setAiBoard(createEmptyBoard());
+    setP2Board(createEmptyBoard());
     setOrientation("horizontal");
     setHover(null);
     setTurn("player");
@@ -187,10 +360,129 @@ export default function App() {
     setLastAIShot(null);
     setLog([]);
     setPhase("setup");
+    setPowerUps({ ...DEFAULT_POWERUPS });
+    setActivePowerUp(null);
+    setRadarCells(new Set());
+    setSonarOverlay(null);
+    setAirstrikeCells(new Set());
+    setSalvoShotsRemaining(0);
+    setSalvoShotsTotal(0);
+    setShowConfetti(false);
+    setShowPassDevice(false);
+    setAiThinking(false);
   };
 
+  /* ─── Power-up usage ─── */
+  const applyPowerUp = (coord: Coord) => {
+    if (!activePowerUp || !enablePowerUps) return false;
+    if (!canUsePowerUp(powerUps, activePowerUp)) return false;
+
+    if (activePowerUp === "radar") {
+      const result = radarScan(aiBoard, coord);
+      const keys = new Set(
+        result.cells
+          .filter((c) => c.hasShip)
+          .map((c) => coordKey(c.coord)),
+      );
+      setRadarCells(keys);
+      setPowerUps(spendPowerUp(powerUps, "radar"));
+      playSound("radar");
+      addLog(
+        `Radar scan at ${coordLabel(coord)}: ${keys.size} ship segment(s) detected.`,
+      );
+      setActivePowerUp(null);
+      // Clear radar overlay after 3s
+      setTimeout(() => setRadarCells(new Set()), 3000);
+      return true;
+    }
+
+    if (activePowerUp === "sonar") {
+      const result = sonarPing(aiBoard, coord);
+      setSonarOverlay({ center: coord, count: result.count });
+      setPowerUps(spendPowerUp(powerUps, "sonar"));
+      playSound("sonar");
+      addLog(
+        `Sonar ping at ${coordLabel(coord)}: ${result.count} ship segment(s) nearby.`,
+      );
+      setActivePowerUp(null);
+      setTimeout(() => setSonarOverlay(null), 3000);
+      return true;
+    }
+
+    if (activePowerUp === "airstrike") {
+      // Determine axis: use row or column of clicked cell
+      // Pick axis with more unshot cells
+      const rowTargets = airstrikeTargets(aiBoard, "row", coord.row);
+      const colTargets = airstrikeTargets(aiBoard, "col", coord.col);
+      const targets = rowTargets.length >= colTargets.length ? rowTargets : colTargets;
+      const axis = rowTargets.length >= colTargets.length ? "row" : "col";
+
+      let currentBoard = aiBoard;
+      const hitKeys = new Set<string>();
+      for (const t of targets) {
+        const { board: nb, result, sunkShip } = receiveAttack(currentBoard, t);
+        if (result !== "already") {
+          currentBoard = nb;
+          hitKeys.add(coordKey(t));
+          if (result === "hit") {
+            if (sunkShip) {
+              addLog(`Airstrike sank ${sunkShip.name} at ${coordLabel(t)}!`);
+            }
+          }
+        }
+      }
+      setAiBoard(currentBoard);
+      setAirstrikeCells(hitKeys);
+      setPowerUps(spendPowerUp(powerUps, "airstrike"));
+      playSound("airstrike");
+      addLog(
+        `Airstrike on ${axis} ${axis === "row" ? coord.row + 1 : COLUMN_LABELS[coord.col]}: ${targets.length} cells bombed.`,
+      );
+      setActivePowerUp(null);
+      setTimeout(() => setAirstrikeCells(new Set()), 2000);
+
+      // Check win
+      if (allShipsSunk(currentBoard)) {
+        setWinner("player");
+        setPhase("gameover");
+        addLog("Victory! You destroyed the enemy fleet.");
+        playSound("win");
+        recordResult(true, currentBoard);
+        setShowConfetti(true);
+        return true;
+      }
+
+      // In salvo mode, airstrike doesn't count as a normal shot
+      // but ends turn in classic mode
+      if (gameMode === "classic") {
+        setTurn("ai");
+        setAiThinking(true);
+      }
+      return true;
+    }
+
+    return false;
+  };
+
+  /* ─── Fire handler ─── */
   const handleFire = (coord: Coord) => {
-    if (phase !== "playing" || turn !== "player") return;
+    if (phase !== "playing") return;
+
+    // Power-up takes priority
+    if (activePowerUp && enablePowerUps && playerMode === "vs-ai") {
+      if ((turn === "player") || (gameMode === "salvo" && salvoShotsRemaining > 0)) {
+        applyPowerUp(coord);
+        return;
+      }
+    }
+
+    if (playerMode === "hotseat") {
+      handleHotseatFire(coord);
+      return;
+    }
+
+    if (turn !== "player") return;
+
     const { board, result, sunkShip } = receiveAttack(aiBoard, coord);
     if (result === "already") return;
     setAiBoard(board);
@@ -212,63 +504,268 @@ export default function App() {
       setPhase("gameover");
       addLog("Victory! You destroyed the enemy fleet.");
       playSound("win");
-      recordResult(true);
+      recordResult(true, board);
+      setShowConfetti(true);
       return;
     }
+
+    if (gameMode === "salvo") {
+      const remaining = salvoShotsRemaining - 1;
+      setSalvoShotsRemaining(remaining);
+      if (remaining > 0) {
+        addLog(`${remaining} shot(s) remaining this turn.`);
+        return; // Don't switch turn yet
+      }
+    }
+
     setTurn("ai");
+    setAiThinking(true);
   };
 
-  // AI takes its turn whenever it becomes the AI's move during play.
-  // State is read from the closure and each setter is called exactly once to
-  // avoid double side effects from updater functions running more than once.
-  useEffect(() => {
-    if (phase !== "playing" || turn !== "ai") return;
-    const timer = setTimeout(() => {
-      const { move, state } = chooseAIMove(playerBoard, aiState, difficulty);
-      const { board: nextBoard, result, sunkShip } = receiveAttack(
-        playerBoard,
-        move,
-      );
-      setPlayerBoard(nextBoard);
-      setLastAIShot(move);
-      setAiState(updateAIAfterResult(state, nextBoard, move, result, !!sunkShip));
-
+  /* ─── Hotseat fire ─── */
+  const handleHotseatFire = (coord: Coord) => {
+    if (turn === "p1") {
+      // P1 fires at P2's board
+      const { board, result, sunkShip } = receiveAttack(p2Board, coord);
+      if (result === "already") return;
+      setP2Board(board);
+      setLastPlayerShot(coord);
       if (result === "hit") {
         playSound(sunkShip ? "sink" : "hit");
         addLog(
           sunkShip
-            ? `Enemy sank your ${sunkShip.name}! (${coordLabel(move)})`
-            : `Enemy hit your fleet at ${coordLabel(move)}.`,
+            ? `P1 sank P2's ${sunkShip.name}! (${coordLabel(coord)})`
+            : `P1 hit at ${coordLabel(coord)}.`,
         );
       } else {
         playSound("miss");
-        addLog(`Enemy missed at ${coordLabel(move)}.`);
+        addLog(`P1 missed at ${coordLabel(coord)}.`);
+      }
+      if (allShipsSunk(board)) {
+        setWinner("p1");
+        setPhase("gameover");
+        addLog("Player 1 wins!");
+        playSound("win");
+        setShowConfetti(true);
+        return;
+      }
+      if (gameMode === "salvo") {
+        const remaining = salvoShotsRemaining - 1;
+        setSalvoShotsRemaining(remaining);
+        if (remaining > 0) return;
+      }
+      // Switch to P2
+      const p2shots = gameMode === "salvo" ? remainingShips(board) : 1;
+      setSalvoShotsRemaining(p2shots);
+      setSalvoShotsTotal(p2shots);
+      setTurn("p2");
+      setLastPlayerShot(null);
+      setLastAIShot(null);
+      setShowPassDevice(true);
+    } else if (turn === "p2") {
+      // P2 fires at P1's board
+      const { board, result, sunkShip } = receiveAttack(playerBoard, coord);
+      if (result === "already") return;
+      setPlayerBoard(board);
+      setLastPlayerShot(coord);
+      if (result === "hit") {
+        playSound(sunkShip ? "sink" : "hit");
+        addLog(
+          sunkShip
+            ? `P2 sank P1's ${sunkShip.name}! (${coordLabel(coord)})`
+            : `P2 hit at ${coordLabel(coord)}.`,
+        );
+      } else {
+        playSound("miss");
+        addLog(`P2 missed at ${coordLabel(coord)}.`);
+      }
+      if (allShipsSunk(board)) {
+        setWinner("p2");
+        setPhase("gameover");
+        addLog("Player 2 wins!");
+        playSound("win");
+        setShowConfetti(true);
+        return;
+      }
+      if (gameMode === "salvo") {
+        const remaining = salvoShotsRemaining - 1;
+        setSalvoShotsRemaining(remaining);
+        if (remaining > 0) return;
+      }
+      const p1shots = gameMode === "salvo" ? remainingShips(board) : 1;
+      setSalvoShotsRemaining(p1shots);
+      setSalvoShotsTotal(p1shots);
+      setTurn("p1");
+      setLastPlayerShot(null);
+      setLastAIShot(null);
+      setShowPassDevice(true);
+    }
+  };
+
+  // AI takes its turn whenever it becomes the AI's move during play.
+  useEffect(() => {
+    if (phase !== "playing" || playerMode === "hotseat") return;
+    if (turn !== "ai") return;
+
+    const aiShotsCount =
+      gameMode === "salvo" ? remainingShips(aiBoard) : 1;
+    let shotsFired = 0;
+    let currentBoard = playerBoard;
+    let currentAiState = aiState;
+    let activeTimer: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
+    const fireNextShot = () => {
+      if (cancelled) return;
+      if (shotsFired >= aiShotsCount) {
+        // AI done
+        setAiThinking(false);
+        const pSalvo =
+          gameMode === "salvo" ? remainingShips(currentBoard) : 1;
+        setSalvoShotsRemaining(pSalvo);
+        setSalvoShotsTotal(pSalvo);
+        if (gameMode === "salvo") {
+          addLog(`Your turn: ${pSalvo} shot(s).`);
+        }
+        setTurn("player");
+        playSound("turn");
+        return;
       }
 
-      if (allShipsSunk(nextBoard)) {
-        setWinner("ai");
-        setPhase("gameover");
-        addLog("Defeat! The enemy sank your fleet.");
-        playSound("lose");
-        recordResult(false);
-      } else {
-        setTurn("player");
+      activeTimer = setTimeout(
+        () => {
+          if (cancelled) return;
+          const { move, state } = chooseAIMove(
+            currentBoard,
+            currentAiState,
+            difficulty,
+          );
+          const { board: nextBoard, result, sunkShip } = receiveAttack(
+            currentBoard,
+            move,
+          );
+          currentBoard = nextBoard;
+          currentAiState = updateAIAfterResult(
+            state,
+            nextBoard,
+            move,
+            result,
+            !!sunkShip,
+          );
+          shotsFired++;
+
+          setPlayerBoard(nextBoard);
+          setLastAIShot(move);
+          setAiState(currentAiState);
+
+          if (result === "hit") {
+            playSound(sunkShip ? "sink" : "hit");
+            addLog(
+              sunkShip
+                ? `Enemy sank your ${sunkShip.name}! (${coordLabel(move)})`
+                : `Enemy hit your fleet at ${coordLabel(move)}.`,
+            );
+          } else {
+            playSound("miss");
+            addLog(`Enemy missed at ${coordLabel(move)}.`);
+          }
+
+          if (allShipsSunk(nextBoard)) {
+            setWinner("ai");
+            setPhase("gameover");
+            addLog("Defeat! The enemy sank your fleet.");
+            playSound("lose");
+            recordResult(false);
+            setAiThinking(false);
+            return;
+          }
+
+          if (shotsFired < aiShotsCount && gameMode === "salvo") {
+            addLog(
+              `Enemy has ${aiShotsCount - shotsFired} shot(s) remaining.`,
+            );
+          }
+
+          fireNextShot();
+        },
+        shotsFired === 0 ? AI_DELAY_MS : 350,
+      );
+    };
+
+    fireNextShot();
+    return () => {
+      cancelled = true;
+      if (activeTimer) clearTimeout(activeTimer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, turn]);
+
+  const winnerLabel =
+    winner === "player" || winner === "p1"
+      ? playerMode === "hotseat"
+        ? "Player 1 wins!"
+        : "You win!"
+      : winner === "p2"
+        ? "Player 2 wins!"
+        : "You lose.";
+
+  const turnLabel = (() => {
+    if (phase === "gameover") return winnerLabel;
+    if (playerMode === "hotseat") {
+      if (turn === "p1") return "Player 1's turn";
+      return "Player 2's turn";
+    }
+    if (aiThinking) return "Enemy is analyzing...";
+    if (turn === "player") {
+      if (gameMode === "salvo" && salvoShotsRemaining > 0) {
+        return `Your turn \u2014 ${salvoShotsRemaining}/${salvoShotsTotal} shots remaining`;
       }
-    }, AI_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [phase, turn, playerBoard, aiState, difficulty, addLog, recordResult]);
+      return "Your turn \u2014 fire at enemy waters.";
+    }
+    return "Enemy is taking aim\u2026";
+  })();
+
+  /* ─── Hotseat board selection ─── */
+  // In hotseat, show the current player's board on the left (own) and the
+  // opponent's board on the right (tracking).
+  const leftBoard = (playerMode === "hotseat" && turn === "p2") || phase === "setup-p2" ? p2Board : playerBoard;
+  const rightBoard = playerMode === "hotseat"
+    ? turn === "p1"
+      ? p2Board
+      : playerBoard
+    : aiBoard;
 
   return (
     <div className="app">
+      <Confetti active={showConfetti} />
+
+      {showPassDevice && playerMode === "hotseat" && phase === "playing" && (
+        <PassDevice
+          playerName={turn === "p1" ? "Player 1" : "Player 2"}
+          onReady={() => setShowPassDevice(false)}
+        />
+      )}
+
       <header className="app__header">
         <div className="app__titles">
           <h1>Battleship</h1>
-          <p className="app__subtitle">Human vs AI</p>
+          <p className="app__subtitle">
+            {playerMode === "hotseat" ? "Pass \u0026 Play" : "Human vs AI"}
+          </p>
         </div>
         <div className="app__meta">
-          <span className="record" title="Wins–Losses on this device">
-            W {record.wins} · L {record.losses}
-          </span>
+          {playerMode === "vs-ai" && (
+            <span className="record" title="Wins\u2013Losses on this device">
+              W {record.wins} \u00B7 L {record.losses}
+            </span>
+          )}
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={() => setShowHistory(true)}
+            title="Match History"
+          >
+            \uD83D\uDCCA Stats
+          </button>
           <button
             type="button"
             className="icon-btn"
@@ -276,47 +773,157 @@ export default function App() {
             onClick={() => setMutedState((m) => !m)}
             title={muted ? "Unmute" : "Mute"}
           >
-            {muted ? "🔇 Muted" : "🔊 Sound"}
+            {muted ? "\uD83D\uDD07 Muted" : "\uD83D\uDD0A Sound"}
           </button>
         </div>
       </header>
 
-      {phase === "setup" && (
-        <section className="panel">
+      {(phase === "setup" || phase === "setup-p2") && (
+        <section className="panel" aria-label="Setup">
           <div className="panel__controls">
             <div>
-              <strong>Place your fleet</strong>
+              <strong>
+                {phase === "setup-p2"
+                  ? "Player 2: Place your fleet"
+                  : "Place your fleet"}
+              </strong>
               <p className="hint">
-                {nextDef
-                  ? `Placing: ${nextDef.name} (${nextDef.size}). Click your grid to place.`
+                {activeNextDef
+                  ? `Placing: ${activeNextDef.name} (${activeNextDef.size}). Click your grid or drag from the dock.`
                   : "All ships placed. Ready to start!"}
               </p>
               <p className="hint">
-                Orientation: <strong>{orientation}</strong> — press{" "}
-                <kbd>R</kbd> or use the button to rotate.
+                Orientation: <strong>{orientation}</strong> \u2014 press{" "}
+                <kbd>R</kbd> or tap Rotate.
               </p>
-              <div className="difficulty">
-                <span className="difficulty__label">AI difficulty:</span>
-                <div
-                  className="difficulty__options"
-                  role="radiogroup"
-                  aria-label="AI difficulty"
-                >
-                  {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      role="radio"
-                      aria-checked={difficulty === d}
-                      className={`chip${difficulty === d ? " chip--active" : ""}`}
-                      onClick={() => setDifficulty(d)}
-                    >
-                      {d}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <p className="hint">{DIFFICULTY_INFO[difficulty]}</p>
+
+              {phase === "setup" && (
+                <>
+                  {/* Game mode */}
+                  <div className="settings-row">
+                    <span className="settings-label">Mode:</span>
+                    <div className="settings-options" role="radiogroup" aria-label="Game mode">
+                      {(["classic", "salvo"] as GameMode[]).map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          role="radio"
+                          aria-checked={gameMode === m}
+                          className={`chip${gameMode === m ? " chip--active" : ""}`}
+                          onClick={() => setGameMode(m)}
+                        >
+                          {m === "classic" ? "Classic" : "Salvo"}
+                        </button>
+                      ))}
+                    </div>
+                    <span className="hint">
+                      {gameMode === "salvo"
+                        ? "Fire one shot per surviving ship each turn."
+                        : "One shot per turn."}
+                    </span>
+                  </div>
+
+                  {/* Player mode */}
+                  <div className="settings-row">
+                    <span className="settings-label">Players:</span>
+                    <div className="settings-options" role="radiogroup" aria-label="Player mode">
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={playerMode === "vs-ai"}
+                        className={`chip${playerMode === "vs-ai" ? " chip--active" : ""}`}
+                        onClick={() => setPlayerMode("vs-ai")}
+                      >
+                        vs AI
+                      </button>
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={playerMode === "hotseat"}
+                        className={`chip${playerMode === "hotseat" ? " chip--active" : ""}`}
+                        onClick={() => setPlayerMode("hotseat")}
+                      >
+                        2-Player
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Difficulty (AI only) */}
+                  {playerMode === "vs-ai" && (
+                    <div className="settings-row">
+                      <span className="settings-label">AI difficulty:</span>
+                      <div
+                        className="settings-options"
+                        role="radiogroup"
+                        aria-label="AI difficulty"
+                      >
+                        {(
+                          ["easy", "medium", "hard", "admiral"] as Difficulty[]
+                        ).map((d) => (
+                          <button
+                            key={d}
+                            type="button"
+                            role="radio"
+                            aria-checked={difficulty === d}
+                            className={`chip${difficulty === d ? " chip--active" : ""}`}
+                            onClick={() => setDifficulty(d)}
+                          >
+                            {d}
+                          </button>
+                        ))}
+                      </div>
+                      <span className="hint">{DIFFICULTY_INFO[difficulty]}</span>
+                    </div>
+                  )}
+
+                  {/* Power-ups toggle */}
+                  {playerMode === "vs-ai" && (
+                    <div className="settings-row">
+                      <label className="toggle-label">
+                        <input
+                          type="checkbox"
+                          checked={enablePowerUps}
+                          onChange={(e) => setEnablePowerUps(e.target.checked)}
+                        />
+                        Enable power-ups (Radar, Sonar, Airstrike)
+                      </label>
+                    </div>
+                  )}
+
+                  {/* Seed */}
+                  {playerMode === "vs-ai" && (
+                    <div className="settings-row">
+                      <label className="toggle-label">
+                        <input
+                          type="checkbox"
+                          checked={useSeed}
+                          onChange={(e) => setUseSeed(e.target.checked)}
+                        />
+                        Use game seed
+                      </label>
+                      {useSeed && (
+                        <input
+                          type="text"
+                          className="seed-input"
+                          placeholder="Enter seed (e.g. AB34)"
+                          value={seedInput}
+                          onChange={(e) =>
+                            setSeedInput(e.target.value.toUpperCase())
+                          }
+                          maxLength={12}
+                          aria-label="Game seed"
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Theme */}
+                  <div className="settings-row">
+                    <span className="settings-label">Theme:</span>
+                    <ThemeSwitcher current={theme} onChange={changeTheme} />
+                  </div>
+                </>
+              )}
             </div>
             <div className="panel__buttons">
               <button type="button" onClick={rotate}>
@@ -331,81 +938,161 @@ export default function App() {
               <button
                 type="button"
                 className="btn-primary"
-                disabled={!allPlaced}
+                disabled={phase === "setup" ? !allPlaced : !allPlacedP2}
                 onClick={startGame}
               >
-                Start game
+                {phase === "setup" && playerMode === "hotseat"
+                  ? "Next: P2 Setup"
+                  : "Start game"}
               </button>
             </div>
           </div>
+
+          {/* Ship dock for drag-and-drop */}
+          <ShipDock
+            shipDefs={SHIP_DEFS}
+            placedCount={phase === "setup-p2" ? p2Board.ships.length : playerBoard.ships.length}
+            currentOrientation={orientation}
+          />
         </section>
       )}
 
-      {phase !== "setup" && (
-        <section className="panel">
+      {phase !== "setup" && phase !== "setup-p2" && (
+        <section className="panel" aria-label="Game status">
           <div className="status">
-            <span className="status__msg">
-              {phase === "gameover"
-                ? winner === "player"
-                  ? "You win! 🎉"
-                  : "You lose."
-                : turn === "player"
-                  ? "Your turn — fire at enemy waters."
-                  : "Enemy is taking aim…"}
+            <span
+              className={`status__msg${aiThinking ? " status__msg--thinking" : ""}`}
+              role="status"
+              aria-live="polite"
+            >
+              {turnLabel}
             </span>
-            <span className="status__stats">
-              Shots {playerStats.shots} · Hits {playerStats.hits} · Accuracy{" "}
-              {accuracy}%
-            </span>
+            {playerMode === "vs-ai" && (
+              <span className="status__stats">
+                Shots {playerStats.shots} \u00B7 Hits {playerStats.hits}{" "}
+                \u00B7 Accuracy {accuracy}%
+              </span>
+            )}
             <span className="status__ships">
-              You: {remainingShips(playerBoard)} left · Enemy:{" "}
-              {remainingShips(aiBoard)} left
+              {playerMode === "hotseat" ? (
+                <>
+                  P1: {remainingShips(playerBoard)} left \u00B7 P2:{" "}
+                  {remainingShips(p2Board)} left
+                </>
+              ) : (
+                <>
+                  You: {remainingShips(playerBoard)} left \u00B7 Enemy:{" "}
+                  {remainingShips(aiBoard)} left
+                </>
+              )}
             </span>
+            {activeSeed && playerMode === "vs-ai" && (
+              <span className="status__seed" title="Game seed (share to challenge a friend)">
+                Seed: {activeSeed}
+              </span>
+            )}
             {phase === "gameover" && (
               <button type="button" className="btn-primary" onClick={newGame}>
                 Play again
               </button>
             )}
           </div>
+
+          {/* Power-up bar */}
+          {enablePowerUps && playerMode === "vs-ai" && phase === "playing" && (
+            <PowerUpBar
+              powerUps={powerUps}
+              activePowerUp={activePowerUp}
+              onSelect={setActivePowerUp}
+              disabled={turn !== "player"}
+            />
+          )}
         </section>
       )}
 
       <main className="boards">
         <div className="board-wrap">
-          <h2>Your waters</h2>
+          <h2>
+            {playerMode === "hotseat"
+              ? turn === "p2"
+                ? "Your waters (P2)"
+                : "Your waters (P1)"
+              : "Your waters"}
+          </h2>
           <BoardGrid
-            board={playerBoard}
+            board={leftBoard}
             mode="own"
             showShips
-            disabled={phase !== "setup"}
-            onCellClick={handlePlace}
-            onCellHover={setHover}
+            disabled={phase !== "setup" && phase !== "setup-p2"}
+            onCellClick={
+              phase === "setup" || phase === "setup-p2" ? handlePlace : undefined
+            }
+            onCellHover={
+              phase === "setup" || phase === "setup-p2" ? setHover : undefined
+            }
             previewCells={previewCells}
             previewValid={previewValid}
             lastShot={phase === "playing" ? lastAIShot : null}
+            onShipDrop={
+              phase === "setup" || phase === "setup-p2"
+                ? handleShipDrop
+                : undefined
+            }
           />
-          {phase !== "setup" && (
-            <FleetStatus title="Your fleet" board={playerBoard} />
+          {phase !== "setup" && phase !== "setup-p2" && (
+            <FleetStatus
+              title={
+                playerMode === "hotseat" && turn === "p2"
+                  ? "P2 fleet"
+                  : "Your fleet"
+              }
+              board={leftBoard}
+            />
           )}
         </div>
 
         <div className="board-wrap">
-          <h2>Enemy waters</h2>
+          <h2>
+            {playerMode === "hotseat"
+              ? turn === "p1"
+                ? "P2 waters"
+                : "P1 waters"
+              : "Enemy waters"}
+          </h2>
           <BoardGrid
-            board={aiBoard}
+            board={rightBoard}
             mode="tracking"
             showShips={phase === "gameover"}
-            disabled={phase !== "playing" || turn !== "player"}
+            disabled={
+              phase !== "playing" ||
+              (playerMode === "vs-ai" && turn !== "player") ||
+              showPassDevice
+            }
             onCellClick={handleFire}
             lastShot={phase === "playing" ? lastPlayerShot : null}
+            radarCells={radarCells.size > 0 ? radarCells : undefined}
+            airstrikeCells={
+              airstrikeCells.size > 0 ? airstrikeCells : undefined
+            }
+            sonarOverlay={sonarOverlay}
           />
-          {phase !== "setup" && (
-            <FleetStatus title="Enemy fleet" board={aiBoard} revealHits={false} />
+          {phase !== "setup" && phase !== "setup-p2" && (
+            <FleetStatus
+              title={
+                playerMode === "hotseat"
+                  ? turn === "p1"
+                    ? "P2 fleet"
+                    : "P1 fleet"
+                  : "Enemy fleet"
+              }
+              board={rightBoard}
+              revealHits={playerMode === "hotseat" ? false : false}
+            />
           )}
         </div>
       </main>
 
-      <section className="log" aria-live="polite">
+      <section className="log" aria-live="polite" aria-label="Battle log">
         <h2>Battle log</h2>
         <ul>
           {log.map((entry, i) => (
@@ -423,6 +1110,11 @@ export default function App() {
           Source on GitHub
         </a>
       </footer>
+
+      <MatchHistoryPanel
+        open={showHistory}
+        onClose={() => setShowHistory(false)}
+      />
     </div>
   );
 }

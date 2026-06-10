@@ -2,7 +2,7 @@ import { coordKey, inBounds, isShipSunk } from "./board";
 import type { Board, Coord } from "./types";
 
 /** AI strength. Higher levels search more cleverly. */
-export type Difficulty = "easy" | "medium" | "hard";
+export type Difficulty = "easy" | "medium" | "hard" | "admiral";
 
 /**
  * State carried by the AI between turns. Kept serializable/immutable so it can
@@ -115,6 +115,97 @@ export function computeHeatmap(board: Board): number[][] {
   return heat;
 }
 
+/**
+ * Admiral-level heatmap: extends the hard heatmap with additional refinements:
+ * - Adjacent-miss penalty: cells adjacent to misses get a 0.7× multiplier,
+ *   reflecting that ships tend not to border misses (heuristic, not strict).
+ * - Edge bonus: the heatmap is slightly biased towards interior cells early
+ *   in the game because more placements cover interior cells.
+ * - Active-hit line bonus: if there are 2+ active hits in a line, boost cells
+ *   that continue that line even more aggressively.
+ */
+export function computeAdmiralHeatmap(board: Board): number[][] {
+  const heat = computeHeatmap(board);
+  const size = board.size;
+
+  // Adjacent-miss penalty
+  const missKeys = new Set<string>();
+  for (const [key, result] of Object.entries(board.shots)) {
+    if (result === "miss") missKeys.add(key);
+  }
+
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      if (coordKey({ row, col }) in board.shots) continue;
+
+      let adjacentMisses = 0;
+      for (const d of ORTHOGONAL) {
+        const n = { row: row + d.row, col: col + d.col };
+        if (inBounds(n, size) && missKeys.has(coordKey(n))) adjacentMisses++;
+      }
+      if (adjacentMisses > 0) {
+        heat[row][col] *= Math.pow(0.7, adjacentMisses);
+      }
+    }
+  }
+
+  // Active-hit line bonus
+  const sunk = sunkCellKeys(board);
+  const activeHitCoords: Coord[] = [];
+  for (const [key, result] of Object.entries(board.shots)) {
+    if (result === "hit" && !sunk.has(key)) {
+      const [r, c] = key.split(",").map(Number);
+      activeHitCoords.push({ row: r, col: c });
+    }
+  }
+
+  if (activeHitCoords.length >= 2) {
+    // Check for lines of active hits and boost continuation cells
+    for (const hit of activeHitCoords) {
+      for (const dir of [
+        { row: 0, col: 1 },
+        { row: 1, col: 0 },
+      ]) {
+        let lineLength = 1;
+        // Count consecutive hits in this direction
+        for (let step = 1; step < size; step++) {
+          const next = {
+            row: hit.row + dir.row * step,
+            col: hit.col + dir.col * step,
+          };
+          if (
+            !inBounds(next, size) ||
+            !activeHitCoords.some(
+              (h) => h.row === next.row && h.col === next.col,
+            )
+          )
+            break;
+          lineLength++;
+        }
+        if (lineLength >= 2) {
+          // Boost cells that continue the line in either direction
+          for (const sign of [-1, 1]) {
+            const step = sign === 1 ? lineLength : 1;
+            const ext = {
+              row: hit.row + dir.row * sign * step,
+              col: hit.col + dir.col * sign * step,
+            };
+            if (
+              inBounds(ext, size) &&
+              !(coordKey(ext) in board.shots) &&
+              heat[ext.row][ext.col] > 0
+            ) {
+              heat[ext.row][ext.col] *= 3;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return heat;
+}
+
 /** Pick the highest-scoring untried cell from a heatmap (random tie-break). */
 function bestFromHeatmap(
   board: Board,
@@ -149,6 +240,8 @@ function bestFromHeatmap(
  *  - "hard": probability-density search that ranks every cell by how many
  *    legal placements of the remaining fleet cover it, strongly favouring
  *    cells in line with an unresolved hit.
+ *  - "admiral": enhanced hard heatmap with adjacent-miss penalties,
+ *    line-continuation bonuses, and more aggressive targeting.
  */
 export function chooseAIMove(
   board: Board,
@@ -156,6 +249,11 @@ export function chooseAIMove(
   difficulty: Difficulty = "medium",
   rng: () => number = Math.random,
 ): { move: Coord; state: AIState } {
+  if (difficulty === "admiral") {
+    const move = bestFromHeatmap(board, computeAdmiralHeatmap(board), rng);
+    return { move, state };
+  }
+
   if (difficulty === "hard") {
     const move = bestFromHeatmap(board, computeHeatmap(board), rng);
     return { move, state };

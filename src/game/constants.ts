@@ -1,4 +1,4 @@
-import type { ShipDef } from "./types";
+import type { PowerUpState, ShipDef } from "./types";
 
 export const BOARD_SIZE = 10;
 
@@ -13,3 +13,10 @@ export const SHIP_DEFS: ShipDef[] = [
 
 /** Column labels A..J used by the UI. */
 export const COLUMN_LABELS = "ABCDEFGHIJ".split("");
+
+/** Default power-up inventory per game. */
+export const DEFAULT_POWERUPS: PowerUpState = {
+  radar: 1,
+  sonar: 2,
+  airstrike: 1,
+};

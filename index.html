@@ -6,11 +6,22 @@
     <title>Battleship</title>
     <meta
       name="description"
-      content="Play Battleship against an AI opponent in your browser."
+      content="Play Battleship against an AI opponent or a friend in your browser. Features multiple AI difficulties, power-ups, salvo mode, themes, and more."
     />
+    <meta name="theme-color" content="#36c5f0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      }
+    </script>
   </body>
 </html>
