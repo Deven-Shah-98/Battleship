@@ -142,6 +142,74 @@ export const THEMES: Record<
       "--cell-border": "rgba(255, 152, 0, 0.06)",
     },
   },
+  ocean: {
+    label: "Ocean",
+    vars: {
+      "--bg": "#0A1628",
+      "--bg-secondary": "#0E1E35",
+      "--panel": "rgba(14, 30, 53, 0.7)",
+      "--panel-solid": "#0E1E35",
+      "--panel-border": "rgba(0, 188, 212, 0.12)",
+      "--sea": "rgba(10, 40, 70, 0.6)",
+      "--sea-line": "rgba(0, 188, 212, 0.1)",
+      "--accent": "#00BCD4",
+      "--accent-glow": "rgba(0, 188, 212, 0.3)",
+      "--accent-secondary": "#80DEEA",
+      "--accent-secondary-glow": "rgba(128, 222, 234, 0.2)",
+      "--hit": "#FF5252",
+      "--miss": "#546E7A",
+      "--ship": "rgba(0, 188, 212, 0.2)",
+      "--ship-stroke": "rgba(0, 188, 212, 0.35)",
+      "--sunk": "#D32F2F",
+      "--ok": "#69F0AE",
+      "--text": "#E0F7FA",
+      "--text-secondary": "#546E7A",
+      "--text-muted": "rgba(84, 110, 122, 0.6)",
+      "--gradient-start": "#0A1628",
+      "--gradient-mid": "#0E1E35",
+      "--gradient-end": "#0C1A30",
+      "--glass-bg": "rgba(14, 30, 53, 0.5)",
+      "--glass-border": "rgba(0, 188, 212, 0.08)",
+      "--glass-highlight": "rgba(255, 255, 255, 0.02)",
+      "--cell-bg": "rgba(10, 40, 70, 0.4)",
+      "--cell-hover": "rgba(0, 188, 212, 0.15)",
+      "--cell-border": "rgba(0, 188, 212, 0.06)",
+    },
+  },
+  neon: {
+    label: "Neon",
+    vars: {
+      "--bg": "#0A0A0A",
+      "--bg-secondary": "#121212",
+      "--panel": "rgba(18, 18, 18, 0.8)",
+      "--panel-solid": "#121212",
+      "--panel-border": "rgba(0, 255, 136, 0.15)",
+      "--sea": "rgba(20, 20, 20, 0.6)",
+      "--sea-line": "rgba(0, 255, 136, 0.08)",
+      "--accent": "#00FF88",
+      "--accent-glow": "rgba(0, 255, 136, 0.3)",
+      "--accent-secondary": "#FF00FF",
+      "--accent-secondary-glow": "rgba(255, 0, 255, 0.2)",
+      "--hit": "#FF0066",
+      "--miss": "#444444",
+      "--ship": "rgba(0, 255, 136, 0.2)",
+      "--ship-stroke": "rgba(0, 255, 136, 0.4)",
+      "--sunk": "#FF0066",
+      "--ok": "#00FF88",
+      "--text": "#FFFFFF",
+      "--text-secondary": "#888888",
+      "--text-muted": "rgba(136, 136, 136, 0.6)",
+      "--gradient-start": "#0A0A0A",
+      "--gradient-mid": "#121212",
+      "--gradient-end": "#0A0A0A",
+      "--glass-bg": "rgba(18, 18, 18, 0.6)",
+      "--glass-border": "rgba(0, 255, 136, 0.1)",
+      "--glass-highlight": "rgba(255, 255, 255, 0.02)",
+      "--cell-bg": "rgba(20, 20, 20, 0.5)",
+      "--cell-hover": "rgba(0, 255, 136, 0.15)",
+      "--cell-border": "rgba(0, 255, 136, 0.08)",
+    },
+  },
 };
 
 export function loadTheme(): ThemeName {
@@ -169,4 +237,27 @@ export function applyTheme(theme: ThemeName): void {
     root.style.setProperty(key, value);
   }
   root.setAttribute("data-theme", theme);
+}
+
+const THEMES_USED_KEY = "battleship.themes_used";
+
+export function recordThemeUsed(theme: ThemeName): Set<string> {
+  try {
+    const raw = localStorage.getItem(THEMES_USED_KEY);
+    const used = raw ? new Set(JSON.parse(raw) as string[]) : new Set<string>();
+    used.add(theme);
+    localStorage.setItem(THEMES_USED_KEY, JSON.stringify([...used]));
+    return used;
+  } catch {
+    return new Set([theme]);
+  }
+}
+
+export function getAllThemesUsed(): Set<string> {
+  try {
+    const raw = localStorage.getItem(THEMES_USED_KEY);
+    return raw ? new Set(JSON.parse(raw) as string[]) : new Set<string>();
+  } catch {
+    return new Set<string>();
+  }
 }
