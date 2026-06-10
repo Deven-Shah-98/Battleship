@@ -161,7 +161,13 @@ export default function App() {
   const nextDefP2 = SHIP_DEFS[p2Board.ships.length] ?? null;
   const allPlacedP2 = p2Board.ships.length === SHIP_DEFS.length;
 
-  const playerStats = useMemo(() => countShots(aiBoard), [aiBoard]);
+  const playerStats = useMemo(() => {
+    if (playerMode === "hotseat") {
+      const board = winner === "p2" ? playerBoard : p2Board;
+      return countShots(board);
+    }
+    return countShots(aiBoard);
+  }, [aiBoard, playerBoard, p2Board, playerMode, winner]);
   const accuracy =
     playerStats.shots === 0
       ? 0
@@ -741,7 +747,7 @@ export default function App() {
 
       {phase === "gameover" && (
         <GameOverOverlay
-          won={winner === "player" || winner === "p1"}
+          won={winner === "player" || winner === "p1" || winner === "p2"}
           label={winnerLabel}
           shots={playerStats.shots}
           hits={playerStats.hits}
