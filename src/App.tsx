@@ -567,7 +567,7 @@ export default function App() {
       const { board, result, sunkShip } = receiveAttack(playerBoard, coord);
       if (result === "already") return;
       setPlayerBoard(board);
-      setLastAIShot(coord);
+      setLastPlayerShot(coord);
       if (result === "hit") {
         playSound(sunkShip ? "sink" : "hit");
         addLog(

@@ -185,9 +185,10 @@ export function computeAdmiralHeatmap(board: Board): number[][] {
         if (lineLength >= 2) {
           // Boost cells that continue the line in either direction
           for (const sign of [-1, 1]) {
+            const step = sign === 1 ? lineLength : 1;
             const ext = {
-              row: hit.row + dir.row * sign * lineLength,
-              col: hit.col + dir.col * sign * lineLength,
+              row: hit.row + dir.row * sign * step,
+              col: hit.col + dir.col * sign * step,
             };
             if (
               inBounds(ext, size) &&
