@@ -201,6 +201,12 @@ export default function App() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_hintCell, setHintCell] = useState<Coord | null>(null);
 
+  /* ─── Last game XP for overlay ─── */
+  const [lastGameXP, setLastGameXP] = useState(0);
+
+  /* ─── Effective difficulty (progressive AI) ─── */
+  const [effectiveDifficulty, setEffectiveDifficulty] = useState<Difficulty>("medium");
+
   /* ─── Board setup tracking ─── */
   const [placementHistory, setPlacementHistory] = useState<Board[]>([]);
 
@@ -245,6 +251,39 @@ export default function App() {
     } catch { /* */ }
   }, []);
 
+  // Auto-save restore on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      if (saved.playerBoard && saved.aiBoard) {
+        setPlayerBoard(saved.playerBoard);
+        setAiBoard(saved.aiBoard);
+        setTurn(saved.turn ?? "player");
+        setAiState(saved.aiState ?? createAIState());
+        setLog(saved.log ?? []);
+        setDifficulty(saved.difficulty ?? "medium");
+        setGameMode(saved.mode ?? saved.gameMode ?? "classic");
+        setEnablePowerUps(saved.enablePowerUps ?? false);
+        setPowerUps(saved.powerUps ?? { ...DEFAULT_POWERUPS });
+        setActiveSeed(saved.activeSeed ?? null);
+        setSalvoShotsRemaining(saved.salvoShotsRemaining ?? 0);
+        setSalvoShotsTotal(saved.salvoShotsTotal ?? 0);
+        setBoardSize(saved.boardSize ?? 10);
+        setFleet(saved.fleet ?? SHIP_DEFS);
+        setAiSpeed(saved.aiSpeed ?? "normal");
+        setAiPersonality(saved.aiPersonality ?? "balanced");
+        setCurrentWeather(saved.currentWeather ?? "clear");
+        setWeatherTurnsLeft(saved.weatherTurnsLeft ?? 0);
+        gameStartRef.current = saved.gameStart ?? Date.now();
+        setPhase("playing");
+        addLog("Game restored from auto-save.");
+      }
+    } catch { /* */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Auto-save on state changes during play
   useEffect(() => {
     if (phase !== "playing" || playerMode === "hotseat") return;
@@ -262,15 +301,37 @@ export default function App() {
     boardSize, fleet, aiSpeed, aiPersonality, playerMode, currentWeather, weatherTurnsLeft]);
 
   // Turn timer
+  const timerExpiredRef = useRef(false);
   useEffect(() => {
     if (phase !== "playing" || timedTurns <= 0) return;
     if (turn === "ai") return;
 
+    timerExpiredRef.current = false;
     setTurnTimer(timedTurns);
     turnTimerRef.current = setInterval(() => {
       setTurnTimer((prev) => {
         if (prev <= 1) {
-          // Time's up - auto-fire random cell or skip
+          if (!timerExpiredRef.current) {
+            timerExpiredRef.current = true;
+            // Auto-fire: find a random un-hit cell on the enemy board
+            setTimeout(() => {
+              const targetBoard = playerMode === "hotseat" ? (turn === "p1" ? p2Board : playerBoard) : aiBoard;
+              const available: Coord[] = [];
+              for (let r = 0; r < targetBoard.size; r++) {
+                for (let c = 0; c < targetBoard.size; c++) {
+                  const key = coordKey({ row: r, col: c });
+                  if (!targetBoard.shots[key]) {
+                    available.push({ row: r, col: c });
+                  }
+                }
+              }
+              if (available.length > 0) {
+                const randomCell = available[Math.floor(Math.random() * available.length)];
+                addLog(`Time's up! Auto-firing at ${coordLabel(randomCell)}.`);
+                handleFire(randomCell);
+              }
+            }, 0);
+          }
           return 0;
         }
         if (prev <= 5) playSound("countdown");
@@ -281,6 +342,7 @@ export default function App() {
     return () => {
       if (turnTimerRef.current) clearInterval(turnTimerRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, turn, timedTurns]);
 
   const addLog = useCallback((message: string) => {
@@ -335,15 +397,17 @@ export default function App() {
         }
       }
 
-      const xpResult = addGameXP(matchRecord, achievementXP);
       const prevXP = loadXP();
+      const xpResult = addGameXP(matchRecord, achievementXP);
+      const xpEarned = xpResult.totalXP - prevXP.totalXP;
+      setLastGameXP(xpEarned);
       if (xpResult.level > prevXP.level) {
-        setXpToast({ xp: xpResult.totalXP - prevXP.totalXP, level: xpResult.level });
+        setXpToast({ xp: xpEarned, level: xpResult.level });
         playSound("levelup");
         setTimeout(() => setXpToast(null), 4000);
       }
 
-      matchRecord.xpEarned = xpResult.totalXP - prevXP.totalXP;
+      matchRecord.xpEarned = xpEarned;
       matchRecord.achievementsUnlocked = newAchievements;
 
       // Finalize replay
@@ -552,6 +616,7 @@ export default function App() {
     const wonGames = history.filter((r) => r.won).length;
     const winRate = totalGames > 0 ? wonGames / totalGames : 0.5;
     const progressiveDiff = getProgressiveDifficulty(winRate, difficulty);
+    setEffectiveDifficulty(progressiveDiff);
     if (progressiveDiff !== difficulty) {
       addLog(`Progressive AI adjusted difficulty to ${progressiveDiff}!`);
     }
@@ -613,6 +678,11 @@ export default function App() {
   /* ─── Power-up usage ─── */
   const applyPowerUp = (coord: Coord) => {
     if (!activePowerUp || !enablePowerUps) return false;
+    if (currentWeather === "storm" && enableWeather) {
+      addLog("Power-ups are disabled during storms!");
+      setActivePowerUp(null);
+      return false;
+    }
     if (!canUsePowerUp(powerUps, activePowerUp)) return false;
 
     usedPowerUpsRef.current.add(activePowerUp);
@@ -782,6 +852,12 @@ export default function App() {
       }
     }
 
+    // Calm weather bonus shot: player gets an extra shot before AI turn
+    if (currentWeather === "calm" && enableWeather && gameMode !== "salvo") {
+      addLog("Calm seas grant a bonus shot!");
+      return;
+    }
+
     setTurn("ai");
     setAiThinking(true);
   };
@@ -884,9 +960,9 @@ export default function App() {
         if (cancelled) return;
         let moveResult;
         if (aiPersonality !== "balanced") {
-          moveResult = choosePersonalityMove(currentBoard, currentAiState, aiPersonality, difficulty);
+          moveResult = choosePersonalityMove(currentBoard, currentAiState, aiPersonality, effectiveDifficulty);
         } else {
-          moveResult = chooseAIMove(currentBoard, currentAiState, difficulty);
+          moveResult = chooseAIMove(currentBoard, currentAiState, effectiveDifficulty);
         }
         const { move, state } = moveResult;
         const { board: nextBoard, result, sunkShip } = receiveAttack(currentBoard, move);
@@ -1031,7 +1107,7 @@ export default function App() {
           hits={playerStats.hits}
           accuracy={accuracy}
           duration={gameDuration}
-          xpEarned={xpState.totalXP}
+          xpEarned={lastGameXP}
           onPlayAgain={newGame}
           onShowAnalysis={playerMode === "vs-ai" ? () => setShowAnalysis(true) : undefined}
           onShare={playerMode === "vs-ai" ? handleShare : undefined}
