@@ -151,6 +151,7 @@ export default function App() {
   const [theme, setThemeState] = useState<ThemeName>(() => loadTheme());
   const [aiThinking, setAiThinking] = useState(false);
   const gameStartRef = useRef<number>(0);
+  const gameEndRef = useRef<number>(0);
 
   /* ─── Power-ups ─── */
   const [powerUps, setPowerUps] = useState<PowerUpState>({ ...DEFAULT_POWERUPS });
@@ -278,6 +279,7 @@ export default function App() {
         setAiPersonality(saved.aiPersonality ?? "balanced");
         setCurrentWeather(saved.currentWeather ?? "clear");
         setWeatherTurnsLeft(saved.weatherTurnsLeft ?? 0);
+        setEffectiveDifficulty(saved.effectiveDifficulty ?? saved.difficulty ?? "medium");
         gameStartRef.current = saved.gameStart ?? Date.now();
         setPhase("playing");
         addLog("Game restored from auto-save.");
@@ -294,7 +296,8 @@ export default function App() {
         playerBoard, aiBoard, turn, aiState, log, difficulty, gameMode,
         enablePowerUps, powerUps, activeSeed, salvoShotsRemaining,
         salvoShotsTotal, boardSize, fleet, aiSpeed, aiPersonality,
-        currentWeather, weatherTurnsLeft, gameStart: gameStartRef.current,
+        currentWeather, weatherTurnsLeft, effectiveDifficulty,
+        gameStart: gameStartRef.current,
       };
       localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
     } catch { /* */ }
@@ -372,14 +375,27 @@ export default function App() {
       });
 
       let achievementXP = 0;
+      const unlockedNames: string[] = [];
       for (const id of newAchievements) {
         const ach = ACHIEVEMENTS.find((a) => a.id === id);
         if (ach) {
           achievementXP += ach.xp;
-          setAchievementToast(ach.name);
-          playSound("achievement");
-          setTimeout(() => setAchievementToast(null), 3000);
+          unlockedNames.push(ach.name);
         }
+      }
+      if (unlockedNames.length > 0) {
+        let i = 0;
+        const showNext = () => {
+          if (i >= unlockedNames.length) return;
+          setAchievementToast(unlockedNames[i]);
+          playSound("achievement");
+          i++;
+          setTimeout(() => {
+            setAchievementToast(null);
+            setTimeout(showNext, 300);
+          }, 3000);
+        };
+        showNext();
       }
 
       const prevXP = loadXP();
@@ -730,6 +746,7 @@ export default function App() {
 
       if (allShipsSunk(currentBoard)) {
         setWinner("player");
+        gameEndRef.current = Date.now();
         setPhase("gameover");
         addLog("Victory! You destroyed the enemy fleet.");
         playSound("win");
@@ -764,6 +781,7 @@ export default function App() {
       if (available.length === 0) return;
       const randomCell = available[Math.floor(Math.random() * available.length)];
       addLog(`Time's up! Auto-firing at ${coordLabel(randomCell)}.`);
+      setActivePowerUp(null); // Clear power-up so auto-fire doesn't waste it
       handleFire(randomCell);
       return;
     }
@@ -835,6 +853,7 @@ export default function App() {
 
     if (allShipsSunk(board)) {
       setWinner("player");
+      gameEndRef.current = Date.now();
       setPhase("gameover");
       addLog("Victory! You destroyed the enemy fleet.");
       playSound("win");
@@ -899,6 +918,7 @@ export default function App() {
       }
       if (allShipsSunk(board)) {
         setWinner("p1");
+        gameEndRef.current = Date.now();
         setPhase("gameover");
         addLog("Player 1 wins!");
         playSound("win");
@@ -931,6 +951,7 @@ export default function App() {
       }
       if (allShipsSunk(board)) {
         setWinner("p2");
+        gameEndRef.current = Date.now();
         setPhase("gameover");
         addLog("Player 2 wins!");
         playSound("win");
@@ -1012,6 +1033,7 @@ export default function App() {
 
         if (allShipsSunk(nextBoard)) {
           setWinner("ai");
+          gameEndRef.current = Date.now();
           setPhase("gameover");
           addLog("Defeat! The enemy sank your fleet.");
           playSound("lose");
@@ -1093,7 +1115,7 @@ export default function App() {
     ? turn === "p1" ? p2Board : playerBoard
     : aiBoard;
 
-  const gameDuration = phase === "gameover" ? (Date.now() - gameStartRef.current) / 1000 : 0;
+  const gameDuration = phase === "gameover" ? (gameEndRef.current - gameStartRef.current) / 1000 : 0;
   const xpState = loadXP();
 
   return (
