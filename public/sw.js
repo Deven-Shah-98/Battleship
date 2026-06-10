@@ -1,4 +1,4 @@
-const CACHE_NAME = "battleship-v2";
+const CACHE_NAME = "battleship-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -24,7 +24,7 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  // Network-first for navigation, cache-first for assets
+  // Navigation: network-first with cache fallback
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request)
@@ -40,16 +40,38 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Hashed assets (contain hash in filename): cache-first
+  const url = new URL(event.request.url);
+  if (url.pathname.match(/\.[a-f0-9]{8,}\.(js|css|woff2?)$/)) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // Everything else: stale-while-revalidate
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        if (response.ok) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        }
-        return response;
-      });
+      const fetchPromise = fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => cached);
+
+      return cached || fetchPromise;
     })
   );
 });

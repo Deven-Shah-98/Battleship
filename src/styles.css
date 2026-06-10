@@ -3314,3 +3314,110 @@ button:focus-visible {
   color: var(--accent);
   font-style: italic;
 }
+
+/* ─── Batch 5: Board Variants ─── */
+.cell--island {
+  background: #4a6741 !important;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.cell--island::after {
+  content: "🏝️";
+  position: absolute;
+  font-size: 0.6em;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.cell--reef {
+  background: rgba(139, 90, 43, 0.4) !important;
+  position: relative;
+}
+
+.cell--reef::after {
+  content: "🪸";
+  position: absolute;
+  font-size: 0.5em;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.6;
+}
+
+.cell--shrunk {
+  background: rgba(0, 0, 0, 0.6) !important;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.cell--wrap-edge {
+  border-style: dashed !important;
+  border-color: rgba(var(--accent-rgb, 250, 80, 80), 0.4) !important;
+}
+
+/* Hex grid mode */
+.board--hex .cell {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  margin: -2px 0;
+}
+
+.board--hex .board-row:nth-child(even) {
+  margin-left: 15px;
+}
+
+/* Giant mode (20x20) */
+.board--giant .cell {
+  width: 22px;
+  height: 22px;
+  font-size: 0.55rem;
+}
+
+/* Tiny mode (4x4) */
+.board--tiny .cell {
+  width: 52px;
+  height: 52px;
+  font-size: 1.1rem;
+}
+
+/* Gamepad cursor */
+.cell--gamepad-cursor {
+  outline: 3px solid var(--accent) !important;
+  outline-offset: -1px;
+  z-index: 5;
+}
+
+/* Voice command indicator */
+.voice-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(var(--accent-rgb, 250, 80, 80), 0.15);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  animation: voicePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes voicePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Notification badge */
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: notifPulse 2s ease-in-out infinite;
+}
+
+@keyframes notifPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
