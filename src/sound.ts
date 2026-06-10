@@ -60,7 +60,28 @@ interface Tone {
   gain?: number;
 }
 
-function playTone(audio: AudioContext, tone: Tone): void {
+function playTonePanned(audio: AudioContext, tone: Tone, pan: number): void {
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+  const panner = audio.createStereoPanner();
+  const start = audio.currentTime + (tone.delay ?? 0);
+  const peak = tone.gain ?? 0.18;
+  osc.type = tone.type ?? "sine";
+  osc.frequency.setValueAtTime(tone.freq, start);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(peak, start + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + tone.duration);
+  panner.pan.setValueAtTime(Math.max(-1, Math.min(1, pan)), start);
+  osc.connect(gain).connect(panner).connect(audio.destination);
+  osc.start(start);
+  osc.stop(start + tone.duration + 0.02);
+}
+
+function playTone(audio: AudioContext, tone: Tone, pan?: number): void {
+  if (pan !== undefined) {
+    playTonePanned(audio, tone, pan);
+    return;
+  }
   const osc = audio.createOscillator();
   const gain = audio.createGain();
   const start = audio.currentTime + (tone.delay ?? 0);
@@ -199,14 +220,20 @@ const SOUNDS: Record<SoundName, Tone[][]> = {
   ],
 };
 
-export function playSound(name: SoundName): void {
+export function playSound(name: SoundName, pan?: number): void {
   if (muted) return;
   const audio = getContext();
   if (!audio) return;
   if (audio.state === "suspended") void audio.resume();
   const variants = SOUNDS[name];
   const variant = variants[Math.floor(Math.random() * variants.length)];
-  for (const tone of variant) playTone(audio, tone);
+  for (const tone of variant) playTone(audio, tone, pan);
+}
+
+/** Calculate stereo pan value (-1 to 1) from board column position. */
+export function columnToPan(col: number, boardSize: number): number {
+  if (boardSize <= 1) return 0;
+  return (col / (boardSize - 1)) * 2 - 1;
 }
 
 /* ─── Dynamic Soundtrack ─── */

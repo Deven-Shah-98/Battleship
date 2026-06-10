@@ -59,7 +59,7 @@ import type {
   WeatherType,
   ShipDef,
 } from "./game/types";
-import { playSound, setMuted, startMusic, stopMusic, updateMusicIntensity, narratorSpeak, setNarratorEnabled } from "./sound";
+import { playSound, setMuted, startMusic, stopMusic, updateMusicIntensity, narratorSpeak, setNarratorEnabled, columnToPan } from "./sound";
 import { seededRng, randomSeedString } from "./game/seed";
 import {
   airstrikeTargets,
@@ -943,7 +943,7 @@ export default function App() {
       if (hitStreakRef.current > maxHitStreakRef.current) {
         maxHitStreakRef.current = hitStreakRef.current;
       }
-      playSound(sunkShip ? "sink" : "hit");
+      playSound(sunkShip ? "sink" : "hit", columnToPan(targetCoord.col, boardSize));
       narratorSpeak(sunkShip ? "sink" : "hit");
       if (sunkShip) {
         sunkOrderRef.current.push(sunkShip.name);
@@ -959,7 +959,7 @@ export default function App() {
       );
     } else {
       hitStreakRef.current = 0;
-      playSound("miss");
+      playSound("miss", columnToPan(targetCoord.col, boardSize));
       narratorSpeak("miss");
       addLog(`You missed at ${coordLabel(targetCoord)}.`);
     }
