@@ -4,7 +4,7 @@ import { COLUMN_LABELS } from "../game/constants";
 
 interface Props {
   aiBoard: Board;
-  playerBoard: Board;
+  playerBoard?: Board;
   won: boolean;
   onClose: () => void;
 }

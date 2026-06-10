@@ -15,6 +15,12 @@ import Tutorial from "./components/Tutorial";
 import CampaignPanel from "./components/CampaignPanel";
 import ReplayViewer from "./components/ReplayViewer";
 import KeyboardShortcuts from "./components/KeyboardShortcuts";
+import { PrestigePanel } from "./components/PrestigePanel";
+import { LoadoutPanel } from "./components/LoadoutPanel";
+import { MilestonePanel } from "./components/MilestonePanel";
+import { ExportImportPanel } from "./components/ExportImportPanel";
+import { LossAnalysis } from "./components/LossAnalysis";
+import { SettingsPanel } from "./components/SettingsPanel";
 import { addMatch, loadHistory } from "./utils/matchHistory";
 import { applyTheme, loadTheme, saveTheme, recordThemeUsed, THEMES } from "./utils/theme";
 import {
@@ -64,6 +70,9 @@ import {
 } from "./game/powerups";
 import { checkGameAchievements, ACHIEVEMENTS, unlockAchievement } from "./game/achievements";
 import { addGameXP, loadXP, getTitle } from "./game/xp";
+import { loadSettings, saveSettings, applySettingsToDOM, type GameSettings } from "./game/settings";
+import { updateMilestones, loadMilestones } from "./game/milestones";
+import { generateIslands, createShrinkState, advanceShrink, generateReefs, type ShrinkState } from "./game/variants";
 import { WEATHER_EFFECTS, rollWeather, applyWeatherScatter } from "./game/weather";
 import { createReplayRecorder, recordMove, finalizeReplay, saveReplay, type ReplayRecorder } from "./game/replay";
 import { generateShareCard, copyToClipboard } from "./game/shareCard";
@@ -179,6 +188,30 @@ export default function App() {
   const [showCampaign, setShowCampaign] = useState(false);
   const [showReplays, setShowReplays] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showPrestige, setShowPrestige] = useState(false);
+  const [showLoadouts, setShowLoadouts] = useState(false);
+  const [showMilestones, setShowMilestones] = useState(false);
+  const [showExportImport, setShowExportImport] = useState(false);
+  const [showLossAnalysis, setShowLossAnalysis] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+
+  /* ─── Game Settings (accessibility, board variants) ─── */
+  const [gameSettings, setGameSettings] = useState<GameSettings>(() => loadSettings());
+
+  /* ─── Board Variants ─── */
+  const [_islands, setIslands] = useState<Set<string>>(new Set());
+  const [_reefs, setReefs] = useState<Set<string>>(new Set());
+  const [shrinkState, setShrinkState] = useState<ShrinkState | null>(null);
+
+  /* ─── Ship abilities ─── */
+  const [shieldedShips, setShieldedShips] = useState<Set<string>>(new Set());
+  const [_divedSubmarine, setDivedSubmarine] = useState(false);
+  const [_repairUsed, setRepairUsed] = useState(false);
+  const [_mines, setMines] = useState<Set<string>>(new Set());
+  const [empTurnsLeft, setEmpTurnsLeft] = useState(0);
+  const [scoutReveal, setScoutReveal] = useState<string | null>(null);
+  const [_moveShipUsed, setMoveShipUsed] = useState(false);
+  const turnCountRef = useRef(0);
 
   /* ─── Weather ─── */
   const [currentWeather, setCurrentWeather] = useState<WeatherType>("clear");
@@ -233,6 +266,14 @@ export default function App() {
 
   // Apply theme on mount and change
   useEffect(() => { applyTheme(theme); }, [theme]);
+
+  // Apply game settings to DOM
+  useEffect(() => { applySettingsToDOM(gameSettings); }, [gameSettings]);
+
+  const handleSettingsChange = useCallback((newSettings: GameSettings) => {
+    setGameSettings(newSettings);
+    saveSettings(newSettings);
+  }, []);
 
   const changeTheme = useCallback((t: ThemeName) => {
     setThemeState(t);
@@ -433,9 +474,26 @@ export default function App() {
         replayRef.current = null;
       }
 
+      // Update milestones
+      const milestones = loadMilestones();
+      const duration2 = (Date.now() - gameStartRef.current) / 1000;
+      const newMilestones = updateMilestones(milestones, {
+        shots: stats.shots,
+        hits: stats.hits,
+        sinks: sunkOrderRef.current.length,
+        won,
+        duration: duration2,
+        accuracy: acc,
+        difficulty,
+      });
+      if (newMilestones.length > 0) {
+        addLog(`Milestones unlocked: ${newMilestones.join(", ")}`);
+      }
+
       // Clear autosave
       try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* */ }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [aiBoard, difficulty, gameMode, playerMode, activeSeed, boardSize, playerBoard],
   );
 
@@ -474,6 +532,12 @@ export default function App() {
         setShowCampaign(false);
         setShowReplays(false);
         setShowHistory(false);
+        setShowPrestige(false);
+        setShowLoadouts(false);
+        setShowMilestones(false);
+        setShowExportImport(false);
+        setShowLossAnalysis(false);
+        setShowSettings(false);
       }
       if (e.key === "h" || e.key === "H") {
         if (phase === "playing" && turn === "player" && playerMode === "vs-ai" && !(e.target instanceof HTMLInputElement)) {
@@ -618,6 +682,38 @@ export default function App() {
     usedPowerUpsRef.current = new Set();
     sinksThisTurnRef.current = 0;
     maxSinksInOneTurnRef.current = 0;
+    turnCountRef.current = 0;
+
+    // Board variants
+    if (gameSettings.enableIslands) {
+      setIslands(generateIslands(boardSize, 4));
+    } else {
+      setIslands(new Set());
+    }
+    if (gameSettings.enableReefs) {
+      setReefs(generateReefs(boardSize, 3));
+    } else {
+      setReefs(new Set());
+    }
+    if (gameSettings.enableShrinking) {
+      setShrinkState(createShrinkState(true));
+    } else {
+      setShrinkState(null);
+    }
+
+    // Ship abilities
+    if (gameSettings.enableShields) {
+      const shielded = new Set(currentFleet.map((s) => s.name));
+      setShieldedShips(shielded);
+    } else {
+      setShieldedShips(new Set());
+    }
+    setDivedSubmarine(false);
+    setRepairUsed(false);
+    setMines(new Set());
+    setEmpTurnsLeft(0);
+    setScoutReveal(null);
+    setMoveShipUsed(false);
 
     // Weather
     if (enableWeather) {
@@ -917,6 +1013,35 @@ export default function App() {
       return;
     }
 
+    // Board variant: advance shrinking
+    turnCountRef.current += 1;
+    if (shrinkState) {
+      const next = advanceShrink(shrinkState, boardSize);
+      if (next.currentRing > shrinkState.currentRing) {
+        addLog(`The board shrinks! Outer ring ${next.currentRing} is now blocked.`);
+      }
+      setShrinkState(next);
+    }
+
+    // Scout plane: every 3 turns reveal if a random row/col has ships
+    if (gameSettings.enableScoutPlane && turnCountRef.current % 3 === 0) {
+      const isRow = Math.random() > 0.5;
+      const idx = Math.floor(Math.random() * boardSize);
+      const label = isRow ? `Row ${idx + 1}` : `Col ${COLUMN_LABELS[idx]}`;
+      const hasShip = aiBoard.ships.some((s) =>
+        s.cells.some((c) => isRow ? c.row === idx : c.col === idx) && !s.hits.every(Boolean),
+      );
+      setScoutReveal(label);
+      addLog(`Scout plane reports: ${label} ${hasShip ? "has ship activity!" : "is clear."}`);
+      setTimeout(() => setScoutReveal(null), 3000);
+    }
+
+    // EMP countdown
+    if (empTurnsLeft > 0) {
+      setEmpTurnsLeft((e) => e - 1);
+      if (empTurnsLeft === 1) addLog("EMP effect expired. AI targeting restored.");
+    }
+
     sinksThisTurnRef.current = 0;
     setTurn("ai");
     setAiThinking(true);
@@ -1176,6 +1301,7 @@ export default function App() {
           xpEarned={lastGameXP}
           onPlayAgain={newGame}
           onShowAnalysis={playerMode === "vs-ai" ? () => setShowAnalysis(true) : undefined}
+          onShowLossAnalysis={winner !== "player" && playerMode === "vs-ai" ? () => setShowLossAnalysis(true) : undefined}
           onShare={playerMode === "vs-ai" ? handleShare : undefined}
           onViewReplay={() => setShowReplays(true)}
         />
@@ -1214,6 +1340,21 @@ export default function App() {
           </button>
           <button type="button" className="icon-btn" onClick={() => setShowReplays(true)} title="Replays">
             Replays
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowPrestige(true)} title="Prestige">
+            Prestige
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowLoadouts(true)} title="Loadouts">
+            Loadouts
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowMilestones(true)} title="Milestones">
+            Milestones
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowExportImport(true)} title="Export/Import">
+            Save
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowSettings(true)} title="Settings">
+            Settings
           </button>
           <button type="button" className="icon-btn" onClick={() => setShowShortcuts(true)} title="Shortcuts (?)">
             ?
@@ -1493,6 +1634,18 @@ export default function App() {
             {activeSeed && playerMode === "vs-ai" && (
               <span className="status__seed" title="Game seed">Seed: {activeSeed}</span>
             )}
+            {scoutReveal && (
+              <span className="status__scout">Scout: {scoutReveal}</span>
+            )}
+            {shrinkState && shrinkState.currentRing > 0 && (
+              <span className="status__shrink">Board shrunk: ring {shrinkState.currentRing}</span>
+            )}
+            {empTurnsLeft > 0 && (
+              <span className="status__emp">EMP active: {empTurnsLeft} turns</span>
+            )}
+            {shieldedShips.size > 0 && (
+              <span className="status__shields">Shields: {shieldedShips.size} ships</span>
+            )}
             {phase === "playing" && turn === "player" && playerMode === "vs-ai" && (
               <button type="button" className="hint-btn" onClick={handleHint} title="Get a hint (H)">
                 Hint
@@ -1617,6 +1770,57 @@ export default function App() {
       <CampaignPanel open={showCampaign} onClose={() => setShowCampaign(false)} onStartMission={() => { setShowCampaign(false); }} />
       <ReplayViewer open={showReplays} onClose={() => { setShowReplays(false); unlockAchievement("replay_watched"); }} />
       <KeyboardShortcuts open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+      {showPrestige && (
+        <PrestigePanel
+          onPrestige={() => { setShowPrestige(false); newGame(); }}
+          onClose={() => setShowPrestige(false)}
+        />
+      )}
+      {showLoadouts && (
+        <LoadoutPanel
+          currentSettings={{
+            boardSize, fleet, difficulty, gameMode, aiPersonality,
+            enablePowerUps, enableWeather, timedTurns, aiSpeed, theme,
+          }}
+          onApply={(loadout) => {
+            setBoardSize(loadout.boardSize);
+            setFleet([...loadout.fleet]);
+            setDifficulty(loadout.difficulty as Difficulty);
+            setGameMode(loadout.gameMode);
+            setAiPersonality(loadout.aiPersonality);
+            setEnablePowerUps(loadout.enablePowerUps);
+            setEnableWeather(loadout.enableWeather);
+            setTimedTurns(loadout.timedTurns);
+            setAiSpeed(loadout.aiSpeed);
+            if (loadout.theme) changeTheme(loadout.theme);
+            setPlayerBoard(createEmptyBoard(loadout.boardSize));
+            setP2Board(createEmptyBoard(loadout.boardSize));
+            setPlacementHistory([]);
+            setShowLoadouts(false);
+          }}
+          onClose={() => setShowLoadouts(false)}
+        />
+      )}
+      {showMilestones && (
+        <MilestonePanel onClose={() => setShowMilestones(false)} />
+      )}
+      {showExportImport && (
+        <ExportImportPanel onClose={() => setShowExportImport(false)} onImport={() => setShowExportImport(false)} />
+      )}
+      {showLossAnalysis && phase === "gameover" && (
+        <LossAnalysis
+          aiBoard={aiBoard}
+          won={winner === "player"}
+          onClose={() => setShowLossAnalysis(false)}
+        />
+      )}
+      {showSettings && (
+        <SettingsPanel
+          settings={gameSettings}
+          onChange={handleSettingsChange}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
     </div>
   );
 }

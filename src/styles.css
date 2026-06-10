@@ -2421,3 +2421,370 @@ button:focus-visible {
 .app--early-game body::before { filter: hue-rotate(0deg); }
 .app--mid-game body::before { filter: hue-rotate(15deg) brightness(0.9); }
 .app--late-game body::before { filter: hue-rotate(30deg) brightness(0.8); }
+
+/* ─── Settings Modal ─── */
+.settings-modal {
+  max-width: 560px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.settings-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+}
+
+.settings-section h3 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+}
+
+.settings-toggle {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 0 0.6rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+}
+
+.settings-toggle input[type="checkbox"] {
+  grid-row: 1 / -1;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.settings-toggle span:first-of-type {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.settings-desc {
+  grid-column: 2;
+  font-size: 0.75rem;
+  color: var(--text-secondary, rgba(255,255,255,0.5));
+}
+
+.settings-slider {
+  margin-bottom: 0.75rem;
+}
+
+.settings-slider label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.settings-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+/* ─── Loadout Modal ─── */
+.loadout-modal {
+  max-width: 500px;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.loadout-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.loadout-card {
+  background: var(--surface-glass, rgba(255,255,255,0.05));
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+}
+
+.loadout-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.loadout-card__meta {
+  font-size: 0.75rem;
+  color: var(--text-secondary, rgba(255,255,255,0.5));
+}
+
+.loadout-card__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.loadout-card__details span {
+  font-size: 0.72rem;
+  background: var(--surface-glass, rgba(255,255,255,0.08));
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.loadout-card__actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.loadout-save {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.loadout-input {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  background: var(--surface-glass, rgba(0,0,0,0.3));
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.15));
+  border-radius: var(--radius-sm);
+  color: var(--text-primary, #fff);
+  font-size: 0.85rem;
+}
+
+/* ─── Milestone Modal ─── */
+.milestone-modal {
+  max-width: 500px;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.milestone-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.milestone-card {
+  background: var(--surface-glass, rgba(255,255,255,0.05));
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.milestone-card--locked {
+  opacity: 0.4;
+}
+
+.milestone-card__icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.3rem;
+}
+
+.milestone-card__name {
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 0.15rem;
+}
+
+.milestone-card__desc {
+  font-size: 0.72rem;
+  color: var(--text-secondary, rgba(255,255,255,0.5));
+}
+
+/* ─── Prestige Modal ─── */
+.prestige-modal {
+  max-width: 420px;
+  text-align: center;
+}
+
+.prestige-stars {
+  font-size: 2rem;
+  letter-spacing: 0.2rem;
+  margin: 0.5rem 0;
+  color: #FFD700;
+}
+
+.prestige-info {
+  font-size: 0.82rem;
+  color: var(--text-secondary, rgba(255,255,255,0.6));
+  margin-bottom: 1rem;
+}
+
+/* ─── Export/Import Modal ─── */
+.export-modal {
+  max-width: 480px;
+}
+
+.export-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.export-area {
+  width: 100%;
+  min-height: 80px;
+  background: var(--surface-glass, rgba(0,0,0,0.4));
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.15));
+  border-radius: var(--radius-sm);
+  color: var(--text-primary, #fff);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  padding: 0.5rem;
+  resize: vertical;
+}
+
+/* ─── Loss Analysis Modal ─── */
+.loss-modal {
+  max-width: 500px;
+}
+
+.loss-ships {
+  margin-top: 0.75rem;
+}
+
+.loss-ship {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.05));
+}
+
+.loss-ship__name {
+  font-weight: 600;
+}
+
+.loss-ship__cells {
+  font-size: 0.75rem;
+  color: var(--text-secondary, rgba(255,255,255,0.5));
+}
+
+/* ─── Status badges ─── */
+.status__scout,
+.status__shrink,
+.status__emp,
+.status__shields {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.status__scout {
+  background: rgba(100, 200, 255, 0.2);
+  color: #64c8ff;
+}
+
+.status__shrink {
+  background: rgba(255, 150, 50, 0.2);
+  color: #ff9632;
+}
+
+.status__emp {
+  background: rgba(180, 80, 255, 0.2);
+  color: #b450ff;
+}
+
+.status__shields {
+  background: rgba(80, 200, 120, 0.2);
+  color: #50c878;
+}
+
+/* ─── Animated Water Tiles (#16) ─── */
+.cell--water {
+  position: relative;
+  overflow: hidden;
+}
+
+.cell--water::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 30%, rgba(100, 200, 255, 0.08) 50%, transparent 70%);
+  animation: waterShimmer 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes waterShimmer {
+  0% { transform: translateX(-100%) translateY(-100%); }
+  100% { transform: translateX(100%) translateY(100%); }
+}
+
+/* ─── Night Mode (#20) ─── */
+.night-mode .boards {
+  filter: brightness(0.6);
+}
+
+.night-mode .cell {
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* ─── Color-blind patterns (#60) ─── */
+.colorblind-mode .cell--hit::after {
+  content: 'X';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.7em;
+  color: #000;
+}
+
+.colorblind-mode .cell--miss::after {
+  content: 'O';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.6em;
+  color: #444;
+}
+
+/* ─── Left-handed Layout (#63) ─── */
+.left-handed .boards {
+  flex-direction: row-reverse;
+}
+
+/* ─── Reduce Motion (#62) ─── */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* ─── Screen shake (#23) ─── */
+@keyframes screenShake {
+  0%, 100% { transform: translate(0); }
+  25% { transform: translate(-3px, 2px); }
+  50% { transform: translate(2px, -3px); }
+  75% { transform: translate(-2px, 1px); }
+}
+
+.screen-shake {
+  animation: screenShake 0.3s ease-in-out;
+}
+
+/* ─── Buttons compact for header ─── */
+.app__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.app__meta .icon-btn {
+  font-size: 0.72rem;
+  padding: 3px 8px;
+}

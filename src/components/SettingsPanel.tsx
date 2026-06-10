@@ -103,6 +103,64 @@ export function SettingsPanel({ settings, onChange, onClose }: Props) {
             <span className="settings-desc">Outer ring becomes blocked every 10 turns</span>
           </label>
         </div>
+
+        <div className="settings-section">
+          <h3>Advanced Mechanics</h3>
+          <label className="settings-toggle">
+            <input type="checkbox" checked={settings.enableShields} onChange={() => toggle("enableShields")} />
+            <span>Ship Shields</span>
+            <span className="settings-desc">Each ship absorbs its first hit</span>
+          </label>
+          <label className="settings-toggle">
+            <input type="checkbox" checked={settings.enableMines} onChange={() => toggle("enableMines")} />
+            <span>Minefields</span>
+            <span className="settings-desc">Place defensive mines during setup</span>
+          </label>
+          <label className="settings-toggle">
+            <input type="checkbox" checked={settings.enableMovingShips} onChange={() => toggle("enableMovingShips")} />
+            <span>Moving Ships</span>
+            <span className="settings-desc">Move one un-hit ship 1 cell per turn</span>
+          </label>
+          <label className="settings-toggle">
+            <input type="checkbox" checked={settings.enableFogDecay} onChange={() => toggle("enableFogDecay")} />
+            <span>Fog of War Decay</span>
+            <span className="settings-desc">Hits/misses fade after 8 turns</span>
+          </label>
+          <label className="settings-toggle">
+            <input type="checkbox" checked={settings.enableChainReaction} onChange={() => toggle("enableChainReaction")} />
+            <span>Chain Reaction</span>
+            <span className="settings-desc">Sinking a ship damages adjacent cells</span>
+          </label>
+          <label className="settings-toggle">
+            <input type="checkbox" checked={settings.enableScoutPlane} onChange={() => toggle("enableScoutPlane")} />
+            <span>Scout Plane</span>
+            <span className="settings-desc">Every 3 turns, reveal if a row/col has ships</span>
+          </label>
+          <label className="settings-toggle">
+            <input type="checkbox" checked={settings.nightMode} onChange={() => toggle("nightMode")} />
+            <span>Night Mode Battle</span>
+            <span className="settings-desc">Limited visibility around last shot</span>
+          </label>
+        </div>
+
+        <div className="settings-section">
+          <h3>Platform</h3>
+          <label className="settings-toggle">
+            <input type="checkbox" checked={settings.gamepadEnabled} onChange={() => toggle("gamepadEnabled")} />
+            <span>Gamepad Support</span>
+            <span className="settings-desc">Play with controller via Gamepad API</span>
+          </label>
+          <label className="settings-toggle">
+            <input type="checkbox" checked={settings.voiceCommands} onChange={() => toggle("voiceCommands")} />
+            <span>Voice Commands</span>
+            <span className="settings-desc">&quot;Fire B4&quot; via Speech API</span>
+          </label>
+          <label className="settings-toggle">
+            <input type="checkbox" checked={settings.pipEnabled} onChange={() => toggle("pipEnabled")} />
+            <span>Picture-in-Picture</span>
+            <span className="settings-desc">Pop out enemy board into PiP window</span>
+          </label>
+        </div>
       </div>
     </div>
   );

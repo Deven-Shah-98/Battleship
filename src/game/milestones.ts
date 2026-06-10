@@ -84,15 +84,19 @@ function createEmptyTracker(): MilestoneTracker {
 }
 
 export function updateMilestones(
-  won: boolean,
-  shots: number,
-  hits: number,
-  sinks: number,
-  duration: number,
-  accuracy: number,
-  difficulty: string,
-  sunkShipNames: string[],
+  _existingTracker: MilestoneTracker,
+  params: {
+    shots: number;
+    hits: number;
+    sinks: number;
+    won: boolean;
+    duration: number;
+    accuracy: number;
+    difficulty: string;
+    sunkShipNames?: string[];
+  },
 ): string[] {
+  const { shots, hits, sinks, won, duration, accuracy, difficulty, sunkShipNames = [] } = params;
   const data = loadMilestones();
   data.totalShots += shots;
   data.totalHits += hits;

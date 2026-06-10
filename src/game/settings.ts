@@ -16,6 +16,16 @@ export interface GameSettings {
   enableIslands: boolean;
   enableReefs: boolean;
   enableShrinking: boolean;
+  enableShields: boolean;
+  enableMines: boolean;
+  enableMovingShips: boolean;
+  enableFogDecay: boolean;
+  enableChainReaction: boolean;
+  enableScoutPlane: boolean;
+  nightMode: boolean;
+  gamepadEnabled: boolean;
+  voiceCommands: boolean;
+  pipEnabled: boolean;
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
@@ -32,6 +42,16 @@ export const DEFAULT_SETTINGS: GameSettings = {
   enableIslands: false,
   enableReefs: false,
   enableShrinking: false,
+  enableShields: false,
+  enableMines: false,
+  enableMovingShips: false,
+  enableFogDecay: false,
+  enableChainReaction: false,
+  enableScoutPlane: false,
+  nightMode: false,
+  gamepadEnabled: false,
+  voiceCommands: false,
+  pipEnabled: false,
 };
 
 export function loadSettings(): GameSettings {

@@ -11,6 +11,7 @@ interface GameOverOverlayProps {
   newLevel?: number;
   onPlayAgain: () => void;
   onShowAnalysis?: () => void;
+  onShowLossAnalysis?: () => void;
   onShare?: () => void;
   onViewReplay?: () => void;
 }
@@ -26,6 +27,7 @@ export default function GameOverOverlay({
   newLevel,
   onPlayAgain,
   onShowAnalysis,
+  onShowLossAnalysis,
   onShare,
   onViewReplay,
 }: GameOverOverlayProps) {
@@ -105,6 +107,11 @@ export default function GameOverOverlay({
           {onViewReplay && (
             <button type="button" className="gameover-btn gameover-btn--secondary" onClick={onViewReplay}>
               Replay
+            </button>
+          )}
+          {onShowLossAnalysis && (
+            <button type="button" className="gameover-btn gameover-btn--secondary" onClick={onShowLossAnalysis}>
+              Loss Analysis
             </button>
           )}
         </div>

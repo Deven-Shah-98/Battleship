@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { loadLoadouts, addLoadout, deleteLoadout, type Loadout } from "../game/loadouts";
-import type { ShipDef, GameMode, AIPersonality } from "../game/types";
+import type { ShipDef, GameMode, AIPersonality, ThemeName } from "../game/types";
 
 interface Props {
   onApply: (loadout: Loadout) => void;
@@ -15,6 +15,7 @@ interface Props {
     enableWeather: boolean;
     timedTurns: number;
     aiSpeed: string;
+    theme: ThemeName;
   };
 }
 

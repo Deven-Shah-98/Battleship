@@ -1,5 +1,6 @@
 /** Prestige system — reset XP/level for cosmetic bonuses */
-import { calculateLevel, type PlayerXP } from "../game/xp";
+import { calculateLevel } from "../game/xp";
+import type { PlayerXP } from "../game/types";
 
 const STORAGE_KEY = "battleship.prestige";
 
