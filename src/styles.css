@@ -3046,3 +3046,118 @@ button:focus-visible {
   transition: height 0.3s ease;
   opacity: 0.6;
 }
+
+/* ─── Strategy Notes (#59) ─── */
+.strategy-modal {
+  max-width: 480px;
+}
+
+.strategy-hint {
+  font-size: 0.78rem;
+  color: var(--text-secondary, rgba(255,255,255,0.5));
+  margin-bottom: 0.75rem;
+}
+
+.strategy-textarea {
+  width: 100%;
+  min-height: 180px;
+  background: var(--surface-glass, rgba(0,0,0,0.4));
+  border: 1px solid var(--border-subtle, rgba(255,255,255,0.15));
+  border-radius: var(--radius-sm);
+  color: var(--text-primary, #fff);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  padding: 0.6rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.strategy-textarea::placeholder {
+  color: rgba(255,255,255,0.25);
+}
+
+.strategy-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
+
+/* ─── Auto-fire Queue Indicator (#57) ─── */
+.autofire-queue {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--text-secondary, rgba(255,255,255,0.5));
+}
+
+.autofire-pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent, #FA5050);
+  opacity: 0.6;
+}
+
+.autofire-pip--pending {
+  opacity: 1;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+/* ─── Bookmark (#54) ─── */
+.bookmark-indicator {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: rgba(255, 200, 0, 0.15);
+  color: #ffc800;
+  font-weight: 600;
+}
+
+/* ─── Smart Assist Overlay (#51) ─── */
+.cell--smart-exclude {
+  position: relative;
+}
+
+.cell--smart-exclude::after {
+  content: '';
+  position: absolute;
+  inset: 25%;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+}
+
+/* ─── Probability Overlay (#52) ─── */
+.cell--probability {
+  position: relative;
+}
+
+.cell--probability .prob-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  pointer-events: none;
+}
+
+/* ─── Board Annotation Markers (#58) ─── */
+.cell--annotated {
+  position: relative;
+}
+
+.cell--annotated .annotation-marker {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  font-size: 0.5rem;
+  font-weight: 900;
+  color: rgba(255, 200, 0, 0.7);
+  pointer-events: none;
+  z-index: 4;
+}

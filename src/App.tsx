@@ -21,6 +21,7 @@ import { MilestonePanel } from "./components/MilestonePanel";
 import { ExportImportPanel } from "./components/ExportImportPanel";
 import { LossAnalysis } from "./components/LossAnalysis";
 import { SettingsPanel } from "./components/SettingsPanel";
+import { StrategyNotes } from "./components/StrategyNotes";
 import { addMatch, loadHistory } from "./utils/matchHistory";
 import { applyTheme, loadTheme, saveTheme, recordThemeUsed, THEMES } from "./utils/theme";
 import {
@@ -194,6 +195,7 @@ export default function App() {
   const [showExportImport, setShowExportImport] = useState(false);
   const [showLossAnalysis, setShowLossAnalysis] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showStrategyNotes, setShowStrategyNotes] = useState(false);
 
   /* ─── Game Settings (accessibility, board variants) ─── */
   const [gameSettings, setGameSettings] = useState<GameSettings>(() => loadSettings());
@@ -1355,6 +1357,9 @@ export default function App() {
           <button type="button" className="icon-btn" onClick={() => setShowSettings(true)} title="Settings">
             Settings
           </button>
+          <button type="button" className="icon-btn" onClick={() => setShowStrategyNotes(true)} title="Strategy Notes">
+            Notes
+          </button>
           <button type="button" className="icon-btn" onClick={() => setShowShortcuts(true)} title="Shortcuts (?)">
             ?
           </button>
@@ -1787,6 +1792,7 @@ export default function App() {
       }} />
       <ReplayViewer open={showReplays} onClose={() => { setShowReplays(false); unlockAchievement("replay_watched"); }} />
       <KeyboardShortcuts open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+      <StrategyNotes open={showStrategyNotes} onClose={() => setShowStrategyNotes(false)} />
       {showPrestige && (
         <PrestigePanel
           onPrestige={() => { setShowPrestige(false); newGame(); }}
