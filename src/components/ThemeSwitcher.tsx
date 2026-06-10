@@ -10,7 +10,7 @@ export default function ThemeSwitcher({
   current,
   onChange,
 }: ThemeSwitcherProps) {
-  const names: ThemeName[] = ["ocean", "dark", "light", "sunset"];
+  const names: ThemeName[] = ["cognition", "midnight", "arctic", "ember"];
   return (
     <div className="theme-switcher" role="radiogroup" aria-label="Theme">
       {names.map((t) => (

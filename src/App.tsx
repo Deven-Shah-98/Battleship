@@ -8,6 +8,7 @@ import MatchHistoryPanel from "./components/MatchHistory";
 import ThemeSwitcher from "./components/ThemeSwitcher";
 import { addMatch } from "./utils/matchHistory";
 import { applyTheme, loadTheme, saveTheme } from "./utils/theme";
+import GameOverOverlay from "./components/GameOverOverlay";
 import ShipDock from "./components/ShipDock";
 import {
   allShipsSunk,
@@ -737,6 +738,17 @@ export default function App() {
   return (
     <div className="app">
       <Confetti active={showConfetti} />
+
+      {phase === "gameover" && (
+        <GameOverOverlay
+          won={winner === "player" || winner === "p1"}
+          label={winnerLabel}
+          shots={playerStats.shots}
+          hits={playerStats.hits}
+          accuracy={accuracy}
+          onPlayAgain={newGame}
+        />
+      )}
 
       {showPassDevice && playerMode === "hotseat" && phase === "playing" && (
         <PassDevice
