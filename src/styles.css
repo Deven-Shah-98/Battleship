@@ -1974,7 +1974,450 @@ button:focus-visible {
   font-size: 0.8rem;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* ═══════════════════════════════════════════════════
+   NEW FEATURES — Batch 100 Enhancements
+   ═══════════════════════════════════════════════════ */
+
+/* ─── Animated Water Tiles (#16) ─── */
+@keyframes waterWave {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
 }
+
+.cell:not(.cell--hit):not(.cell--miss):not(.cell--ship):not(.cell--sunk):not(.cell--island):not(.cell--reef-revealed):not(.cell--shrunk) {
+  background-image: linear-gradient(
+    135deg,
+    var(--cell-bg) 0%,
+    rgba(30, 80, 120, 0.15) 25%,
+    var(--cell-bg) 50%,
+    rgba(30, 80, 120, 0.1) 75%,
+    var(--cell-bg) 100%
+  );
+  background-size: 200% 200%;
+  animation: waterWave 8s ease-in-out infinite, shimmer 6s ease-in-out infinite;
+}
+
+/* ─── Screen Shake (#23) ─── */
+@keyframes screenShake {
+  0%, 100% { transform: translate(0); }
+  10% { transform: translate(-3px, -2px); }
+  20% { transform: translate(3px, 2px); }
+  30% { transform: translate(-2px, 3px); }
+  40% { transform: translate(2px, -3px); }
+  50% { transform: translate(-1px, 1px); }
+  60% { transform: translate(1px, -1px); }
+}
+
+.screen-shake {
+  animation: screenShake 0.4s ease-out;
+}
+
+/* ─── Enhanced Sinking Animation (#19) ─── */
+@keyframes sinkDeep {
+  0% { transform: scale(1) rotate(0deg); opacity: 1; }
+  20% { transform: scale(1.1) rotate(2deg); }
+  40% { transform: scale(0.95) rotate(-3deg); }
+  60% { transform: scale(0.9) rotate(5deg); filter: brightness(0.7); }
+  80% { transform: scale(0.85) rotate(-2deg); filter: brightness(0.5); }
+  100% { transform: scale(0.8) rotate(0deg); filter: brightness(0.6); opacity: 0.8; }
+}
+
+.cell--sunk {
+  animation: sinkDeep 0.8s ease-out forwards;
+}
+
+/* ─── Board Zoom on Hover (#28) ─── */
+.board--tracking .cell:not(:disabled):not(.cell--hit):not(.cell--miss):not(.cell--sunk):hover {
+  transform: scale(1.15);
+  z-index: 5;
+  transition: transform 0.15s ease-out, background var(--transition-fast);
+}
+
+/* ─── Countdown Timer Urgency (#39) ─── */
+.timer-urgent {
+  color: var(--hit) !important;
+  animation: timerPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ─── Islands (#82) ─── */
+.cell--island {
+  background: rgba(80, 65, 40, 0.6) !important;
+  border-color: rgba(120, 100, 60, 0.5) !important;
+  cursor: not-allowed;
+  animation: none !important;
+}
+
+.cell--island::after {
+  content: "🏝️";
+  font-size: 0.7em;
+}
+
+/* ─── Reefs (#84) ─── */
+.cell--reef-revealed {
+  background: rgba(60, 100, 80, 0.4) !important;
+  border-color: rgba(80, 130, 100, 0.5) !important;
+  animation: none !important;
+}
+
+.cell--reef-revealed::after {
+  content: "🪸";
+  font-size: 0.7em;
+}
+
+/* ─── Shrinking Board (#87) ─── */
+.cell--shrunk {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border-color: rgba(100, 0, 0, 0.3) !important;
+  cursor: not-allowed;
+  opacity: 0.5;
+  animation: none !important;
+}
+
+.cell--shrunk::after {
+  content: "✕";
+  color: rgba(200, 0, 0, 0.4);
+  font-size: 0.6em;
+}
+
+/* ─── Smart Assist (#51) ─── */
+.cell--impossible {
+  opacity: 0.4;
+}
+
+/* ─── Probability Overlay (#52) ─── */
+.cell--probability::before {
+  content: attr(data-prob);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  font-family: "JetBrains Mono", monospace;
+  color: var(--accent-secondary);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─── Board Annotations (#58) ─── */
+.cell--annotated-maybe {
+  outline: 2px dashed rgba(255, 200, 0, 0.5);
+  outline-offset: -2px;
+}
+
+.cell--annotated-unlikely {
+  outline: 2px dashed rgba(100, 100, 100, 0.4);
+  outline-offset: -2px;
+}
+
+/* ─── Color-Blind Mode (#60) ─── */
+.colorblind-mode .cell--hit {
+  background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,0.3) 3px, rgba(255,255,255,0.3) 6px) !important;
+}
+
+.colorblind-mode .cell--miss {
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.2) 3px, rgba(0,0,0,0.2) 6px) !important;
+}
+
+.colorblind-mode .cell--sunk {
+  background-image: repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(255,255,255,0.4) 2px, rgba(255,255,255,0.4) 4px) !important;
+}
+
+.colorblind-mode .cell--ship {
+  background-image: repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(158,174,233,0.3) 4px, rgba(158,174,233,0.3) 8px) !important;
+}
+
+/* ─── Reduce Motion (#62) ─── */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* ─── Left-Handed Layout (#63) ─── */
+.left-handed .boards {
+  flex-direction: row-reverse;
+}
+
+/* ─── Settings Panel ─── */
+.settings-modal { max-width: 500px; }
+
+.settings-section {
+  margin: 16px 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--panel-border);
+}
+
+.settings-section h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--accent-secondary);
+  margin: 0 0 12px;
+}
+
+.settings-toggle {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 2px 10px;
+  padding: 8px 0;
+  cursor: pointer;
+  align-items: center;
+}
+
+.settings-toggle input[type="checkbox"] {
+  grid-row: 1 / 3;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.settings-toggle span:first-of-type { font-weight: 600; font-size: 0.9rem; }
+.settings-desc { font-size: 0.78rem; color: var(--text-secondary); }
+
+.settings-slider { padding: 8px 0; }
+.settings-slider label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 6px; }
+.settings-slider input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+/* ─── Loadout Panel ─── */
+.loadout-modal { max-width: 550px; }
+
+.loadout-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 350px;
+  overflow-y: auto;
+  margin: 16px 0;
+}
+
+.loadout-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.loadout-card__header { display: flex; justify-content: space-between; align-items: center; }
+.loadout-card__meta { font-size: 0.75rem; color: var(--text-secondary); font-family: "JetBrains Mono", monospace; }
+
+.loadout-card__details {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 6px 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.loadout-card__details span {
+  background: rgba(255,255,255,0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.loadout-card__actions { display: flex; gap: 8px; margin-top: 8px; }
+
+.loadout-save { display: flex; gap: 8px; margin-top: 12px; }
+
+.loadout-input {
+  flex: 1;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+.loadout-input::placeholder { color: var(--text-muted); }
+
+/* ─── Prestige Panel ─── */
+.prestige-modal { max-width: 440px; text-align: center; }
+.prestige-stars { font-size: 2rem; margin: 16px 0; letter-spacing: 4px; }
+.star--empty { opacity: 0.3; }
+
+.prestige-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 16px 0;
+  text-align: left;
+}
+
+.prestige-info p { margin: 0; font-size: 0.85rem; }
+
+.prestige-requirements {
+  margin: 16px 0;
+  padding: 12px;
+  background: var(--glass-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+}
+
+.prestige-requirements h3 { margin: 0 0 8px; font-size: 0.85rem; }
+.prestige-warning { font-size: 0.8rem; color: var(--accent); }
+.prestige-btn { width: 100%; margin-top: 12px; }
+
+/* ─── Milestone Panel ─── */
+.milestone-modal { max-width: 600px; }
+
+.milestone-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.milestone-stat {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  text-align: center;
+}
+
+.milestone-stat__value {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: "JetBrains Mono", monospace;
+}
+
+.milestone-stat__label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.milestone-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.milestone-badge {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  text-align: center;
+}
+
+.milestone-badge--done { border-color: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+.milestone-badge--locked { opacity: 0.5; }
+.milestone-badge__icon { display: block; font-size: 1.5rem; margin-bottom: 4px; }
+.milestone-badge__name { display: block; font-weight: 600; font-size: 0.8rem; }
+.milestone-badge__desc { display: block; font-size: 0.7rem; color: var(--text-secondary); }
+
+/* ─── Export/Import Panel ─── */
+.export-modal { max-width: 440px; }
+.export-desc { font-size: 0.85rem; color: var(--text-secondary); }
+.export-actions { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+.export-file-input { display: none; }
+.export-status { font-size: 0.85rem; color: var(--ok); text-align: center; }
+
+/* ─── Loss Analysis ─── */
+.loss-analysis-modal { max-width: 500px; }
+.analysis-subtitle { font-size: 0.85rem; color: var(--text-secondary); }
+
+.analysis-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  font-family: "JetBrains Mono", monospace;
+}
+
+.analysis-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  border-radius: 2px;
+  background: var(--cell-bg);
+  border: 1px solid var(--cell-border);
+}
+
+.analysis-cell--hit { background: var(--hit); color: #fff; }
+.analysis-cell--miss { background: rgba(0,0,0,0.2); color: var(--miss); }
+
+.analysis-cell--missed-ship {
+  background: rgba(255, 200, 0, 0.4);
+  color: #FFD700;
+  animation: missedShipPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes missedShipPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.analysis-legend { display: flex; gap: 16px; justify-content: center; margin: 12px 0; font-size: 0.8rem; }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; }
+.legend-swatch--hit { background: var(--hit); }
+.legend-swatch--miss { background: var(--miss); }
+.legend-swatch--missed-ship { background: rgba(255, 200, 0, 0.6); }
+
+.analysis-tip {
+  background: var(--glass-bg);
+  border: 1px solid var(--accent-glow);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  font-size: 0.82rem;
+  margin-top: 12px;
+}
+
+/* ─── Btn variants ─── */
+.btn--small { padding: 4px 12px; font-size: 0.75rem; }
+.btn--ghost { background: transparent; border: 1px solid var(--panel-border); color: var(--text-secondary); }
+.btn--ghost:hover { border-color: var(--accent); color: var(--text); }
+.btn--secondary {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn--secondary:hover { border-color: var(--accent-secondary); }
+.btn--disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── Comeback indicator (#80) ─── */
+.last-stand-indicator {
+  background: linear-gradient(135deg, rgba(250, 80, 80, 0.2), rgba(255, 180, 0, 0.2));
+  border: 1px solid rgba(250, 80, 80, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+  animation: lastStandGlow 2s ease-in-out infinite;
+}
+
+@keyframes lastStandGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(250, 80, 80, 0.2); }
+  50% { box-shadow: 0 0 16px rgba(250, 80, 80, 0.5); }
+}
+
+/* ─── Dynamic skybox background shift (#30) ─── */
+.app--early-game body::before { filter: hue-rotate(0deg); }
+.app--mid-game body::before { filter: hue-rotate(15deg) brightness(0.9); }
+.app--late-game body::before { filter: hue-rotate(30deg) brightness(0.8); }

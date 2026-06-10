@@ -119,6 +119,7 @@ export function checkGameAchievements(
     usedAllPowerUps?: boolean;
     hitStreak?: number;
     sunkShipsOrder?: string[];
+    maxSinksInOneTurn?: number;
     isBlitz?: boolean;
     isCustomFleet?: boolean;
     boardSize?: number;
@@ -193,14 +194,14 @@ export function checkGameAchievements(
   if (extraFlags.sunkShipsOrder && extraFlags.sunkShipsOrder.length > 0) {
     tryUnlock("first_sink");
   }
-  if (extraFlags.sunkShipsOrder && extraFlags.sunkShipsOrder.length >= 2 && record.mode === "salvo") {
+  if (extraFlags.maxSinksInOneTurn && extraFlags.maxSinksInOneTurn >= 2 && record.mode === "salvo") {
     tryUnlock("sink_all_one_turn");
   }
 
-  // Lose streak → win
+  // Lose streak → win (history is newest-first; index 0 = current game)
   if (record.won && totalGames >= 6) {
     let loseCount = 0;
-    for (let i = history.length - 2; i >= 0 && i >= history.length - 6; i--) {
+    for (let i = 1; i <= 5 && i < history.length; i++) {
       if (!history[i].won) loseCount++;
       else break;
     }

@@ -198,6 +198,8 @@ export default function App() {
   const maxHitStreakRef = useRef(0);
   const sunkOrderRef = useRef<string[]>([]);
   const usedPowerUpsRef = useRef<Set<string>>(new Set());
+  const sinksThisTurnRef = useRef(0);
+  const maxSinksInOneTurnRef = useRef(0);
 
   /* ─── Hint ─── */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -280,6 +282,9 @@ export default function App() {
         setCurrentWeather(saved.currentWeather ?? "clear");
         setWeatherTurnsLeft(saved.weatherTurnsLeft ?? 0);
         setEffectiveDifficulty(saved.effectiveDifficulty ?? saved.difficulty ?? "medium");
+        setEnableWeather(saved.enableWeather ?? false);
+        setTimedTurns(saved.timedTurns ?? 0);
+        setEnableNarrator(saved.enableNarrator ?? false);
         gameStartRef.current = saved.gameStart ?? Date.now();
         setPhase("playing");
         addLog("Game restored from auto-save.");
@@ -297,13 +302,15 @@ export default function App() {
         enablePowerUps, powerUps, activeSeed, salvoShotsRemaining,
         salvoShotsTotal, boardSize, fleet, aiSpeed, aiPersonality,
         currentWeather, weatherTurnsLeft, effectiveDifficulty,
+        enableWeather, timedTurns, enableNarrator,
         gameStart: gameStartRef.current,
       };
       localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(state));
     } catch { /* */ }
   }, [phase, playerBoard, aiBoard, turn, aiState, log, difficulty, gameMode,
     enablePowerUps, powerUps, activeSeed, salvoShotsRemaining, salvoShotsTotal,
-    boardSize, fleet, aiSpeed, aiPersonality, playerMode, currentWeather, weatherTurnsLeft]);
+    boardSize, fleet, aiSpeed, aiPersonality, playerMode, currentWeather, weatherTurnsLeft,
+    enableWeather, timedTurns, enableNarrator, effectiveDifficulty]);
 
   // Turn timer — use refs to avoid stale closures in salvo mode
   const timerExpiredRef = useRef(false);
@@ -311,6 +318,8 @@ export default function App() {
   useEffect(() => {
     if (phase !== "playing" || timedTurns <= 0) return;
     if (turn === "ai") return;
+    // Pause timer during hotseat pass-device screen
+    if (showPassDevice) return;
 
     timerExpiredRef.current = false;
     setTurnTimer(timedTurns);
@@ -331,7 +340,7 @@ export default function App() {
     return () => {
       if (turnTimerRef.current) clearInterval(turnTimerRef.current);
     };
-  }, [phase, turn, timedTurns]);
+  }, [phase, turn, timedTurns, showPassDevice]);
 
   const addLog = useCallback((message: string) => {
     setLog((prev) => [message, ...prev].slice(0, 60));
@@ -362,13 +371,12 @@ export default function App() {
         seed: activeSeed,
         boardSize,
       };
-      addMatch(matchRecord);
-
-      // XP & Achievements
+      // XP & Achievements (compute before saving so matchRecord has all fields)
       const history = loadHistory();
       const newAchievements = checkGameAchievements(matchRecord, history, playerBoard, {
         hitStreak: maxHitStreakRef.current,
         sunkShipsOrder: sunkOrderRef.current,
+        maxSinksInOneTurn: maxSinksInOneTurnRef.current,
         usedAllPowerUps: usedPowerUpsRef.current.size >= 3,
         boardSize,
         isBlitz: boardSize <= 6,
@@ -414,6 +422,9 @@ export default function App() {
 
       matchRecord.xpEarned = xpEarned;
       matchRecord.achievementsUnlocked = newAchievements;
+
+      // Save match with all fields populated
+      addMatch(matchRecord);
 
       // Finalize replay
       if (replayRef.current) {
@@ -605,6 +616,8 @@ export default function App() {
     maxHitStreakRef.current = 0;
     sunkOrderRef.current = [];
     usedPowerUpsRef.current = new Set();
+    sinksThisTurnRef.current = 0;
+    maxSinksInOneTurnRef.current = 0;
 
     // Weather
     if (enableWeather) {
@@ -757,6 +770,7 @@ export default function App() {
       }
 
       if (gameMode === "classic") {
+        sinksThisTurnRef.current = 0;
         setTurn("ai");
         setAiThinking(true);
       }
@@ -770,6 +784,8 @@ export default function App() {
   const handleFire = (coord: Coord) => {
     // Timer auto-fire sentinel: pick a random un-hit cell
     if (coord.row === -1 && coord.col === -1) {
+      // Don't auto-fire while the pass-device screen is visible
+      if (showPassDevice) return;
       const targetBoard = playerMode === "hotseat" ? (turn === "p1" ? p2Board : playerBoard) : aiBoard;
       const available: Coord[] = [];
       for (let r = 0; r < targetBoard.size; r++) {
@@ -834,7 +850,13 @@ export default function App() {
       }
       playSound(sunkShip ? "sink" : "hit");
       narratorSpeak(sunkShip ? "sink" : "hit");
-      if (sunkShip) sunkOrderRef.current.push(sunkShip.name);
+      if (sunkShip) {
+        sunkOrderRef.current.push(sunkShip.name);
+        sinksThisTurnRef.current += 1;
+        if (sinksThisTurnRef.current > maxSinksInOneTurnRef.current) {
+          maxSinksInOneTurnRef.current = sinksThisTurnRef.current;
+        }
+      }
       addLog(
         sunkShip
           ? `You sank the enemy ${sunkShip.name}! (${coordLabel(targetCoord)})`
@@ -895,6 +917,7 @@ export default function App() {
       return;
     }
 
+    sinksThisTurnRef.current = 0;
     setTurn("ai");
     setAiThinking(true);
   };
