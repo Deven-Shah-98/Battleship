@@ -17,7 +17,6 @@ interface PostGameAnalysisProps {
 export default function PostGameAnalysis({
   open,
   onClose,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   playerBoard: _playerBoard,
   enemyBoard,
   won,

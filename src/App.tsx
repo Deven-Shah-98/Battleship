@@ -235,7 +235,6 @@ export default function App() {
   const maxSinksInOneTurnRef = useRef(0);
 
   /* ─── Hint ─── */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_hintCell, setHintCell] = useState<Coord | null>(null);
 
   /* ─── Last game XP for overlay ─── */
@@ -412,8 +411,8 @@ export default function App() {
         seed: activeSeed,
         boardSize,
       };
-      // XP & Achievements (compute before saving so matchRecord has all fields)
-      const history = loadHistory();
+      // XP & Achievements — include current match so win counts/streaks aren't off-by-one
+      const history = [matchRecord, ...loadHistory()];
       const newAchievements = checkGameAchievements(matchRecord, history, playerBoard, {
         hitStreak: maxHitStreakRef.current,
         sunkShipsOrder: sunkOrderRef.current,
@@ -877,7 +876,7 @@ export default function App() {
   };
 
   /* ─── Fire handler ─── */
-  const handleFire = (coord: Coord) => {
+  const handleFire = (coord: Coord, skipPowerUp = false) => {
     // Timer auto-fire sentinel: pick a random un-hit cell
     if (coord.row === -1 && coord.col === -1) {
       // Don't auto-fire while the pass-device screen is visible
@@ -893,13 +892,13 @@ export default function App() {
       if (available.length === 0) return;
       const randomCell = available[Math.floor(Math.random() * available.length)];
       addLog(`Time's up! Auto-firing at ${coordLabel(randomCell)}.`);
-      setActivePowerUp(null); // Clear power-up so auto-fire doesn't waste it
-      handleFire(randomCell);
+      setActivePowerUp(null);
+      handleFire(randomCell, true);
       return;
     }
     if (phase !== "playing") return;
 
-    if (activePowerUp && enablePowerUps && playerMode === "vs-ai") {
+    if (!skipPowerUp && activePowerUp && enablePowerUps && playerMode === "vs-ai") {
       if ((turn === "player") || (gameMode === "salvo" && salvoShotsRemaining > 0)) {
         applyPowerUp(coord);
         return;
@@ -1767,7 +1766,25 @@ export default function App() {
         onClose={() => setShowTutorial(false)}
         onComplete={handleTutorialComplete}
       />
-      <CampaignPanel open={showCampaign} onClose={() => setShowCampaign(false)} onStartMission={() => { setShowCampaign(false); }} />
+      <CampaignPanel open={showCampaign} onClose={() => setShowCampaign(false)} onStartMission={(mission) => {
+        setShowCampaign(false);
+        const diffMap: Record<number, Difficulty> = { 1: "easy", 2: "medium", 3: "hard", 4: "admiral", 5: "admiral" };
+        const diff = diffMap[mission.difficulty] ?? "medium";
+        setBoardSize(mission.boardSize);
+        setFleet([...mission.fleet]);
+        setDifficulty(diff);
+        if (mission.weather && mission.weather !== "clear") {
+          setCurrentWeather(mission.weather);
+          setWeatherTurnsLeft(99);
+          setEnableWeather(true);
+        }
+        setPlayerBoard(createEmptyBoard(mission.boardSize));
+        setP2Board(createEmptyBoard(mission.boardSize));
+        setAiBoard(createEmptyBoard(mission.boardSize));
+        setPhase("setup");
+        setPlacementHistory([]);
+        addLog(`Campaign mission: ${mission.name} — ${mission.briefing}`);
+      }} />
       <ReplayViewer open={showReplays} onClose={() => { setShowReplays(false); unlockAchievement("replay_watched"); }} />
       <KeyboardShortcuts open={showShortcuts} onClose={() => setShowShortcuts(false)} />
       {showPrestige && (
