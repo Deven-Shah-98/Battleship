@@ -191,7 +191,7 @@ export default function App() {
   }, []);
 
   const recordResult = useCallback(
-    (won: boolean) => {
+    (won: boolean, finalBoard?: Board) => {
       setRecord((prev) => {
         const next = won
           ? { ...prev, wins: prev.wins + 1 }
@@ -206,7 +206,7 @@ export default function App() {
 
       // Save to match history
       const duration = (Date.now() - gameStartRef.current) / 1000;
-      const stats = countShots(aiBoard);
+      const stats = countShots(finalBoard ?? aiBoard);
       const acc =
         stats.shots === 0
           ? 0
@@ -447,7 +447,7 @@ export default function App() {
         setPhase("gameover");
         addLog("Victory! You destroyed the enemy fleet.");
         playSound("win");
-        recordResult(true);
+        recordResult(true, currentBoard);
         setShowConfetti(true);
         return true;
       }
@@ -504,7 +504,7 @@ export default function App() {
       setPhase("gameover");
       addLog("Victory! You destroyed the enemy fleet.");
       playSound("win");
-      recordResult(true);
+      recordResult(true, board);
       setShowConfetti(true);
       return;
     }
@@ -612,7 +612,10 @@ export default function App() {
     let shotsFired = 0;
     let currentBoard = playerBoard;
     let currentAiState = aiState;
+    let activeTimer: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
     const fireNextShot = () => {
+      if (cancelled) return;
       if (shotsFired >= aiShotsCount) {
         // AI done
         setAiThinking(false);
@@ -628,8 +631,9 @@ export default function App() {
         return;
       }
 
-      const timer = setTimeout(
+      activeTimer = setTimeout(
         () => {
+          if (cancelled) return;
           const { move, state } = chooseAIMove(
             currentBoard,
             currentAiState,
@@ -685,12 +689,12 @@ export default function App() {
         },
         shotsFired === 0 ? AI_DELAY_MS : 350,
       );
-      return timer;
     };
 
-    const _timer = fireNextShot();
+    fireNextShot();
     return () => {
-      if (_timer) clearTimeout(_timer);
+      cancelled = true;
+      if (activeTimer) clearTimeout(activeTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, turn]);
@@ -723,7 +727,7 @@ export default function App() {
   /* ─── Hotseat board selection ─── */
   // In hotseat, show the current player's board on the left (own) and the
   // opponent's board on the right (tracking).
-  const leftBoard = playerMode === "hotseat" && turn === "p2" ? p2Board : playerBoard;
+  const leftBoard = (playerMode === "hotseat" && turn === "p2") || phase === "setup-p2" ? p2Board : playerBoard;
   const rightBoard = playerMode === "hotseat"
     ? turn === "p1"
       ? p2Board
