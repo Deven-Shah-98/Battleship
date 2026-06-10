@@ -194,6 +194,7 @@ export default function App() {
   const [achievementToast, setAchievementToast] = useState<string | null>(null);
   const [xpToast, setXpToast] = useState<{ xp: number; level: number } | null>(null);
   const hitStreakRef = useRef(0);
+  const maxHitStreakRef = useRef(0);
   const sunkOrderRef = useRef<string[]>([]);
   const usedPowerUpsRef = useRef<Set<string>>(new Set());
 
@@ -363,7 +364,7 @@ export default function App() {
       // XP & Achievements
       const history = loadHistory();
       const newAchievements = checkGameAchievements(matchRecord, history, playerBoard, {
-        hitStreak: hitStreakRef.current,
+        hitStreak: maxHitStreakRef.current,
         sunkShipsOrder: sunkOrderRef.current,
         usedAllPowerUps: usedPowerUpsRef.current.size >= 3,
         boardSize,
@@ -522,6 +523,7 @@ export default function App() {
     const preset = BOARD_SIZES.find((b) => b.size === newSize);
     if (preset) setFleet([...preset.fleet]);
     setPlayerBoard(createEmptyBoard(newSize));
+    setP2Board(createEmptyBoard(newSize));
     setPlacementHistory([]);
   };
 
@@ -584,6 +586,7 @@ export default function App() {
     setShowConfetti(false);
     setHintCell(null);
     hitStreakRef.current = 0;
+    maxHitStreakRef.current = 0;
     sunkOrderRef.current = [];
     usedPowerUpsRef.current = new Set();
 
@@ -780,12 +783,18 @@ export default function App() {
 
     if (turn !== "player") return;
 
-    // Weather scatter
+    // Weather scatter (retry if scattered to already-hit cell)
     let targetCoord = coord;
     if (currentWeather !== "clear" && enableWeather) {
-      targetCoord = applyWeatherScatter(coord, currentWeather, boardSize);
-      if (targetCoord.row !== coord.row || targetCoord.col !== coord.col) {
-        addLog(`Weather scattered shot from ${coordLabel(coord)} to ${coordLabel(targetCoord)}!`);
+      const scattered = applyWeatherScatter(coord, currentWeather, boardSize);
+      const scatteredKey = coordKey(scattered);
+      if (aiBoard.shots[scatteredKey]) {
+        addLog(`Weather scattered shot to ${coordLabel(scattered)} (already targeted) — using original ${coordLabel(coord)}.`);
+      } else {
+        targetCoord = scattered;
+        if (targetCoord.row !== coord.row || targetCoord.col !== coord.col) {
+          addLog(`Weather scattered shot from ${coordLabel(coord)} to ${coordLabel(targetCoord)}!`);
+        }
       }
     }
 
@@ -802,6 +811,9 @@ export default function App() {
 
     if (result === "hit") {
       hitStreakRef.current++;
+      if (hitStreakRef.current > maxHitStreakRef.current) {
+        maxHitStreakRef.current = hitStreakRef.current;
+      }
       playSound(sunkShip ? "sink" : "hit");
       narratorSpeak(sunkShip ? "sink" : "hit");
       if (sunkShip) sunkOrderRef.current.push(sunkShip.name);

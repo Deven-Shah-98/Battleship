@@ -46,7 +46,7 @@ export default function PostGameAnalysis({
   }
 
   // Find wasted shots (misses in low-probability areas)
-  const heatAtStart = computeHeatmap({ ...enemyBoard, shots: {}, ships: enemyBoard.ships });
+  const heatAtStart = computeHeatmap({ ...enemyBoard, shots: {}, ships: enemyBoard.ships.map(s => ({ ...s, hits: s.hits.map(() => false) })) });
   let wastedShots = 0;
   const missedKeys = Object.entries(enemyBoard.shots)
     .filter(([, r]) => r === "miss")
