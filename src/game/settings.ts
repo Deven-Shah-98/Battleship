@@ -26,6 +26,11 @@ export interface GameSettings {
   gamepadEnabled: boolean;
   voiceCommands: boolean;
   pipEnabled: boolean;
+  enableComebackMechanic: boolean;
+  enableDoubleHull: boolean;
+  enableDecoys: boolean;
+  enableTorpedo: boolean;
+  enableEMP: boolean;
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
@@ -52,6 +57,11 @@ export const DEFAULT_SETTINGS: GameSettings = {
   gamepadEnabled: false,
   voiceCommands: false,
   pipEnabled: false,
+  enableComebackMechanic: true,
+  enableDoubleHull: false,
+  enableDecoys: false,
+  enableTorpedo: false,
+  enableEMP: false,
 };
 
 export function loadSettings(): GameSettings {

@@ -65,6 +65,8 @@ import { playSound, setMuted, startMusic, stopMusic, updateMusicIntensity, narra
 import { seededRng, randomSeedString } from "./game/seed";
 import { recordMasteryWin } from "./game/mastery";
 import { addJournalEntry } from "./game/journal";
+import { updateBattlePassProgress } from "./game/battlePass";
+import { updateStreak, getStreakLabel } from "./game/streaks";
 import {
   airstrikeTargets,
   canUsePowerUp,
@@ -476,6 +478,18 @@ export default function App() {
       // Mastery + Journal
       if (won) recordMasteryWin(difficulty);
       addJournalEntry(won, matchRecord.accuracy, matchRecord.shots, matchRecord.duration, matchRecord.difficulty);
+
+      // Battle pass progress
+      const bpResult = updateBattlePassProgress(won, matchRecord.shots, sunkOrderRef.current.length, matchRecord.accuracy);
+      if (bpResult.completed.length > 0) {
+        addLog(`Battle Pass missions completed: ${bpResult.completed.join(", ")} (+${bpResult.xpEarned} XP)`);
+      }
+
+      // Win streak
+      const streakResult = updateStreak(won);
+      if (streakResult.effect) {
+        addLog(`Win streak: ${streakResult.currentStreak}! ${getStreakLabel(streakResult.effect)}`);
+      }
 
       // Campaign mission completion
       if (activeCampaignMissionId && won) {
@@ -1211,9 +1225,13 @@ export default function App() {
           return;
         }
 
-        // Check player ship health for narrator
+        // Check player ship health for narrator + comeback mechanic
         const aliveCount = nextBoard.ships.filter((s) => !s.hits.every(Boolean)).length;
         if (aliveCount <= 2 && aliveCount > 0) narratorSpeak("lowHealth");
+        if (aliveCount === 1 && gameSettings.enableComebackMechanic) {
+          addLog("Last Stand activated! +1 free Radar scan.");
+          setPowerUps((prev) => ({ ...prev, radar: prev.radar + 1 }));
+        }
 
         if (shotsFired < aiShotsCount && gameMode === "salvo") {
           addLog(`Enemy has ${aiShotsCount - shotsFired} shot(s) remaining.`);

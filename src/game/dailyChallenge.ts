@@ -43,15 +43,24 @@ export function saveDailyChallenge(challenge: DailyChallenge): void {
   } catch { /* ignore */ }
 }
 
-export function getTodayChallenge(): DailyChallenge {
+export type ChallengeTier = "easy" | "medium" | "hard";
+
+const TIER_CONFIG: Record<ChallengeTier, { boardSize: number; difficulty: string }> = {
+  easy: { boardSize: 8, difficulty: "easy" },
+  medium: { boardSize: 10, difficulty: "medium" },
+  hard: { boardSize: 10, difficulty: "hard" },
+};
+
+export function getTodayChallenge(tier: ChallengeTier = "hard"): DailyChallenge {
   const existing = loadDailyChallenge();
   if (existing) return existing;
   const date = getTodayKey();
+  const cfg = TIER_CONFIG[tier];
   return {
     date,
     seed: getDailySeed(date),
-    boardSize: 10,
-    difficulty: "hard",
+    boardSize: cfg.boardSize,
+    difficulty: cfg.difficulty,
     completed: false,
   };
 }
