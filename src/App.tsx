@@ -13,6 +13,7 @@ import PlayerProfile from "./components/PlayerProfile";
 import PostGameAnalysis from "./components/PostGameAnalysis";
 import Tutorial from "./components/Tutorial";
 import CampaignPanel from "./components/CampaignPanel";
+import { completeMission } from "./game/campaign";
 import ReplayViewer from "./components/ReplayViewer";
 import KeyboardShortcuts from "./components/KeyboardShortcuts";
 import { PrestigePanel } from "./components/PrestigePanel";
@@ -62,6 +63,8 @@ import type {
 } from "./game/types";
 import { playSound, setMuted, startMusic, stopMusic, updateMusicIntensity, narratorSpeak, setNarratorEnabled, columnToPan } from "./sound";
 import { seededRng, randomSeedString } from "./game/seed";
+import { recordMasteryWin } from "./game/mastery";
+import { addJournalEntry } from "./game/journal";
 import {
   airstrikeTargets,
   canUsePowerUp,
@@ -135,6 +138,7 @@ export default function App() {
   const [activeSeed, setActiveSeed] = useState<string | null>(null);
   const [boardSize, setBoardSize] = useState(10);
   const [fleet, setFleet] = useState<ShipDef[]>(SHIP_DEFS);
+  const [enemyFleetOverride, setEnemyFleetOverride] = useState<ShipDef[] | null>(null);
   const [aiSpeed, setAiSpeed] = useState<string>("normal");
   const [aiPersonality, setAiPersonality] = useState<AIPersonality>("balanced");
   const [enableWeather, setEnableWeather] = useState(false);
@@ -187,6 +191,7 @@ export default function App() {
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showCampaign, setShowCampaign] = useState(false);
+  const [activeCampaignMissionId, setActiveCampaignMissionId] = useState<string | null>(null);
   const [showReplays, setShowReplays] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showPrestige, setShowPrestige] = useState(false);
@@ -468,6 +473,17 @@ export default function App() {
       // Save match with all fields populated
       addMatch(matchRecord);
 
+      // Mastery + Journal
+      if (won) recordMasteryWin(difficulty);
+      addJournalEntry(won, matchRecord.accuracy, matchRecord.shots, matchRecord.duration, matchRecord.difficulty);
+
+      // Campaign mission completion
+      if (activeCampaignMissionId && won) {
+        completeMission(activeCampaignMissionId, matchRecord.accuracy, matchRecord.shots);
+        addLog(`Campaign mission completed! Stars earned based on ${matchRecord.accuracy}% accuracy.`);
+        setActiveCampaignMissionId(null);
+      }
+
       // Finalize replay
       if (replayRef.current) {
         const replay = finalizeReplay(replayRef.current, won ? "player" : "ai");
@@ -661,9 +677,10 @@ export default function App() {
     const rng = useSeed && seedInput ? seededRng(seedInput) : undefined;
     const seed = useSeed && seedInput ? seedInput : randomSeedString();
     setActiveSeed(seed);
+    const aiFleet = enemyFleetOverride ?? currentFleet;
     const enemyBoard = rng
-      ? placeShipsRandomly(currentFleet, boardSize, rng)
-      : placeShipsRandomly(currentFleet, boardSize);
+      ? placeShipsRandomly(aiFleet, boardSize, rng)
+      : placeShipsRandomly(aiFleet, boardSize);
     setAiBoard(enemyBoard);
     setAiState(createAIState());
     setTurn("player");
@@ -788,6 +805,8 @@ export default function App() {
     setPlacementHistory([]);
     setCurrentWeather("clear");
     setWeatherTurnsLeft(0);
+    setEnemyFleetOverride(null);
+    setActiveCampaignMissionId(null);
     stopMusic();
     try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* */ }
   };
@@ -1029,7 +1048,7 @@ export default function App() {
       const isRow = Math.random() > 0.5;
       const idx = Math.floor(Math.random() * boardSize);
       const label = isRow ? `Row ${idx + 1}` : `Col ${COLUMN_LABELS[idx]}`;
-      const hasShip = aiBoard.ships.some((s) =>
+      const hasShip = board.ships.some((s) =>
         s.cells.some((c) => isRow ? c.row === idx : c.col === idx) && !s.hits.every(Boolean),
       );
       setScoutReveal(label);
@@ -1777,6 +1796,7 @@ export default function App() {
         const diff = diffMap[mission.difficulty] ?? "medium";
         setBoardSize(mission.boardSize);
         setFleet([...mission.fleet]);
+        setEnemyFleetOverride(mission.enemyFleet ? [...mission.enemyFleet] : null);
         setDifficulty(diff);
         if (mission.weather && mission.weather !== "clear") {
           setCurrentWeather(mission.weather);
@@ -1788,6 +1808,7 @@ export default function App() {
         setAiBoard(createEmptyBoard(mission.boardSize));
         setPhase("setup");
         setPlacementHistory([]);
+        setActiveCampaignMissionId(mission.id);
         addLog(`Campaign mission: ${mission.name} — ${mission.briefing}`);
       }} />
       <ReplayViewer open={showReplays} onClose={() => { setShowReplays(false); unlockAchievement("replay_watched"); }} />
