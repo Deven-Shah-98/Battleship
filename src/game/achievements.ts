@@ -189,6 +189,24 @@ export function checkGameAchievements(
     if (streak >= 10) tryUnlock("win_streak_10");
   }
 
+  // Sinking achievements (win or lose)
+  if (extraFlags.sunkShipsOrder && extraFlags.sunkShipsOrder.length > 0) {
+    tryUnlock("first_sink");
+  }
+  if (extraFlags.sunkShipsOrder && extraFlags.sunkShipsOrder.length >= 2 && record.mode === "salvo") {
+    tryUnlock("sink_all_one_turn");
+  }
+
+  // Lose streak → win
+  if (record.won && totalGames >= 6) {
+    let loseCount = 0;
+    for (let i = history.length - 2; i >= 0 && i >= history.length - 6; i--) {
+      if (!history[i].won) loseCount++;
+      else break;
+    }
+    if (loseCount >= 5) tryUnlock("lose_streak_5");
+  }
+
   // Accuracy
   if (record.accuracy >= 50) tryUnlock("sharpshooter");
   if (record.accuracy >= 70) tryUnlock("sniper");

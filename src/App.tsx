@@ -16,7 +16,7 @@ import CampaignPanel from "./components/CampaignPanel";
 import ReplayViewer from "./components/ReplayViewer";
 import KeyboardShortcuts from "./components/KeyboardShortcuts";
 import { addMatch, loadHistory } from "./utils/matchHistory";
-import { applyTheme, loadTheme, saveTheme, recordThemeUsed } from "./utils/theme";
+import { applyTheme, loadTheme, saveTheme, recordThemeUsed, THEMES } from "./utils/theme";
 import {
   allShipsSunk,
   canPlaceShip,
@@ -233,7 +233,8 @@ export default function App() {
   const changeTheme = useCallback((t: ThemeName) => {
     setThemeState(t);
     saveTheme(t);
-    recordThemeUsed(t);
+    const used = recordThemeUsed(t);
+    if (used.size >= Object.keys(THEMES).length) unlockAchievement("all_themes");
   }, []);
 
   // Sync mute and narrator
@@ -300,8 +301,9 @@ export default function App() {
     enablePowerUps, powerUps, activeSeed, salvoShotsRemaining, salvoShotsTotal,
     boardSize, fleet, aiSpeed, aiPersonality, playerMode, currentWeather, weatherTurnsLeft]);
 
-  // Turn timer
+  // Turn timer — use refs to avoid stale closures in salvo mode
   const timerExpiredRef = useRef(false);
+  const handleFireRef = useRef<(coord: Coord) => void>(() => {});
   useEffect(() => {
     if (phase !== "playing" || timedTurns <= 0) return;
     if (turn === "ai") return;
@@ -313,24 +315,7 @@ export default function App() {
         if (prev <= 1) {
           if (!timerExpiredRef.current) {
             timerExpiredRef.current = true;
-            // Auto-fire: find a random un-hit cell on the enemy board
-            setTimeout(() => {
-              const targetBoard = playerMode === "hotseat" ? (turn === "p1" ? p2Board : playerBoard) : aiBoard;
-              const available: Coord[] = [];
-              for (let r = 0; r < targetBoard.size; r++) {
-                for (let c = 0; c < targetBoard.size; c++) {
-                  const key = coordKey({ row: r, col: c });
-                  if (!targetBoard.shots[key]) {
-                    available.push({ row: r, col: c });
-                  }
-                }
-              }
-              if (available.length > 0) {
-                const randomCell = available[Math.floor(Math.random() * available.length)];
-                addLog(`Time's up! Auto-firing at ${coordLabel(randomCell)}.`);
-                handleFire(randomCell);
-              }
-            }, 0);
+            setTimeout(() => { handleFireRef.current({ row: -1, col: -1 }); }, 0);
           }
           return 0;
         }
@@ -342,7 +327,6 @@ export default function App() {
     return () => {
       if (turnTimerRef.current) clearInterval(turnTimerRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, turn, timedTurns]);
 
   const addLog = useCallback((message: string) => {
@@ -406,6 +390,10 @@ export default function App() {
         playSound("levelup");
         setTimeout(() => setXpToast(null), 4000);
       }
+
+      // Level-based achievements
+      if (xpResult.level >= 10) unlockAchievement("level_10");
+      if (xpResult.level >= 25) unlockAchievement("level_25");
 
       matchRecord.xpEarned = xpEarned;
       matchRecord.achievementsUnlocked = newAchievements;
@@ -760,6 +748,22 @@ export default function App() {
 
   /* ─── Fire handler ─── */
   const handleFire = (coord: Coord) => {
+    // Timer auto-fire sentinel: pick a random un-hit cell
+    if (coord.row === -1 && coord.col === -1) {
+      const targetBoard = playerMode === "hotseat" ? (turn === "p1" ? p2Board : playerBoard) : aiBoard;
+      const available: Coord[] = [];
+      for (let r = 0; r < targetBoard.size; r++) {
+        for (let c = 0; c < targetBoard.size; c++) {
+          const key = coordKey({ row: r, col: c });
+          if (!targetBoard.shots[key]) available.push({ row: r, col: c });
+        }
+      }
+      if (available.length === 0) return;
+      const randomCell = available[Math.floor(Math.random() * available.length)];
+      addLog(`Time's up! Auto-firing at ${coordLabel(randomCell)}.`);
+      handleFire(randomCell);
+      return;
+    }
     if (phase !== "playing") return;
 
     if (activePowerUp && enablePowerUps && playerMode === "vs-ai") {
@@ -838,6 +842,7 @@ export default function App() {
     }
 
     // Weather update
+    let effectiveWeather = currentWeather;
     if (enableWeather && weatherTurnsLeft > 0) {
       const newTurns = weatherTurnsLeft - 1;
       setWeatherTurnsLeft(newTurns);
@@ -845,6 +850,7 @@ export default function App() {
         const w = rollWeather();
         setCurrentWeather(w.type);
         setWeatherTurnsLeft(w.duration);
+        effectiveWeather = w.type;
         if (w.type !== "clear") {
           addLog(`Weather changed: ${w.label} \u2014 ${w.description}`);
           playSound("weather");
@@ -853,7 +859,7 @@ export default function App() {
     }
 
     // Calm weather bonus shot: player gets an extra shot before AI turn
-    if (currentWeather === "calm" && enableWeather && gameMode !== "salvo") {
+    if (effectiveWeather === "calm" && enableWeather && gameMode !== "salvo") {
       addLog("Calm seas grant a bonus shot!");
       return;
     }
@@ -861,6 +867,9 @@ export default function App() {
     setTurn("ai");
     setAiThinking(true);
   };
+
+  // Keep handleFireRef in sync so the timer always calls the latest version
+  handleFireRef.current = handleFire;
 
   /* ─── Hotseat fire ─── */
   const handleHotseatFire = (coord: Coord) => {
@@ -1549,7 +1558,7 @@ export default function App() {
         onComplete={handleTutorialComplete}
       />
       <CampaignPanel open={showCampaign} onClose={() => setShowCampaign(false)} onStartMission={() => { setShowCampaign(false); }} />
-      <ReplayViewer open={showReplays} onClose={() => setShowReplays(false)} />
+      <ReplayViewer open={showReplays} onClose={() => { setShowReplays(false); unlockAchievement("replay_watched"); }} />
       <KeyboardShortcuts open={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
   );
