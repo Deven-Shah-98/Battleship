@@ -13,14 +13,14 @@ interface Particle {
 }
 
 const COLORS = [
-  "#36c5f0",
-  "#e4572e",
-  "#2ecc71",
-  "#f1c40f",
-  "#9b59b6",
-  "#e67e22",
-  "#1abc9c",
-  "#ff6b81",
+  "#FA5050",
+  "#9EAEE9",
+  "#A2D1CE",
+  "#EAF0F9",
+  "#FFCC80",
+  "#69F0AE",
+  "#B388FF",
+  "#FF8A80",
 ];
 
 export default function Confetti({ active }: { active: boolean }) {

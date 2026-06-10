@@ -8,6 +8,7 @@ import MatchHistoryPanel from "./components/MatchHistory";
 import ThemeSwitcher from "./components/ThemeSwitcher";
 import { addMatch } from "./utils/matchHistory";
 import { applyTheme, loadTheme, saveTheme } from "./utils/theme";
+import GameOverOverlay from "./components/GameOverOverlay";
 import ShipDock from "./components/ShipDock";
 import {
   allShipsSunk,
@@ -160,7 +161,13 @@ export default function App() {
   const nextDefP2 = SHIP_DEFS[p2Board.ships.length] ?? null;
   const allPlacedP2 = p2Board.ships.length === SHIP_DEFS.length;
 
-  const playerStats = useMemo(() => countShots(aiBoard), [aiBoard]);
+  const playerStats = useMemo(() => {
+    if (playerMode === "hotseat") {
+      const board = winner === "p2" ? playerBoard : p2Board;
+      return countShots(board);
+    }
+    return countShots(aiBoard);
+  }, [aiBoard, playerBoard, p2Board, playerMode, winner]);
   const accuracy =
     playerStats.shots === 0
       ? 0
@@ -737,6 +744,17 @@ export default function App() {
   return (
     <div className="app">
       <Confetti active={showConfetti} />
+
+      {phase === "gameover" && (
+        <GameOverOverlay
+          won={winner === "player" || winner === "p1" || winner === "p2"}
+          label={winnerLabel}
+          shots={playerStats.shots}
+          hits={playerStats.hits}
+          accuracy={accuracy}
+          onPlayAgain={newGame}
+        />
+      )}
 
       {showPassDevice && playerMode === "hotseat" && phase === "playing" && (
         <PassDevice
