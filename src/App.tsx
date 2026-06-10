@@ -361,6 +361,9 @@ export default function App() {
     boardSize, fleet, aiSpeed, aiPersonality, playerMode, currentWeather, weatherTurnsLeft,
     enableWeather, timedTurns, enableNarrator, effectiveDifficulty]);
 
+  // Last Stand comeback — only fires once per game
+  const lastStandRef = useRef(false);
+
   // Turn timer — use refs to avoid stale closures in salvo mode
   const timerExpiredRef = useRef(false);
   const handleFireRef = useRef<(coord: Coord) => void>(() => {});
@@ -715,6 +718,7 @@ export default function App() {
     sinksThisTurnRef.current = 0;
     maxSinksInOneTurnRef.current = 0;
     turnCountRef.current = 0;
+    lastStandRef.current = false;
 
     // Board variants
     if (gameSettings.enableIslands) {
@@ -821,6 +825,7 @@ export default function App() {
     setWeatherTurnsLeft(0);
     setEnemyFleetOverride(null);
     setActiveCampaignMissionId(null);
+    lastStandRef.current = false;
     stopMusic();
     try { localStorage.removeItem(AUTOSAVE_KEY); } catch { /* */ }
   };
@@ -1228,7 +1233,8 @@ export default function App() {
         // Check player ship health for narrator + comeback mechanic
         const aliveCount = nextBoard.ships.filter((s) => !s.hits.every(Boolean)).length;
         if (aliveCount <= 2 && aliveCount > 0) narratorSpeak("lowHealth");
-        if (aliveCount === 1 && gameSettings.enableComebackMechanic) {
+        if (aliveCount === 1 && gameSettings.enableComebackMechanic && !lastStandRef.current) {
+          lastStandRef.current = true;
           addLog("Last Stand activated! +1 free Radar scan.");
           setPowerUps((prev) => ({ ...prev, radar: prev.radar + 1 }));
         }

@@ -69,7 +69,7 @@ self.addEventListener("fetch", (event) => {
           }
           return response;
         })
-        .catch(() => cached);
+        .catch(() => cached || new Response("Network error", { status: 503, statusText: "Service Unavailable" }));
 
       return cached || fetchPromise;
     })
