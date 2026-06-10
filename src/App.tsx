@@ -307,6 +307,9 @@ export default function App() {
         setWinner(null);
         setLastPlayerShot(null);
         setLastAIShot(null);
+        const p1Shots = gameMode === "salvo" ? remainingShips(playerBoard) : 1;
+        setSalvoShotsRemaining(p1Shots);
+        setSalvoShotsTotal(p1Shots);
         setLog(["Game on! Pass-and-play mode. Player 1 fires first."]);
         setPhase("playing");
         gameStartRef.current = Date.now();
@@ -552,7 +555,7 @@ export default function App() {
         if (remaining > 0) return;
       }
       // Switch to P2
-      const p2shots = gameMode === "salvo" ? remainingShips(p2Board) : 1;
+      const p2shots = gameMode === "salvo" ? remainingShips(board) : 1;
       setSalvoShotsRemaining(p2shots);
       setSalvoShotsTotal(p2shots);
       setTurn("p2");
@@ -589,7 +592,7 @@ export default function App() {
         setSalvoShotsRemaining(remaining);
         if (remaining > 0) return;
       }
-      const p1shots = gameMode === "salvo" ? remainingShips(playerBoard) : 1;
+      const p1shots = gameMode === "salvo" ? remainingShips(board) : 1;
       setSalvoShotsRemaining(p1shots);
       setSalvoShotsTotal(p1shots);
       setTurn("p1");

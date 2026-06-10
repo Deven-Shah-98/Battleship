@@ -1,4 +1,4 @@
-import { coordKey, inBounds, shipAt } from "./board";
+import { coordKey, inBounds, isShipSunk, shipAt } from "./board";
 import type {
   Board,
   Coord,
@@ -20,21 +20,22 @@ function areaAround(center: Coord, boardSize: number): Coord[] {
   return cells;
 }
 
-/** Radar scan: reveal which cells in a 3×3 area contain a ship. */
+/** Radar scan: reveal which unsunk-ship cells are in a 3×3 area. */
 export function radarScan(board: Board, center: Coord): RadarResult {
-  const cells = areaAround(center, board.size).map((coord) => ({
-    coord,
-    hasShip: shipAt(board, coord) !== null,
-  }));
+  const cells = areaAround(center, board.size).map((coord) => {
+    const ship = shipAt(board, coord);
+    return { coord, hasShip: ship !== null && !isShipSunk(ship) };
+  });
   return { center, cells };
 }
 
-/** Sonar ping: count ship segments in a 3×3 area. */
+/** Sonar ping: count unsunk ship segments in a 3×3 area. */
 export function sonarPing(board: Board, center: Coord): SonarResult {
   const cells = areaAround(center, board.size);
   let count = 0;
   for (const c of cells) {
-    if (shipAt(board, c)) count++;
+    const ship = shipAt(board, c);
+    if (ship && !isShipSunk(ship)) count++;
   }
   return { center, count };
 }
