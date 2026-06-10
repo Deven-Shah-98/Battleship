@@ -4,7 +4,17 @@
  * created lazily on first use (after a user gesture) to satisfy autoplay rules.
  */
 
-export type SoundName = "hit" | "miss" | "sink" | "win" | "lose";
+export type SoundName =
+  | "hit"
+  | "miss"
+  | "sink"
+  | "win"
+  | "lose"
+  | "radar"
+  | "sonar"
+  | "airstrike"
+  | "place"
+  | "turn";
 
 let ctx: AudioContext | null = null;
 let muted = false;
@@ -82,6 +92,23 @@ const SOUNDS: Record<SoundName, Tone[]> = {
     { freq: 311, duration: 0.22, type: "triangle", delay: 0.2 },
     { freq: 233, duration: 0.4, type: "triangle", delay: 0.4 },
   ],
+  radar: [
+    { freq: 800, duration: 0.08, type: "sine", gain: 0.1 },
+    { freq: 600, duration: 0.08, type: "sine", gain: 0.1, delay: 0.1 },
+    { freq: 800, duration: 0.08, type: "sine", gain: 0.1, delay: 0.2 },
+  ],
+  sonar: [
+    { freq: 440, duration: 0.3, type: "sine", gain: 0.12 },
+    { freq: 440, duration: 0.3, type: "sine", gain: 0.06, delay: 0.4 },
+  ],
+  airstrike: [
+    { freq: 200, duration: 0.1, type: "sawtooth", gain: 0.2 },
+    { freq: 150, duration: 0.15, type: "sawtooth", gain: 0.2, delay: 0.08 },
+    { freq: 100, duration: 0.2, type: "sawtooth", gain: 0.2, delay: 0.18 },
+    { freq: 80, duration: 0.3, type: "sawtooth", gain: 0.15, delay: 0.3 },
+  ],
+  place: [{ freq: 440, duration: 0.06, type: "sine", gain: 0.08 }],
+  turn: [{ freq: 660, duration: 0.08, type: "triangle", gain: 0.1 }],
 };
 
 export function playSound(name: SoundName): void {
