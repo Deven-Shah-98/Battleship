@@ -25,7 +25,9 @@
   --accent-secondary: #191919;
   --accent-secondary-glow: rgba(25, 25, 25, 0.1);
   --hit: #e53935;
+  --hit-glow: rgba(229, 57, 53, 0.25);
   --miss: #90a4ae;
+  --ok-glow: rgba(46, 125, 50, 0.2);
   --ship: rgba(34, 0, 255, 0.12);
   --ship-stroke: rgba(34, 0, 255, 0.25);
   --sunk: #c62828;
@@ -527,7 +529,7 @@ button:focus-visible {
   color: #fff;
   border-color: var(--hit);
   animation: pop 0.3s ease-out;
-  box-shadow: 0 0 16px var(--accent-glow);
+  box-shadow: 0 0 16px var(--hit-glow);
 }
 
 .cell--hit::after {
@@ -535,7 +537,7 @@ button:focus-visible {
   position: absolute;
   inset: -6px;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  background: radial-gradient(circle, var(--hit-glow) 0%, transparent 70%);
   animation: explode 0.6s ease-out forwards;
   pointer-events: none;
 }
@@ -735,7 +737,7 @@ button:focus-visible {
 
 .pip--hit {
   background: var(--hit);
-  box-shadow: 0 0 6px var(--accent-glow);
+  box-shadow: 0 0 6px var(--hit-glow);
 }
 
 .fleet__ship--sunk .pip {
@@ -1218,17 +1220,17 @@ button:focus-visible {
 }
 
 .gameover-icon--win {
-  background: rgba(162, 209, 206, 0.15);
+  background: var(--ok-glow);
   color: var(--ok);
   border: 2px solid var(--ok);
-  box-shadow: 0 0 24px rgba(162, 209, 206, 0.2);
+  box-shadow: 0 0 24px var(--ok-glow);
 }
 
 .gameover-icon--loss {
-  background: var(--accent-glow);
+  background: var(--hit-glow);
   color: var(--hit);
   border: 2px solid var(--hit);
-  box-shadow: 0 0 24px var(--accent-glow);
+  box-shadow: 0 0 24px var(--hit-glow);
 }
 
 .gameover-title {
