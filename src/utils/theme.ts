@@ -219,8 +219,12 @@ export function saveTheme(theme: ThemeName): void {
 
 export function applyTheme(theme: ThemeName): void {
   const root = document.documentElement;
-  const vars = THEMES[theme].vars;
-  for (const [key, value] of Object.entries(vars)) {
+  const themeEntry = THEMES[theme];
+  if (!themeEntry) {
+    applyTheme("midnight");
+    return;
+  }
+  for (const [key, value] of Object.entries(themeEntry.vars)) {
     root.style.setProperty(key, value);
   }
   root.setAttribute("data-theme", theme);
