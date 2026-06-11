@@ -729,6 +729,75 @@ before `used.add(theme)`, then unconditionally deletes `"cognition"`.
 
 ---
 
+## 58. Game-over modals trapped behind overlay — z-index stacking
+
+**Symptom**  
+Clicking Analysis, Replay, or Loss Analysis on the game-over screen produced
+no visible change. The modals opened in the DOM but were invisible, hidden
+behind the `.gameover-overlay`.
+
+**Cause**  
+`.modal-overlay` had `z-index: 800` while `.gameover-overlay` was at `950`.
+Modals rendered *below* the gameover screen.
+
+**Fix**  
+Raised `.modal-overlay` z-index from `800` → `1100`, placing it above
+`.gameover-overlay` at `950`.
+
+---
+
+## 59. Game-over button classes didn't match CSS — double-underscore BEM
+
+**Symptom**  
+Secondary buttons (Analysis, Share, Replay, Loss Analysis) rendered with no
+background, border, or hover styling — effectively invisible.
+
+**Cause**  
+`GameOverOverlay.tsx` emitted BEM double-underscore class names
+(`gameover__actions`, `gameover__xp`, `gameover__rating`) but the CSS used
+single-dash naming (`gameover-actions`, `gameover-xp`, `gameover-rating`).
+
+**Fix**  
+Changed component class names to single-dash convention matching the CSS:
+`gameover-actions`, `gameover-btn`, `gameover-btn--secondary`, `gameover-xp`,
+`gameover-rating`.
+
+---
+
+## 60. Missing `.gameover-btn--secondary` CSS rule
+
+**Symptom**  
+Secondary game-over buttons had no glass background, no border, and no hover
+effect — just transparent text floating on the overlay.
+
+**Cause**  
+The `.gameover-btn--secondary` selector was referenced by the component but
+never defined in `styles.css`.
+
+**Fix**  
+Added complete styling: `background: var(--glass-bg)`, `border-color:
+var(--glass-border)`, hover brightness boost, and the base `.gameover-btn`
+rule with padding, font-size, border-radius, cursor, and transition.
+
+---
+
+## 61. Missing layout CSS for game-over sub-elements
+
+**Symptom**  
+Game-over buttons stacked awkwardly, XP and rating text had no accent
+styling, rating letter wasn't enlarged.
+
+**Cause**  
+`.gameover-actions` (flex container), `.gameover-rating` sub-elements, and
+`.gameover-xp` sub-elements had no CSS rules defined.
+
+**Fix**  
+Added `.gameover-actions` with `display: flex`, `gap: 10px`, `flex-wrap:
+wrap`, `justify-content: center`; `.gameover-rating` letter sizing and color;
+`.gameover-xp` accent coloring.
+
+---
+
 ## Known Issue (Not Yet Fixed)
 
 **Campaign weather overridden by `startGame()` roll**  
