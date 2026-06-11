@@ -62,14 +62,13 @@ export function createMinehunterState(boardSize: number, mineCount: number): Min
   return { mines, safePath: [], detonated: 0, maxDetonations: 3 };
 }
 
-export function checkMine(state: MinehunterState, coord: Coord): { hit: boolean; gameOver: boolean } {
+export function checkMine(state: MinehunterState, coord: Coord): { hit: boolean; gameOver: boolean; newState: MinehunterState } {
   const key = `${coord.row},${coord.col}`;
   if (state.mines.has(key)) {
-    state.detonated += 1;
-    return { hit: true, gameOver: state.detonated >= state.maxDetonations };
+    const newDetonated = state.detonated + 1;
+    return { hit: true, gameOver: newDetonated >= state.maxDetonations, newState: { ...state, detonated: newDetonated } };
   }
-  state.safePath.push(coord);
-  return { hit: false, gameOver: false };
+  return { hit: false, gameOver: false, newState: { ...state, safePath: [...state.safePath, coord] } };
 }
 
 /* ─── Speed Chess Mode ─── */

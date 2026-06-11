@@ -1063,11 +1063,11 @@ export default function App() {
     setDayNightState(prev => advanceDayNight(prev));
 
     // Win probability update
-    setWinProbability(predictWinProbability(remainingShips(playerBoard), board.ships.filter(s => !s.hits.every(Boolean)).length, accuracy, playerStats.shots, boardSize));
+    setWinProbability(predictWinProbability(remainingShips(playerBoard), board.ships.filter(s => !s.hits.every(Boolean)).length, accuracy, Object.keys(playerBoard.shots).length, boardSize));
 
     // AI dialogue on significant events
     if (sunkShip && aiPersonality) {
-      const dialogue = getAIDialogue(aiPersonality, "onSink");
+      const dialogue = getAIDialogue(aiPersonality, "onTakeHit");
       if (dialogue) setAiDialogue(dialogue);
     }
 

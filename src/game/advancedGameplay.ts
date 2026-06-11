@@ -347,11 +347,11 @@ export function calculateHandicap(playerWinRate: number, gamesPlayed: number): H
   if (playerWinRate >= 0.65) {
     return { playerShipReduction: 0, aiExtraShips: 0, playerBoardReduction: 0, aiFirstStrike: true, playerBonusPowerUps: 0 };
   }
-  if (playerWinRate <= 0.3) {
-    return { playerShipReduction: 0, aiExtraShips: 0, playerBoardReduction: 0, aiFirstStrike: false, playerBonusPowerUps: 3 };
-  }
   if (playerWinRate <= 0.2) {
     return { playerShipReduction: 0, aiExtraShips: 0, playerBoardReduction: 0, aiFirstStrike: false, playerBonusPowerUps: 5 };
+  }
+  if (playerWinRate <= 0.3) {
+    return { playerShipReduction: 0, aiExtraShips: 0, playerBoardReduction: 0, aiFirstStrike: false, playerBonusPowerUps: 3 };
   }
   return { playerShipReduction: 0, aiExtraShips: 0, playerBoardReduction: 0, aiFirstStrike: false, playerBonusPowerUps: 0 };
 }
