@@ -1669,7 +1669,7 @@ export default function App() {
                     <button
                       type="button"
                       className="preset-btn"
-                      onClick={() => { setBoardSize(8); setGameMode("classic"); setDifficulty("easy"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
+                      onClick={() => { handleBoardSizeChange(8); setGameMode("classic"); setDifficulty("easy"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
                       title="8x8, Classic, Easy AI, no extras"
                     >
                       Quick Play
@@ -1677,7 +1677,7 @@ export default function App() {
                     <button
                       type="button"
                       className="preset-btn preset-btn--active"
-                      onClick={() => { setBoardSize(10); setGameMode("classic"); setDifficulty("medium"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
+                      onClick={() => { handleBoardSizeChange(10); setGameMode("classic"); setDifficulty("medium"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
                       title="10x10, Classic, Medium AI"
                     >
                       Standard
@@ -1685,7 +1685,7 @@ export default function App() {
                     <button
                       type="button"
                       className="preset-btn"
-                      onClick={() => { setBoardSize(12); setGameMode("salvo"); setDifficulty("hard"); setEnablePowerUps(true); setEnableWeather(true); setTimedTurns(30); }}
+                      onClick={() => { handleBoardSizeChange(12); setGameMode("salvo"); setDifficulty("hard"); setEnablePowerUps(true); setEnableWeather(true); setTimedTurns(30); }}
                       title="12x12, Salvo, Hard AI, power-ups, weather, 30s timer"
                     >
                       Advanced
@@ -2002,7 +2002,8 @@ export default function App() {
         <button type="button" className="icon-btn icon-btn--help" onClick={() => setShowHelpGuide(true)} title="Searchable guide to every feature">Help</button>
       </footer>
 
-      {/* Modals */}
+      {/* Modals — all lazy-loaded inside single Suspense boundary */}
+      <Suspense fallback={null}>
       <MatchHistoryPanel open={showHistory} onClose={() => setShowHistory(false)} />
       <AchievementPanel open={showAchievements} onClose={() => setShowAchievements(false)} />
       <PlayerProfile open={showProfile} onClose={() => setShowProfile(false)} />
@@ -2028,7 +2029,7 @@ export default function App() {
         setShowCampaign(false);
         const diffMap: Record<number, Difficulty> = { 1: "easy", 2: "medium", 3: "hard", 4: "admiral", 5: "admiral" };
         const diff = diffMap[mission.difficulty] ?? "medium";
-        setBoardSize(mission.boardSize);
+        handleBoardSizeChange(mission.boardSize);
         setFleet([...mission.fleet]);
         setEnemyFleetOverride(mission.enemyFleet ? [...mission.enemyFleet] : null);
         setDifficulty(diff);
@@ -2037,15 +2038,9 @@ export default function App() {
           setWeatherTurnsLeft(99);
           setEnableWeather(true);
         }
-        setPlayerBoard(createEmptyBoard(mission.boardSize));
-        setP2Board(createEmptyBoard(mission.boardSize));
-        setAiBoard(createEmptyBoard(mission.boardSize));
-        setPhase("setup");
-        setPlacementHistory([]);
         setActiveCampaignMissionId(mission.id);
         addLog(`Campaign mission: ${mission.name} — ${mission.briefing}`);
       }} />
-      <Suspense fallback={null}>
         <ReplayViewer open={showReplays} onClose={() => { setShowReplays(false); unlockAchievement("replay_watched"); }} />
         <KeyboardShortcuts open={showShortcuts} onClose={() => setShowShortcuts(false)} />
         {showStrategyNotes && <LazyStrategyNotes open={showStrategyNotes} onClose={() => setShowStrategyNotes(false)} />}
