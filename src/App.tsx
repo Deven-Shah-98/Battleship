@@ -223,7 +223,7 @@ export default function App() {
   const [enableWeather, setEnableWeather] = useState(false);
   const [timedTurns, setTimedTurns] = useState(0); // 0 = unlimited
   const [enableNarrator, setEnableNarrator] = useState(false);
-  const [activePreset, setActivePreset] = useState<"quick" | "standard" | "advanced" | null>(null);
+  const [activePreset, setActivePreset] = useState<"quick" | "standard" | "advanced" | null>("standard");
 
   /* ─── Game state ─── */
   const [phase, setPhase] = useState<Phase>("setup");
