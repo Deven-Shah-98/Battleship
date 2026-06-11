@@ -26,6 +26,14 @@ interface BoardGridProps {
   sonarOverlay?: { center: Coord; count: number } | null;
   /** Allow drag-and-drop ship placement. */
   onShipDrop?: (coord: Coord) => void;
+  /** Board annotations — mark cells with "?" or "X" for strategy. */
+  annotations?: Map<string, string>;
+  /** Smart assist — highlight cells guaranteed to be misses. */
+  smartAssistCells?: Set<string>;
+  /** Shot probability overlay values (0-1). */
+  probabilityMap?: Map<string, number>;
+  /** Right-click handler for annotations. */
+  onCellRightClick?: (coord: Coord) => void;
 }
 
 function cellClass(
@@ -93,6 +101,10 @@ export default function BoardGrid({
   airstrikeCells,
   sonarOverlay,
   onShipDrop,
+  annotations: _annotations,
+  smartAssistCells: _smartAssistCells,
+  probabilityMap: _probabilityMap,
+  onCellRightClick: _onCellRightClick,
 }: BoardGridProps) {
   const previewKeys = new Set(previewCells.map(coordKey));
   const lastShotKey = lastShot ? coordKey(lastShot) : null;

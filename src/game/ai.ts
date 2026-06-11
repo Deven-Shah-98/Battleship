@@ -313,3 +313,130 @@ export function updateAIAfterResult(
   }
   return { targetQueue: [...state.targetQueue, ...additions] };
 }
+
+/* ─── AI Personalities ─── */
+
+import type { AIPersonality } from "./types";
+
+export interface PersonalityInfo {
+  name: string;
+  description: string;
+  icon: string;
+}
+
+export const AI_PERSONALITIES: Record<AIPersonality, PersonalityInfo> = {
+  balanced: { name: "Balanced", description: "Standard play — uses the chosen difficulty's algorithm.", icon: "⚖️" },
+  aggressive: { name: "Aggressive", description: "Always chases hits. Never retreats to random hunting.", icon: "🔥" },
+  cautious: { name: "Cautious", description: "Spreads shots wide. Avoids clustering near misses.", icon: "🛡️" },
+  chaotic: { name: "Chaotic", description: "Random with occasional brilliant moves. Unpredictable.", icon: "🎲" },
+  methodical: { name: "Methodical", description: "Systematic row-by-row scanning. Predictable but thorough.", icon: "📐" },
+};
+
+export function choosePersonalityMove(
+  board: Board,
+  state: AIState,
+  personality: AIPersonality,
+  difficulty: Difficulty,
+  rng: () => number = Math.random,
+): { move: Coord; state: AIState } {
+  if (personality === "balanced") {
+    return chooseAIMove(board, state, difficulty, rng);
+  }
+
+  if (personality === "aggressive") {
+    // Always use heatmap and heavily weight active hits
+    const heat = computeHeatmap(board);
+    const sunk = sunkCellKeys(board);
+    for (const [key, result] of Object.entries(board.shots)) {
+      if (result === "hit" && !sunk.has(key)) {
+        const [r, c] = key.split(",").map(Number);
+        for (const d of ORTHOGONAL) {
+          const nr = r + d.row;
+          const nc = c + d.col;
+          if (inBounds({ row: nr, col: nc }, board.size) && !(coordKey({ row: nr, col: nc }) in board.shots)) {
+            heat[nr][nc] *= 5;
+          }
+        }
+      }
+    }
+    const move = bestFromHeatmap(board, heat, rng);
+    return { move, state };
+  }
+
+  if (personality === "cautious") {
+    // Spread shots wide — penalize cells near existing shots
+    const heat = computeHeatmap(board);
+    for (let row = 0; row < board.size; row++) {
+      for (let col = 0; col < board.size; col++) {
+        if (coordKey({ row, col }) in board.shots) continue;
+        let nearbyShots = 0;
+        for (const d of ORTHOGONAL) {
+          const key = coordKey({ row: row + d.row, col: col + d.col });
+          if (key in board.shots) nearbyShots++;
+        }
+        if (nearbyShots > 0) heat[row][col] *= Math.pow(0.5, nearbyShots);
+      }
+    }
+    const move = bestFromHeatmap(board, heat, rng);
+    return { move, state };
+  }
+
+  if (personality === "chaotic") {
+    // 70% random, 30% smart
+    if (rng() < 0.7) {
+      const untried = untriedCells(board);
+      if (untried.length === 0) throw new Error("No cells left");
+      const move = untried[Math.floor(rng() * untried.length)];
+      return { move, state };
+    }
+    return chooseAIMove(board, state, "hard", rng);
+  }
+
+  // methodical: row-by-row, left-to-right scanning
+  for (let row = 0; row < board.size; row++) {
+    for (let col = 0; col < board.size; col++) {
+      if (!(coordKey({ row, col }) in board.shots)) {
+        return { move: { row, col }, state };
+      }
+    }
+  }
+  throw new Error("No cells left");
+}
+
+/* ─── Hint System ─── */
+
+/** Get the best cell to fire at (for the hint system). */
+export function getHint(board: Board): Coord | null {
+  const heat = computeHeatmap(board);
+  let best: Coord | null = null;
+  let bestScore = -1;
+  for (let row = 0; row < board.size; row++) {
+    for (let col = 0; col < board.size; col++) {
+      if (coordKey({ row, col }) in board.shots) continue;
+      if (heat[row][col] > bestScore) {
+        bestScore = heat[row][col];
+        best = { row, col };
+      }
+    }
+  }
+  return best;
+}
+
+/* ─── Progressive AI ─── */
+
+/** Determine effective difficulty based on win rate. */
+export function getProgressiveDifficulty(
+  winRate: number,
+  baseDifficulty: Difficulty,
+): Difficulty {
+  const difficulties: Difficulty[] = ["easy", "medium", "hard", "admiral"];
+  const baseIdx = difficulties.indexOf(baseDifficulty);
+
+  if (winRate > 0.75 && baseIdx < 3) {
+    return difficulties[baseIdx + 1];
+  }
+  if (winRate < 0.25 && baseIdx > 0) {
+    return difficulties[baseIdx - 1];
+  }
+  return baseDifficulty;
+}
