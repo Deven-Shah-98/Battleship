@@ -12,37 +12,37 @@
   --transition-med: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Default Cognition palette (overridden by JS theme application) */
-  --bg: #f7f6f5;
-  --bg-secondary: #eeedeb;
-  --panel: rgba(255, 255, 255, 0.85);
-  --panel-solid: #ffffff;
-  --panel-border: rgba(0, 0, 0, 0.06);
-  --sea: rgba(230, 228, 225, 0.5);
-  --sea-line: rgba(0, 0, 0, 0.06);
-  --accent: #2200ff;
-  --accent-glow: rgba(34, 0, 255, 0.15);
-  --accent-secondary: #191919;
-  --accent-secondary-glow: rgba(25, 25, 25, 0.1);
-  --hit: #e53935;
-  --hit-glow: rgba(229, 57, 53, 0.25);
-  --miss: #90a4ae;
-  --ok-glow: rgba(46, 125, 50, 0.2);
-  --ship: rgba(34, 0, 255, 0.12);
-  --ship-stroke: rgba(34, 0, 255, 0.25);
-  --sunk: #c62828;
-  --ok: #2e7d32;
-  --text: #000000;
-  --text-secondary: #555555;
-  --text-muted: rgba(0, 0, 0, 0.4);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(0, 0, 0, 0.06);
-  --glass-highlight: rgba(255, 255, 255, 0.9);
-  --cell-bg: rgba(230, 228, 225, 0.3);
-  --cell-hover: rgba(34, 0, 255, 0.1);
-  --cell-border: rgba(0, 0, 0, 0.06);
-  --border-subtle: rgba(0, 0, 0, 0.08);
-  --surface-glass: rgba(0, 0, 0, 0.03);
+  /* Default Midnight palette (overridden by JS theme application) */
+  --bg: #08080F;
+  --bg-secondary: #0E0E1A;
+  --panel: rgba(14, 14, 30, 0.7);
+  --panel-solid: #0E0E1E;
+  --panel-border: rgba(124, 77, 255, 0.15);
+  --sea: rgba(26, 26, 50, 0.6);
+  --sea-line: rgba(124, 77, 255, 0.12);
+  --accent: #7C4DFF;
+  --accent-glow: rgba(124, 77, 255, 0.3);
+  --accent-secondary: #B388FF;
+  --accent-secondary-glow: rgba(179, 136, 255, 0.2);
+  --hit: #FF5252;
+  --hit-glow: rgba(255, 82, 82, 0.3);
+  --miss: #616B80;
+  --ok-glow: rgba(105, 240, 174, 0.2);
+  --ship: rgba(124, 77, 255, 0.2);
+  --ship-stroke: rgba(124, 77, 255, 0.35);
+  --sunk: #D32F2F;
+  --ok: #69F0AE;
+  --text: #E0E0F0;
+  --text-secondary: #616B80;
+  --text-muted: rgba(97, 107, 128, 0.6);
+  --glass-bg: rgba(14, 14, 30, 0.5);
+  --glass-border: rgba(124, 77, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.02);
+  --cell-bg: rgba(26, 26, 50, 0.4);
+  --cell-hover: rgba(124, 77, 255, 0.15);
+  --cell-border: rgba(124, 77, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --surface-glass: rgba(255, 255, 255, 0.05);
 }
 
 * {
@@ -295,6 +295,19 @@ button:disabled {
 button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-sm {
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
 }
 
 .btn-primary {
@@ -975,6 +988,26 @@ button:focus-visible {
   to { opacity: 1; transform: translateY(0); }
 }
 
+.modal-content {
+  padding: 28px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.25s ease-out;
+  color: var(--text);
+}
+
+.modal-content h2 {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+}
+
+.modal-content p {
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+
 .modal__header {
   display: flex;
   justify-content: space-between;
@@ -1556,6 +1589,7 @@ button:focus-visible {
 }
 
 .achievement-card__name {
+  display: block;
   font-family: var(--font-mono);
   font-weight: 600;
   font-size: 0.85rem;
@@ -1563,12 +1597,14 @@ button:focus-visible {
 }
 
 .achievement-card__desc {
+  display: block;
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
 .achievement-card__xp {
+  display: block;
   font-family: var(--font-mono);
   font-size: 0.7rem;
   color: var(--accent);
@@ -4570,10 +4606,13 @@ button:focus-visible {
   color: var(--text);
 }
 
-.preset-btn--active {
-  background: var(--cell-hover);
+.preset-btn--active,
+.preset-btn--active:hover {
+  background: var(--accent);
   border-color: var(--accent);
-  color: var(--text);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 2px 8px var(--accent-glow);
 }
 
 /* ═══════════════════════════════════════════════

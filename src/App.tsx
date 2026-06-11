@@ -223,6 +223,7 @@ export default function App() {
   const [enableWeather, setEnableWeather] = useState(false);
   const [timedTurns, setTimedTurns] = useState(0); // 0 = unlimited
   const [enableNarrator, setEnableNarrator] = useState(false);
+  const [activePreset, setActivePreset] = useState<"quick" | "standard" | "advanced" | null>("standard");
 
   /* ─── Game state ─── */
   const [phase, setPhase] = useState<Phase>("setup");
@@ -1669,24 +1670,24 @@ export default function App() {
                   <div className="setup-presets">
                     <button
                       type="button"
-                      className="preset-btn"
-                      onClick={() => { handleBoardSizeChange(8); setGameMode("classic"); setDifficulty("easy"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
+                      className={`preset-btn${activePreset === "quick" ? " preset-btn--active" : ""}`}
+                      onClick={() => { setActivePreset("quick"); handleBoardSizeChange(8); setGameMode("classic"); setDifficulty("easy"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
                       title="8x8, Classic, Easy AI, no extras"
                     >
                       Quick Play
                     </button>
                     <button
                       type="button"
-                      className="preset-btn preset-btn--active"
-                      onClick={() => { handleBoardSizeChange(10); setGameMode("classic"); setDifficulty("medium"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
+                      className={`preset-btn${activePreset === "standard" ? " preset-btn--active" : ""}`}
+                      onClick={() => { setActivePreset("standard"); handleBoardSizeChange(10); setGameMode("classic"); setDifficulty("medium"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
                       title="10x10, Classic, Medium AI"
                     >
                       Standard
                     </button>
                     <button
                       type="button"
-                      className="preset-btn"
-                      onClick={() => { handleBoardSizeChange(12); setGameMode("salvo"); setDifficulty("hard"); setEnablePowerUps(true); setEnableWeather(true); setTimedTurns(30); }}
+                      className={`preset-btn${activePreset === "advanced" ? " preset-btn--active" : ""}`}
+                      onClick={() => { setActivePreset("advanced"); handleBoardSizeChange(12); setGameMode("salvo"); setDifficulty("hard"); setEnablePowerUps(true); setEnableWeather(true); setTimedTurns(30); }}
                       title="12x12, Salvo, Hard AI, power-ups, weather, 30s timer"
                     >
                       Advanced
@@ -1710,7 +1711,7 @@ export default function App() {
                           <span className="settings-label">Board: <InfoTip text={"Larger boards have more ships and take longer. 6\u00d76 is great for quick games; 15\u00d715 is for epic battles."} /></span>
                           <div className="settings-options" role="radiogroup" aria-label="Board size">
                             {BOARD_SIZES.map((b) => (
-                              <button key={b.size} type="button" role="radio" aria-checked={boardSize === b.size} className={`chip${boardSize === b.size ? " chip--active" : ""}`} onClick={() => handleBoardSizeChange(b.size)}>{b.label}</button>
+                              <button key={b.size} type="button" role="radio" aria-checked={boardSize === b.size} className={`chip${boardSize === b.size ? " chip--active" : ""}`} onClick={() => { setActivePreset(null); handleBoardSizeChange(b.size); }}>{b.label}</button>
                             ))}
                           </div>
                         </div>
@@ -1718,7 +1719,7 @@ export default function App() {
                           <span className="settings-label">Mode: <InfoTip text={"Classic: one shot per turn. Salvo: fire one shot per surviving ship each turn \u2014 faster and more strategic!"} /></span>
                           <div className="settings-options" role="radiogroup" aria-label="Game mode">
                             {(["classic", "salvo"] as GameMode[]).map((m) => (
-                              <button key={m} type="button" role="radio" aria-checked={gameMode === m} className={`chip${gameMode === m ? " chip--active" : ""}`} onClick={() => setGameMode(m)}>{m === "classic" ? "Classic" : "Salvo"}</button>
+                              <button key={m} type="button" role="radio" aria-checked={gameMode === m} className={`chip${gameMode === m ? " chip--active" : ""}`} onClick={() => { setActivePreset(null); setGameMode(m); }}>{m === "classic" ? "Classic" : "Salvo"}</button>
                             ))}
                           </div>
                           <span className="hint">{gameMode === "salvo" ? "Fire one shot per surviving ship each turn." : "One shot per turn."}</span>

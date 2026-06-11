@@ -243,7 +243,7 @@ export function loadTheme(): ThemeName {
   } catch {
     /* ignore */
   }
-  return "cognition";
+  return "midnight";
 }
 
 export function saveTheme(theme: ThemeName): void {
