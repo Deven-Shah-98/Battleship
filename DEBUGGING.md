@@ -681,6 +681,54 @@ with proper grid layouts, borders, padding, and theme-aware colours.
 
 ---
 
+## 55. Fashionista achievement unreachable — THEMES registry still had 6 entries
+
+**Symptom**  
+The "Fashionista" achievement (`all_themes`) required `used.size >=
+Object.keys(THEMES).length`. After Cognition was removed from the UI, only 5
+themes were selectable, but `THEMES` still contained the cognition entry —
+`Object.keys(THEMES).length` was 6, making the achievement impossible.
+
+**Fix**  
+Removed the `cognition` entry from the `THEMES` object and the `"cognition"`
+member from the `ThemeName` union type. Added migration in `loadTheme()`:
+if `localStorage` contains `"cognition"`, it's overwritten with `"midnight"`.
+
+---
+
+## 56. `applyTheme()` crash on invalid/removed theme name
+
+**Symptom**  
+Applying a loadout saved when the Cognition theme existed would call
+`applyTheme("cognition")`. Since `THEMES["cognition"]` was now `undefined`,
+accessing `.vars` threw a `TypeError`, crashing the app.
+
+**Fix**  
+Added a guard at the top of `applyTheme()`: if `THEMES[theme]` is undefined,
+recursively call `applyTheme("midnight")` and return early. This catches any
+invalid theme from loadouts, imported backups, or corrupted localStorage.
+
+---
+
+## 57. `recordThemeUsed` re-added "cognition" when called with stale loadout data
+
+**Symptom**  
+`recordThemeUsed` deleted `"cognition"` from the used-themes set but then
+unconditionally added the `theme` parameter. If called with `"cognition"`
+(via loadout apply → `changeTheme`), the delete was immediately undone,
+inflating `used.size` and potentially false-triggering the Fashionista
+achievement. Additionally, `changeTheme("cognition")` called
+`saveTheme("cognition")` and `setThemeState("cognition")`, corrupting the
+active theme state so no ThemeSwitcher button appeared selected.
+
+**Fix**  
+Two changes: (1) `recordThemeUsed` now guards with `if (theme in THEMES)`
+before `used.add(theme)`, then unconditionally deletes `"cognition"`.
+(2) Loadout application validates `loadout.theme in THEMES` before calling
+`changeTheme`, preventing the entire corruption chain.
+
+---
+
 ## Known Issue (Not Yet Fixed)
 
 **Campaign weather overridden by `startGame()` roll**  
