@@ -1487,7 +1487,7 @@ button:focus-visible {
 
 .hint-btn:hover {
   background: var(--accent);
-  color: var(--bg-primary);
+  color: #fff;
 }
 
 /* ─── Settings toggles ─── */
@@ -2579,7 +2579,7 @@ button:focus-visible {
 }
 
 .loadout-card__details span {
-  background: rgba(255,255,255,0.05);
+  background: var(--surface-glass);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -3606,13 +3606,13 @@ button:focus-visible {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--surface-glass);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   transition: all 0.2s;
 }
 
-.perk-card:hover { background: rgba(255, 255, 255, 0.08); }
+.perk-card:hover { background: var(--cell-hover); }
 .perk-card--active { border-color: var(--accent); background: var(--accent-glow); }
 .perk-card--locked { opacity: 0.4; cursor: not-allowed; }
 
@@ -3622,7 +3622,7 @@ button:focus-visible {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0.75rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-glass);
   border-radius: 6px;
   margin-bottom: 0.25rem;
 }
@@ -3636,7 +3636,7 @@ button:focus-visible {
 .battle-pass-progress {
   width: 60px;
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-subtle);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -3651,7 +3651,7 @@ button:focus-visible {
 /* ─── Batch 4: Journal ─── */
 .journal-entry {
   padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface-glass);
   border-radius: 8px;
   border-left: 3px solid var(--accent);
   margin-bottom: 0.5rem;
