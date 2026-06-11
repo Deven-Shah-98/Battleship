@@ -67,16 +67,37 @@ export function DayNightIndicator({ state }: { state: DayNightState }) {
 /* ─── Seasonal Event Banner ─── */
 export function SeasonalBanner() {
   const event = getCurrentSeasonalEvent();
-  if (!event) return null;
+  const [dismissed, setDismissed] = useState(() => {
+    if (!event) return true;
+    return sessionStorage.getItem(`banner_dismissed_${event.name}`) === "1";
+  });
+
+  if (!event || dismissed) return null;
+
+  const handleDismiss = () => {
+    sessionStorage.setItem(`banner_dismissed_${event.name}`, "1");
+    setDismissed(true);
+  };
 
   return (
     <div className="glass" style={{
       padding: "0.5rem 1rem", borderRadius: "8px", margin: "0.5rem 0",
       borderLeft: "3px solid var(--accent)", fontSize: "0.85rem",
+      display: "flex", alignItems: "center", gap: "12px",
     }}>
-      <div style={{ fontWeight: 700 }}>🎉 {event.name}</div>
-      <div style={{ opacity: 0.7, fontSize: "0.75rem" }}>{event.description}</div>
-      <div style={{ opacity: 0.5, fontSize: "0.65rem" }}>+{event.bonusXP} bonus XP per game</div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: 700 }}>🎉 {event.name}</div>
+        <div style={{ opacity: 0.7, fontSize: "0.75rem" }}>{event.description}</div>
+        <div style={{ opacity: 0.5, fontSize: "0.65rem" }}>+{event.bonusXP} bonus XP per game</div>
+      </div>
+      <button
+        type="button"
+        onClick={handleDismiss}
+        aria-label="Dismiss banner"
+        style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "1.2rem", padding: "4px" }}
+      >
+        ×
+      </button>
     </div>
   );
 }

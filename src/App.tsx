@@ -1,35 +1,54 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import BoardGrid from "./components/BoardGrid";
 import FleetStatus from "./components/FleetStatus";
 import Confetti from "./components/Confetti";
 import PassDevice from "./components/PassDevice";
 import PowerUpBar from "./components/PowerUpBar";
-import MatchHistoryPanel from "./components/MatchHistory";
 import ThemeSwitcher from "./components/ThemeSwitcher";
 import GameOverOverlay from "./components/GameOverOverlay";
 import ShipDock from "./components/ShipDock";
-import AchievementPanel from "./components/AchievementPanel";
-import PlayerProfile from "./components/PlayerProfile";
-import PostGameAnalysis from "./components/PostGameAnalysis";
-import Tutorial from "./components/Tutorial";
-import HelpGuide from "./components/HelpGuide";
 import { InfoTip } from "./components/InfoTip";
-import CampaignPanel from "./components/CampaignPanel";
 import { completeMission } from "./game/campaign";
-import ReplayViewer from "./components/ReplayViewer";
-import KeyboardShortcuts from "./components/KeyboardShortcuts";
-import { PrestigePanel } from "./components/PrestigePanel";
-import { LoadoutPanel } from "./components/LoadoutPanel";
-import { MilestonePanel } from "./components/MilestonePanel";
-import { ExportImportPanel } from "./components/ExportImportPanel";
-import { LossAnalysis } from "./components/LossAnalysis";
-import { SettingsPanel } from "./components/SettingsPanel";
-import { StrategyNotes } from "./components/StrategyNotes";
-import { CrewPanel, LoreCardsPanel, MemorialWall, FactionSelector, NemesisDisplay } from "./components/NarrativePanel";
-import { ImprovementTracker, H2HPanel, PlacementHeatmapPanel, BenchmarkPanel } from "./components/AnalyticsPanel";
-import { ExperimentalModeSelector, PuzzleSelector, TrainingGroundsPanel, ShipGraveyard, ComboDisplay } from "./components/ExperimentalModesPanel";
-import { AccessibilityPanel } from "./components/AccessibilityPanel";
-import { BoardSkinSelector, SeasonalBanner, UpgradeTreePanel, DifficultyPresetsPanel, CustomRulesPanel, WinProbabilityBar, MoraleIndicator } from "./components/VisualPanel";
+import Sidebar from "./components/Sidebar";
+/* Gameplay HUD elements (always loaded — small components used during play phase) */
+import { NemesisDisplay } from "./components/NarrativePanel";
+import { ComboDisplay } from "./components/ExperimentalModesPanel";
+import { SeasonalBanner, WinProbabilityBar, MoraleIndicator } from "./components/VisualPanel";
+
+/* Lazy-loaded panels (only loaded when opened) */
+const MatchHistoryPanel = lazy(() => import("./components/MatchHistory"));
+const AchievementPanel = lazy(() => import("./components/AchievementPanel"));
+const PlayerProfile = lazy(() => import("./components/PlayerProfile"));
+const PostGameAnalysis = lazy(() => import("./components/PostGameAnalysis"));
+const Tutorial = lazy(() => import("./components/Tutorial"));
+const HelpGuide = lazy(() => import("./components/HelpGuide"));
+const CampaignPanel = lazy(() => import("./components/CampaignPanel"));
+const ReplayViewer = lazy(() => import("./components/ReplayViewer"));
+const KeyboardShortcuts = lazy(() => import("./components/KeyboardShortcuts"));
+const LazyPrestigePanel = lazy(() => import("./components/PrestigePanel").then(m => ({ default: m.PrestigePanel })));
+const LazyLoadoutPanel = lazy(() => import("./components/LoadoutPanel").then(m => ({ default: m.LoadoutPanel })));
+const LazyMilestonePanel = lazy(() => import("./components/MilestonePanel").then(m => ({ default: m.MilestonePanel })));
+const LazyExportImportPanel = lazy(() => import("./components/ExportImportPanel").then(m => ({ default: m.ExportImportPanel })));
+const LazyLossAnalysis = lazy(() => import("./components/LossAnalysis").then(m => ({ default: m.LossAnalysis })));
+const LazySettingsPanel = lazy(() => import("./components/SettingsPanel").then(m => ({ default: m.SettingsPanel })));
+const LazyStrategyNotes = lazy(() => import("./components/StrategyNotes").then(m => ({ default: m.StrategyNotes })));
+const LazyCrewPanel = lazy(() => import("./components/NarrativePanel").then(m => ({ default: m.CrewPanel })));
+const LazyLoreCardsPanel = lazy(() => import("./components/NarrativePanel").then(m => ({ default: m.LoreCardsPanel })));
+const LazyMemorialWall = lazy(() => import("./components/NarrativePanel").then(m => ({ default: m.MemorialWall })));
+const LazyFactionSelector = lazy(() => import("./components/NarrativePanel").then(m => ({ default: m.FactionSelector })));
+const LazyImprovementTracker = lazy(() => import("./components/AnalyticsPanel").then(m => ({ default: m.ImprovementTracker })));
+const LazyH2HPanel = lazy(() => import("./components/AnalyticsPanel").then(m => ({ default: m.H2HPanel })));
+const LazyPlacementHeatmapPanel = lazy(() => import("./components/AnalyticsPanel").then(m => ({ default: m.PlacementHeatmapPanel })));
+const LazyBenchmarkPanel = lazy(() => import("./components/AnalyticsPanel").then(m => ({ default: m.BenchmarkPanel })));
+const LazyExperimentalModeSelector = lazy(() => import("./components/ExperimentalModesPanel").then(m => ({ default: m.ExperimentalModeSelector })));
+const LazyPuzzleSelector = lazy(() => import("./components/ExperimentalModesPanel").then(m => ({ default: m.PuzzleSelector })));
+const LazyTrainingGroundsPanel = lazy(() => import("./components/ExperimentalModesPanel").then(m => ({ default: m.TrainingGroundsPanel })));
+const LazyShipGraveyard = lazy(() => import("./components/ExperimentalModesPanel").then(m => ({ default: m.ShipGraveyard })));
+const LazyAccessibilityPanel = lazy(() => import("./components/AccessibilityPanel").then(m => ({ default: m.AccessibilityPanel })));
+const LazyBoardSkinSelector = lazy(() => import("./components/VisualPanel").then(m => ({ default: m.BoardSkinSelector })));
+const LazyUpgradeTreePanel = lazy(() => import("./components/VisualPanel").then(m => ({ default: m.UpgradeTreePanel })));
+const LazyDifficultyPresetsPanel = lazy(() => import("./components/VisualPanel").then(m => ({ default: m.DifficultyPresetsPanel })));
+const LazyCustomRulesPanel = lazy(() => import("./components/VisualPanel").then(m => ({ default: m.CustomRulesPanel })));
 import { createComboState, updateCombo, type ComboState } from "./game/experimental";
 import { predictWinProbability } from "./game/analytics";
 import { getAIDialogue, type CoachSuggestion } from "./game/aiEnhancements";
@@ -343,6 +362,70 @@ export default function App() {
   const [showDifficultyPresets, setShowDifficultyPresets] = useState(false);
   const [showCustomRules, setShowCustomRules] = useState(false);
 
+  /* ─── Sidebar ─── */
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [setupExpanded, setSetupExpanded] = useState<string | null>("core");
+
+  const sidebarCategories = [
+    {
+      name: "Play",
+      icon: "\u2694",
+      items: [
+        { label: "Campaign", icon: "\uD83C\uDFAF", onClick: () => setShowCampaign(true) },
+        { label: "Modes", icon: "\uD83C\uDFB2", onClick: () => setShowExperimental(true) },
+        { label: "Puzzles", icon: "\uD83E\udDE9", onClick: () => setShowPuzzles(true) },
+        { label: "Training", icon: "\uD83C\uDFCB", onClick: () => setShowTraining(true) },
+        { label: "Benchmark", icon: "\u26A1", onClick: () => setShowBenchmark(true) },
+      ],
+    },
+    {
+      name: "Progress",
+      icon: "\uD83D\uDCC8",
+      items: [
+        { label: "Profile", icon: "\uD83D\uDC64", onClick: () => setShowProfile(true) },
+        { label: "Achievements", icon: "\uD83C\uDFC6", onClick: () => setShowAchievements(true) },
+        { label: "Stats", icon: "\uD83D\uDCCA", onClick: () => setShowHistory(true) },
+        { label: "Milestones", icon: "\uD83C\uDFC5", onClick: () => setShowMilestones(true) },
+        { label: "Prestige", icon: "\u2B50", onClick: () => setShowPrestige(true) },
+        { label: "Progress", icon: "\uD83D\uDCC8", onClick: () => setShowImprovement(true) },
+      ],
+    },
+    {
+      name: "Fleet",
+      icon: "\u2693",
+      items: [
+        { label: "Loadouts", icon: "\uD83D\uDCE6", onClick: () => setShowLoadouts(true) },
+        { label: "Crew", icon: "\uD83D\uDC65", onClick: () => setShowCrew(true) },
+        { label: "Upgrades", icon: "\u2B06", onClick: () => setShowUpgrades(true) },
+        { label: "Graveyard", icon: "\u2620", onClick: () => setShowGraveyard(true) },
+        { label: "Memorial", icon: "\uD83C\uDF96", onClick: () => setShowMemorial(true) },
+        { label: "Skins", icon: "\uD83C\uDFA8", onClick: () => setShowBoardSkins(true) },
+        { label: "Faction", icon: "\uD83C\uDFF4", onClick: () => setShowFaction(true) },
+        { label: "Lore", icon: "\uD83D\uDCDC", onClick: () => setShowLore(true) },
+      ],
+    },
+    {
+      name: "Analytics",
+      icon: "\uD83D\uDD0D",
+      items: [
+        { label: "H2H Record", icon: "\uD83E\uDD1C", onClick: () => setShowH2H(true) },
+        { label: "Heatmap", icon: "\uD83D\uDDFA", onClick: () => setShowHeatmap(true) },
+        { label: "Replays", icon: "\u23EF", onClick: () => setShowReplays(true) },
+      ],
+    },
+    {
+      name: "Settings",
+      icon: "\u2699",
+      items: [
+        { label: "Settings", icon: "\u2699", onClick: () => setShowSettings(true) },
+        { label: "Accessibility", icon: "\u267F", onClick: () => setShowAccessibility(true) },
+        { label: "Save / Export", icon: "\uD83D\uDCBE", onClick: () => setShowExportImport(true) },
+        { label: "Notes", icon: "\uD83D\uDCDD", onClick: () => setShowStrategyNotes(true) },
+        { label: "Shortcuts", icon: "\u2328", onClick: () => setShowShortcuts(true) },
+      ],
+    },
+  ];
+
   const currentFleet = fleet;
   const nextDef = currentFleet[playerBoard.ships.length] ?? null;
   const allPlaced = playerBoard.ships.length === currentFleet.length;
@@ -646,6 +729,7 @@ export default function App() {
         }
       }
       if (e.key === "Escape") {
+        setSidebarOpen(false);
         setShowShortcuts(false);
         setShowAchievements(false);
         setShowProfile(false);
@@ -1492,101 +1576,50 @@ export default function App() {
         />
       )}
 
+      <a href="#main-content" className="skip-link">Skip to game</a>
+
+      <Sidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        categories={sidebarCategories}
+      />
+
       <header className="app__header">
-        <div className="app__titles">
-          <h1>Battleship</h1>
-          <p className="app__subtitle">
-            {playerMode === "hotseat" ? "Pass & Play" : "Human vs AI"}
-            {xpState.level > 1 && ` \u2014 ${getTitle(xpState.level)} (Lv.${xpState.level})`}
-          </p>
+        <div className="app__header-left">
+          <button
+            type="button"
+            className="hamburger-btn"
+            onClick={() => setSidebarOpen((o) => !o)}
+            aria-label="Open menu"
+            aria-expanded={sidebarOpen}
+          >
+            <span className="hamburger-btn__line" />
+            <span className="hamburger-btn__line" />
+            <span className="hamburger-btn__line" />
+          </button>
+          <div className="app__titles">
+            <h1>Battleship</h1>
+            <p className="app__subtitle">
+              {playerMode === "hotseat" ? "Pass & Play" : "Human vs AI"}
+              {xpState.level > 1 && ` \u2014 ${getTitle(xpState.level)} (Lv.${xpState.level})`}
+            </p>
+          </div>
         </div>
         <div className="app__meta">
           {playerMode === "vs-ai" && (
             <span className="record" title="Wins\u2013Losses">W {record.wins} \u00B7 L {record.losses}</span>
           )}
-          <button type="button" className="icon-btn icon-btn--help" onClick={() => setShowHelpGuide(true)} title="Help & Guide — learn about every feature">
+          {xpState.level > 0 && (
+            <div className="xp-bar-header" title={`${xpState.totalXP} XP total`}>
+              <div className="xp-bar-header__fill" style={{ width: `${Math.min(100, ((xpState.totalXP % 1000) / 1000) * 100)}%` }} />
+              <span className="xp-bar-header__label">Lv.{xpState.level}</span>
+            </div>
+          )}
+          <button type="button" className="icon-btn icon-btn--help" onClick={() => setShowHelpGuide(true)} title="Help & Guide">
             Help
           </button>
           <button type="button" className="icon-btn" onClick={() => setShowProfile(true)} title={HEADER_TOOLTIPS.Profile}>
             Profile
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowAchievements(true)} title={HEADER_TOOLTIPS.Achievements}>
-            Achievements
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowHistory(true)} title={HEADER_TOOLTIPS.Stats}>
-            Stats
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowCampaign(true)} title={HEADER_TOOLTIPS.Campaign}>
-            Campaign
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowReplays(true)} title={HEADER_TOOLTIPS.Replays}>
-            Replays
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowPrestige(true)} title={HEADER_TOOLTIPS.Prestige}>
-            Prestige
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowLoadouts(true)} title={HEADER_TOOLTIPS.Loadouts}>
-            Loadouts
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowMilestones(true)} title={HEADER_TOOLTIPS.Milestones}>
-            Milestones
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowExportImport(true)} title={HEADER_TOOLTIPS.Save}>
-            Save
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowSettings(true)} title={HEADER_TOOLTIPS.Settings}>
-            Settings
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowCrew(true)} title={HEADER_TOOLTIPS.Crew}>
-            Crew
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowLore(true)} title={HEADER_TOOLTIPS.Lore}>
-            Lore
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowMemorial(true)} title={HEADER_TOOLTIPS.Memorial}>
-            Memorial
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowFaction(true)} title={HEADER_TOOLTIPS.Faction}>
-            Faction
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowImprovement(true)} title={HEADER_TOOLTIPS.Progress}>
-            Progress
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowH2H(true)} title={HEADER_TOOLTIPS.H2H}>
-            H2H
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowHeatmap(true)} title={HEADER_TOOLTIPS.Heatmap}>
-            Heatmap
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowExperimental(true)} title={HEADER_TOOLTIPS.Modes}>
-            Modes
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowPuzzles(true)} title={HEADER_TOOLTIPS.Puzzles}>
-            Puzzles
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowTraining(true)} title={HEADER_TOOLTIPS.Training}>
-            Training
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowGraveyard(true)} title={HEADER_TOOLTIPS.Graveyard}>
-            Graveyard
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowAccessibility(true)} title={HEADER_TOOLTIPS.A11y}>
-            A11y
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowBoardSkins(true)} title={HEADER_TOOLTIPS.Skins}>
-            Skins
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowUpgrades(true)} title={HEADER_TOOLTIPS.Upgrades}>
-            Upgrades
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowBenchmark(true)} title={HEADER_TOOLTIPS.Benchmark}>
-            Benchmark
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowStrategyNotes(true)} title={HEADER_TOOLTIPS.Notes}>
-            Notes
-          </button>
-          <button type="button" className="icon-btn" onClick={() => setShowShortcuts(true)} title="View all keyboard shortcuts">
-            ?
           </button>
           <button
             type="button"
@@ -1616,195 +1649,189 @@ export default function App() {
                 Orientation: <strong>{orientation}</strong> \u2014 press <kbd>R</kbd> or tap Rotate. <kbd>U</kbd> to undo.
               </p>
 
+              {/* Ship placement progress */}
+              <div className="placement-progress">
+                <div className="placement-progress__bar">
+                  <div
+                    className="placement-progress__fill"
+                    style={{ width: `${(activeBoard.ships.length / currentFleet.length) * 100}%` }}
+                  />
+                </div>
+                <span className="placement-progress__text">
+                  {activeBoard.ships.length}/{currentFleet.length} ships placed
+                </span>
+              </div>
+
               {phase === "setup" && (
                 <>
-                  {/* Board size */}
-                  <div className="settings-row">
-                    <span className="settings-label">Board: <InfoTip text="Larger boards have more ships and take longer. 6×6 is great for quick games; 15×15 is for epic battles." /></span>
-                    <div className="settings-options" role="radiogroup" aria-label="Board size">
-                      {BOARD_SIZES.map((b) => (
-                        <button
-                          key={b.size}
-                          type="button"
-                          role="radio"
-                          aria-checked={boardSize === b.size}
-                          className={`chip${boardSize === b.size ? " chip--active" : ""}`}
-                          onClick={() => handleBoardSizeChange(b.size)}
-                        >
-                          {b.label}
-                        </button>
-                      ))}
-                    </div>
+                  {/* Difficulty Presets */}
+                  <div className="setup-presets">
+                    <button
+                      type="button"
+                      className="preset-btn"
+                      onClick={() => { handleBoardSizeChange(8); setGameMode("classic"); setDifficulty("easy"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
+                      title="8x8, Classic, Easy AI, no extras"
+                    >
+                      Quick Play
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-btn preset-btn--active"
+                      onClick={() => { handleBoardSizeChange(10); setGameMode("classic"); setDifficulty("medium"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
+                      title="10x10, Classic, Medium AI"
+                    >
+                      Standard
+                    </button>
+                    <button
+                      type="button"
+                      className="preset-btn"
+                      onClick={() => { handleBoardSizeChange(12); setGameMode("salvo"); setDifficulty("hard"); setEnablePowerUps(true); setEnableWeather(true); setTimedTurns(30); }}
+                      title="12x12, Salvo, Hard AI, power-ups, weather, 30s timer"
+                    >
+                      Advanced
+                    </button>
                   </div>
 
-                  {/* Game mode */}
-                  <div className="settings-row">
-                    <span className="settings-label">Mode: <InfoTip text="Classic: one shot per turn. Salvo: fire one shot per surviving ship each turn — faster and more strategic!" /></span>
-                    <div className="settings-options" role="radiogroup" aria-label="Game mode">
-                      {(["classic", "salvo"] as GameMode[]).map((m) => (
-                        <button
-                          key={m}
-                          type="button"
-                          role="radio"
-                          aria-checked={gameMode === m}
-                          className={`chip${gameMode === m ? " chip--active" : ""}`}
-                          onClick={() => setGameMode(m)}
-                        >
-                          {m === "classic" ? "Classic" : "Salvo"}
-                        </button>
-                      ))}
-                    </div>
-                    <span className="hint">
-                      {gameMode === "salvo" ? "Fire one shot per surviving ship each turn." : "One shot per turn."}
-                    </span>
-                  </div>
-
-                  {/* Player mode */}
-                  <div className="settings-row">
-                    <span className="settings-label">Players: <InfoTip text="vs AI: play against the computer. 2-Player: pass the device between two human players (hotseat mode)." /></span>
-                    <div className="settings-options" role="radiogroup" aria-label="Player mode">
-                      <button
-                        type="button"
-                        role="radio"
-                        aria-checked={playerMode === "vs-ai"}
-                        className={`chip${playerMode === "vs-ai" ? " chip--active" : ""}`}
-                        onClick={() => setPlayerMode("vs-ai")}
-                      >
-                        vs AI
-                      </button>
-                      <button
-                        type="button"
-                        role="radio"
-                        aria-checked={playerMode === "hotseat"}
-                        className={`chip${playerMode === "hotseat" ? " chip--active" : ""}`}
-                        onClick={() => setPlayerMode("hotseat")}
-                      >
-                        2-Player
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Difficulty */}
-                  {playerMode === "vs-ai" && (
-                    <div className="settings-row">
-                      <span className="settings-label">AI difficulty: <InfoTip text="Easy: random shots. Medium: hunts hits. Hard: probability targeting. Admiral: enhanced heatmap — the toughest." /></span>
-                      <div className="settings-options" role="radiogroup" aria-label="AI difficulty">
-                        {(["easy", "medium", "hard", "admiral"] as Difficulty[]).map((d) => (
-                          <button
-                            key={d}
-                            type="button"
-                            role="radio"
-                            aria-checked={difficulty === d}
-                            className={`chip${difficulty === d ? " chip--active" : ""}`}
-                            onClick={() => setDifficulty(d)}
-                          >
-                            {d}
-                          </button>
-                        ))}
+                  {/* Core Settings (always visible) */}
+                  <div className="setup-section">
+                    <button
+                      type="button"
+                      className={`setup-section__toggle${setupExpanded === "core" ? " setup-section__toggle--open" : ""}`}
+                      onClick={() => setSetupExpanded(setupExpanded === "core" ? null : "core")}
+                      aria-expanded={setupExpanded === "core"}
+                    >
+                      Core Settings
+                      <span className="setup-section__chevron">{setupExpanded === "core" ? "\u25B4" : "\u25BE"}</span>
+                    </button>
+                    {setupExpanded === "core" && (
+                      <div className="setup-section__body">
+                        <div className="settings-row">
+                          <span className="settings-label">Board: <InfoTip text="Larger boards have more ships and take longer. 6\u00d76 is great for quick games; 15\u00d715 is for epic battles." /></span>
+                          <div className="settings-options" role="radiogroup" aria-label="Board size">
+                            {BOARD_SIZES.map((b) => (
+                              <button key={b.size} type="button" role="radio" aria-checked={boardSize === b.size} className={`chip${boardSize === b.size ? " chip--active" : ""}`} onClick={() => handleBoardSizeChange(b.size)}>{b.label}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="settings-row">
+                          <span className="settings-label">Mode: <InfoTip text="Classic: one shot per turn. Salvo: fire one shot per surviving ship each turn \u2014 faster and more strategic!" /></span>
+                          <div className="settings-options" role="radiogroup" aria-label="Game mode">
+                            {(["classic", "salvo"] as GameMode[]).map((m) => (
+                              <button key={m} type="button" role="radio" aria-checked={gameMode === m} className={`chip${gameMode === m ? " chip--active" : ""}`} onClick={() => setGameMode(m)}>{m === "classic" ? "Classic" : "Salvo"}</button>
+                            ))}
+                          </div>
+                          <span className="hint">{gameMode === "salvo" ? "Fire one shot per surviving ship each turn." : "One shot per turn."}</span>
+                        </div>
+                        <div className="settings-row">
+                          <span className="settings-label">Players: <InfoTip text="vs AI: play against the computer. 2-Player: pass the device between two human players (hotseat mode)." /></span>
+                          <div className="settings-options" role="radiogroup" aria-label="Player mode">
+                            <button type="button" role="radio" aria-checked={playerMode === "vs-ai"} className={`chip${playerMode === "vs-ai" ? " chip--active" : ""}`} onClick={() => setPlayerMode("vs-ai")}>vs AI</button>
+                            <button type="button" role="radio" aria-checked={playerMode === "hotseat"} className={`chip${playerMode === "hotseat" ? " chip--active" : ""}`} onClick={() => setPlayerMode("hotseat")}>2-Player</button>
+                          </div>
+                        </div>
                       </div>
-                      <span className="hint">{DIFFICULTY_INFO[difficulty]}</span>
-                    </div>
-                  )}
-
-                  {/* AI Personality */}
-                  {playerMode === "vs-ai" && (
-                    <div className="settings-row">
-                      <span className="settings-label">AI style: <InfoTip text={PERSONALITY_INFO[aiPersonality]} /></span>
-                      <div className="settings-options" role="radiogroup" aria-label="AI personality">
-                        {(["balanced", "aggressive", "cautious", "chaotic", "methodical"] as AIPersonality[]).map((p) => (
-                          <button
-                            key={p}
-                            type="button"
-                            role="radio"
-                            aria-checked={aiPersonality === p}
-                            className={`chip${aiPersonality === p ? " chip--active" : ""}`}
-                            onClick={() => setAiPersonality(p)}
-                          >
-                            {p}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* AI Speed */}
-                  {playerMode === "vs-ai" && (
-                    <div className="settings-row">
-                      <span className="settings-label">Speed: <InfoTip text={SPEED_INFO[aiSpeed] || "Controls how fast the AI takes its turn."} /></span>
-                      <div className="settings-options" role="radiogroup" aria-label="AI speed">
-                        {Object.keys(AI_SPEEDS).map((s) => (
-                          <button
-                            key={s}
-                            type="button"
-                            role="radio"
-                            aria-checked={aiSpeed === s}
-                            className={`chip${aiSpeed === s ? " chip--active" : ""}`}
-                            onClick={() => setAiSpeed(s)}
-                          >
-                            {s}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Toggles */}
-                  <div className="settings-row settings-toggles">
-                    {playerMode === "vs-ai" && (
-                      <label className="toggle-label" title="Enable Radar, Sonar, and Airstrike abilities during gameplay">
-                        <input type="checkbox" checked={enablePowerUps} onChange={(e) => setEnablePowerUps(e.target.checked)} />
-                        Power-ups <InfoTip text="Grants special abilities: Radar (reveal 3×3 area), Sonar (count ships in area), Airstrike (bomb entire row/column). Limited uses each game." />
-                      </label>
                     )}
-                    <label className="toggle-label" title="Random weather events that affect gameplay">
-                      <input type="checkbox" checked={enableWeather} onChange={(e) => setEnableWeather(e.target.checked)} />
-                      Weather <InfoTip text="Randomly triggers Storm (power-ups disabled, shots scatter), Fog (reduced visibility), or Calm (bonus shot). Changes every few turns." />
-                    </label>
-                    <label className="toggle-label" title="AI narrator provides commentary on game events">
-                      <input type="checkbox" checked={enableNarrator} onChange={(e) => setEnableNarrator(e.target.checked)} />
-                      Narrator <InfoTip text="An AI narrator comments on game events: hits, misses, sinks, and dramatic moments. Uses text-to-speech when available." />
-                    </label>
                   </div>
 
-                  {/* Timed turns */}
-                  <div className="settings-row">
-                    <span className="settings-label">Timer: <InfoTip text="Set a countdown per turn. If time runs out, a random cell is auto-fired. Off = unlimited time to think." /></span>
-                    <div className="settings-options" role="radiogroup" aria-label="Turn timer">
-                      {[0, 10, 30, 60].map((t) => (
-                        <button
-                          key={t}
-                          type="button"
-                          role="radio"
-                          aria-checked={timedTurns === t}
-                          className={`chip${timedTurns === t ? " chip--active" : ""}`}
-                          onClick={() => setTimedTurns(t)}
-                        >
-                          {t === 0 ? "Off" : `${t}s`}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Seed */}
+                  {/* AI Settings */}
                   {playerMode === "vs-ai" && (
-                    <div className="settings-row">
-                      <label className="toggle-label">
-                        <input type="checkbox" checked={useSeed} onChange={(e) => setUseSeed(e.target.checked)} />
-                        Use game seed <InfoTip text="A seed is a code that generates the same board layout every time. Share seeds with friends to play the exact same game and compare scores!" />
-                      </label>
-                      {useSeed && (
-                        <input
-                          type="text"
-                          className="seed-input"
-                          placeholder="Enter seed (e.g. AB34)"
-                          value={seedInput}
-                          onChange={(e) => setSeedInput(e.target.value.toUpperCase())}
-                          maxLength={12}
-                          aria-label="Game seed"
-                        />
+                    <div className="setup-section">
+                      <button
+                        type="button"
+                        className={`setup-section__toggle${setupExpanded === "ai" ? " setup-section__toggle--open" : ""}`}
+                        onClick={() => setSetupExpanded(setupExpanded === "ai" ? null : "ai")}
+                        aria-expanded={setupExpanded === "ai"}
+                      >
+                        AI Settings
+                        <span className="setup-section__hint">{difficulty} / {aiPersonality}</span>
+                        <span className="setup-section__chevron">{setupExpanded === "ai" ? "\u25B4" : "\u25BE"}</span>
+                      </button>
+                      {setupExpanded === "ai" && (
+                        <div className="setup-section__body">
+                          <div className="settings-row">
+                            <span className="settings-label">AI difficulty: <InfoTip text="Easy: random shots. Medium: hunts hits. Hard: probability targeting. Admiral: enhanced heatmap \u2014 the toughest." /></span>
+                            <div className="settings-options" role="radiogroup" aria-label="AI difficulty">
+                              {(["easy", "medium", "hard", "admiral"] as Difficulty[]).map((d) => (
+                                <button key={d} type="button" role="radio" aria-checked={difficulty === d} className={`chip${difficulty === d ? " chip--active" : ""}`} onClick={() => setDifficulty(d)}>{d}</button>
+                              ))}
+                            </div>
+                            <span className="hint">{DIFFICULTY_INFO[difficulty]}</span>
+                          </div>
+                          <div className="settings-row">
+                            <span className="settings-label">AI style: <InfoTip text={PERSONALITY_INFO[aiPersonality]} /></span>
+                            <div className="settings-options" role="radiogroup" aria-label="AI personality">
+                              {(["balanced", "aggressive", "cautious", "chaotic", "methodical"] as AIPersonality[]).map((p) => (
+                                <button key={p} type="button" role="radio" aria-checked={aiPersonality === p} className={`chip${aiPersonality === p ? " chip--active" : ""}`} onClick={() => setAiPersonality(p)}>{p}</button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="settings-row">
+                            <span className="settings-label">Speed: <InfoTip text={SPEED_INFO[aiSpeed] || "Controls how fast the AI takes its turn."} /></span>
+                            <div className="settings-options" role="radiogroup" aria-label="AI speed">
+                              {Object.keys(AI_SPEEDS).map((s) => (
+                                <button key={s} type="button" role="radio" aria-checked={aiSpeed === s} className={`chip${aiSpeed === s ? " chip--active" : ""}`} onClick={() => setAiSpeed(s)}>{s}</button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}
+
+                  {/* Extras */}
+                  <div className="setup-section">
+                    <button
+                      type="button"
+                      className={`setup-section__toggle${setupExpanded === "extras" ? " setup-section__toggle--open" : ""}`}
+                      onClick={() => setSetupExpanded(setupExpanded === "extras" ? null : "extras")}
+                      aria-expanded={setupExpanded === "extras"}
+                    >
+                      Extras &amp; Modifiers
+                      <span className="setup-section__hint">
+                        {[enablePowerUps && "Power-ups", enableWeather && "Weather", enableNarrator && "Narrator", timedTurns > 0 && `${timedTurns}s timer`].filter(Boolean).join(", ") || "None"}
+                      </span>
+                      <span className="setup-section__chevron">{setupExpanded === "extras" ? "\u25B4" : "\u25BE"}</span>
+                    </button>
+                    {setupExpanded === "extras" && (
+                      <div className="setup-section__body">
+                        <div className="settings-row settings-toggles">
+                          {playerMode === "vs-ai" && (
+                            <label className="toggle-label" title="Enable Radar, Sonar, and Airstrike abilities during gameplay">
+                              <input type="checkbox" checked={enablePowerUps} onChange={(e) => setEnablePowerUps(e.target.checked)} />
+                              Power-ups <InfoTip text="Grants special abilities: Radar (reveal 3\u00d73 area), Sonar (count ships in area), Airstrike (bomb entire row/column). Limited uses each game." />
+                            </label>
+                          )}
+                          <label className="toggle-label" title="Random weather events that affect gameplay">
+                            <input type="checkbox" checked={enableWeather} onChange={(e) => setEnableWeather(e.target.checked)} />
+                            Weather <InfoTip text="Randomly triggers Storm (power-ups disabled, shots scatter), Fog (reduced visibility), or Calm (bonus shot). Changes every few turns." />
+                          </label>
+                          <label className="toggle-label" title="AI narrator provides commentary on game events">
+                            <input type="checkbox" checked={enableNarrator} onChange={(e) => setEnableNarrator(e.target.checked)} />
+                            Narrator <InfoTip text="An AI narrator comments on game events: hits, misses, sinks, and dramatic moments. Uses text-to-speech when available." />
+                          </label>
+                        </div>
+                        <div className="settings-row">
+                          <span className="settings-label">Timer: <InfoTip text="Set a countdown per turn. If time runs out, a random cell is auto-fired. Off = unlimited time to think." /></span>
+                          <div className="settings-options" role="radiogroup" aria-label="Turn timer">
+                            {[0, 10, 30, 60].map((t) => (
+                              <button key={t} type="button" role="radio" aria-checked={timedTurns === t} className={`chip${timedTurns === t ? " chip--active" : ""}`} onClick={() => setTimedTurns(t)}>{t === 0 ? "Off" : `${t}s`}</button>
+                            ))}
+                          </div>
+                        </div>
+                        {playerMode === "vs-ai" && (
+                          <div className="settings-row">
+                            <label className="toggle-label">
+                              <input type="checkbox" checked={useSeed} onChange={(e) => setUseSeed(e.target.checked)} />
+                              Use game seed <InfoTip text="A seed is a code that generates the same board layout every time. Share seeds with friends to play the exact same game and compare scores!" />
+                            </label>
+                            {useSeed && (
+                              <input type="text" className="seed-input" placeholder="Enter seed (e.g. AB34)" value={seedInput} onChange={(e) => setSeedInput(e.target.value.toUpperCase())} maxLength={12} aria-label="Game seed" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
                   {/* Theme */}
                   <div className="settings-row">
@@ -1896,7 +1923,7 @@ export default function App() {
         </section>
       )}
 
-      <main className="boards">
+      <main id="main-content" className="boards">
         <div className="board-wrap">
           <h2>
             {playerMode === "hotseat"
@@ -1975,7 +2002,8 @@ export default function App() {
         <button type="button" className="icon-btn icon-btn--help" onClick={() => setShowHelpGuide(true)} title="Searchable guide to every feature">Help</button>
       </footer>
 
-      {/* Modals */}
+      {/* Modals — all lazy-loaded inside single Suspense boundary */}
+      <Suspense fallback={null}>
       <MatchHistoryPanel open={showHistory} onClose={() => setShowHistory(false)} />
       <AchievementPanel open={showAchievements} onClose={() => setShowAchievements(false)} />
       <PlayerProfile open={showProfile} onClose={() => setShowProfile(false)} />
@@ -2001,7 +2029,7 @@ export default function App() {
         setShowCampaign(false);
         const diffMap: Record<number, Difficulty> = { 1: "easy", 2: "medium", 3: "hard", 4: "admiral", 5: "admiral" };
         const diff = diffMap[mission.difficulty] ?? "medium";
-        setBoardSize(mission.boardSize);
+        handleBoardSizeChange(mission.boardSize);
         setFleet([...mission.fleet]);
         setEnemyFleetOverride(mission.enemyFleet ? [...mission.enemyFleet] : null);
         setDifficulty(diff);
@@ -2010,88 +2038,70 @@ export default function App() {
           setWeatherTurnsLeft(99);
           setEnableWeather(true);
         }
-        setPlayerBoard(createEmptyBoard(mission.boardSize));
-        setP2Board(createEmptyBoard(mission.boardSize));
-        setAiBoard(createEmptyBoard(mission.boardSize));
-        setPhase("setup");
-        setPlacementHistory([]);
         setActiveCampaignMissionId(mission.id);
         addLog(`Campaign mission: ${mission.name} — ${mission.briefing}`);
       }} />
-      <ReplayViewer open={showReplays} onClose={() => { setShowReplays(false); unlockAchievement("replay_watched"); }} />
-      <KeyboardShortcuts open={showShortcuts} onClose={() => setShowShortcuts(false)} />
-      <StrategyNotes open={showStrategyNotes} onClose={() => setShowStrategyNotes(false)} />
-      <HelpGuide open={showHelpGuide} onClose={() => setShowHelpGuide(false)} />
-      {showPrestige && (
-        <PrestigePanel
-          onPrestige={() => { setShowPrestige(false); newGame(); }}
-          onClose={() => setShowPrestige(false)}
-        />
-      )}
-      {showLoadouts && (
-        <LoadoutPanel
-          currentSettings={{
-            boardSize, fleet, difficulty, gameMode, aiPersonality,
-            enablePowerUps, enableWeather, timedTurns, aiSpeed, theme,
-          }}
-          onApply={(loadout) => {
-            setBoardSize(loadout.boardSize);
-            setFleet([...loadout.fleet]);
-            setDifficulty(loadout.difficulty as Difficulty);
-            setGameMode(loadout.gameMode);
-            setAiPersonality(loadout.aiPersonality);
-            setEnablePowerUps(loadout.enablePowerUps);
-            setEnableWeather(loadout.enableWeather);
-            setTimedTurns(loadout.timedTurns);
-            setAiSpeed(loadout.aiSpeed);
-            if (loadout.theme) changeTheme(loadout.theme);
-            setPlayerBoard(createEmptyBoard(loadout.boardSize));
-            setP2Board(createEmptyBoard(loadout.boardSize));
-            setPlacementHistory([]);
-            setShowLoadouts(false);
-          }}
-          onClose={() => setShowLoadouts(false)}
-        />
-      )}
-      {showMilestones && (
-        <MilestonePanel onClose={() => setShowMilestones(false)} />
-      )}
-      {showExportImport && (
-        <ExportImportPanel onClose={() => setShowExportImport(false)} onImport={() => setShowExportImport(false)} />
-      )}
-      {showLossAnalysis && phase === "gameover" && (
-        <LossAnalysis
-          aiBoard={aiBoard}
-          won={winner === "player"}
-          onClose={() => setShowLossAnalysis(false)}
-        />
-      )}
-      {showSettings && (
-        <SettingsPanel
-          settings={gameSettings}
-          onChange={handleSettingsChange}
-          onClose={() => setShowSettings(false)}
-        />
-      )}
-
-      {/* ─── New Feature Modals (100 More) ─── */}
-      {showCrew && <CrewPanel onClose={() => setShowCrew(false)} />}
-      {showLore && <LoreCardsPanel onClose={() => setShowLore(false)} />}
-      {showMemorial && <MemorialWall onClose={() => setShowMemorial(false)} />}
-      {showFaction && <FactionSelector onClose={() => setShowFaction(false)} />}
-      {showImprovement && <ImprovementTracker onClose={() => setShowImprovement(false)} />}
-      {showH2H && <H2HPanel onClose={() => setShowH2H(false)} />}
-      {showHeatmap && <PlacementHeatmapPanel onClose={() => setShowHeatmap(false)} />}
-      {showBenchmark && <BenchmarkPanel onClose={() => setShowBenchmark(false)} onStart={() => setShowBenchmark(false)} />}
-      {showExperimental && <ExperimentalModeSelector onSelect={() => setShowExperimental(false)} onClose={() => setShowExperimental(false)} />}
-      {showPuzzles && <PuzzleSelector onSelect={() => setShowPuzzles(false)} onClose={() => setShowPuzzles(false)} />}
-      {showTraining && <TrainingGroundsPanel onClose={() => setShowTraining(false)} onStart={() => setShowTraining(false)} />}
-      {showGraveyard && <ShipGraveyard onClose={() => setShowGraveyard(false)} />}
-      {showAccessibility && <AccessibilityPanel onClose={() => setShowAccessibility(false)} />}
-      {showBoardSkins && <BoardSkinSelector onClose={() => setShowBoardSkins(false)} />}
-      {showUpgrades && <UpgradeTreePanel onClose={() => setShowUpgrades(false)} availableXP={xpState.totalXP} />}
-      {showDifficultyPresets && <DifficultyPresetsPanel onSelect={() => setShowDifficultyPresets(false)} onClose={() => setShowDifficultyPresets(false)} />}
-      {showCustomRules && <CustomRulesPanel onClose={() => setShowCustomRules(false)} onApply={() => setShowCustomRules(false)} />}
+        <ReplayViewer open={showReplays} onClose={() => { setShowReplays(false); unlockAchievement("replay_watched"); }} />
+        <KeyboardShortcuts open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+        {showStrategyNotes && <LazyStrategyNotes open={showStrategyNotes} onClose={() => setShowStrategyNotes(false)} />}
+        <HelpGuide open={showHelpGuide} onClose={() => setShowHelpGuide(false)} />
+        {showPrestige && (
+          <LazyPrestigePanel
+            onPrestige={() => { setShowPrestige(false); newGame(); }}
+            onClose={() => setShowPrestige(false)}
+          />
+        )}
+        {showLoadouts && (
+          <LazyLoadoutPanel
+            currentSettings={{
+              boardSize, fleet, difficulty, gameMode, aiPersonality,
+              enablePowerUps, enableWeather, timedTurns, aiSpeed, theme,
+            }}
+            onApply={(loadout) => {
+              setBoardSize(loadout.boardSize);
+              setFleet([...loadout.fleet]);
+              setDifficulty(loadout.difficulty as Difficulty);
+              setGameMode(loadout.gameMode);
+              setAiPersonality(loadout.aiPersonality);
+              setEnablePowerUps(loadout.enablePowerUps);
+              setEnableWeather(loadout.enableWeather);
+              setTimedTurns(loadout.timedTurns);
+              setAiSpeed(loadout.aiSpeed);
+              if (loadout.theme) changeTheme(loadout.theme);
+              setPlayerBoard(createEmptyBoard(loadout.boardSize));
+              setP2Board(createEmptyBoard(loadout.boardSize));
+              setPlacementHistory([]);
+              setShowLoadouts(false);
+            }}
+            onClose={() => setShowLoadouts(false)}
+          />
+        )}
+        {showMilestones && <LazyMilestonePanel onClose={() => setShowMilestones(false)} />}
+        {showExportImport && <LazyExportImportPanel onClose={() => setShowExportImport(false)} onImport={() => setShowExportImport(false)} />}
+        {showLossAnalysis && phase === "gameover" && (
+          <LazyLossAnalysis aiBoard={aiBoard} won={winner === "player"} onClose={() => setShowLossAnalysis(false)} />
+        )}
+        {showSettings && (
+          <LazySettingsPanel settings={gameSettings} onChange={handleSettingsChange} onClose={() => setShowSettings(false)} />
+        )}
+        {showCrew && <LazyCrewPanel onClose={() => setShowCrew(false)} />}
+        {showLore && <LazyLoreCardsPanel onClose={() => setShowLore(false)} />}
+        {showMemorial && <LazyMemorialWall onClose={() => setShowMemorial(false)} />}
+        {showFaction && <LazyFactionSelector onClose={() => setShowFaction(false)} />}
+        {showImprovement && <LazyImprovementTracker onClose={() => setShowImprovement(false)} />}
+        {showH2H && <LazyH2HPanel onClose={() => setShowH2H(false)} />}
+        {showHeatmap && <LazyPlacementHeatmapPanel onClose={() => setShowHeatmap(false)} />}
+        {showBenchmark && <LazyBenchmarkPanel onClose={() => setShowBenchmark(false)} onStart={() => setShowBenchmark(false)} />}
+        {showExperimental && <LazyExperimentalModeSelector onSelect={() => setShowExperimental(false)} onClose={() => setShowExperimental(false)} />}
+        {showPuzzles && <LazyPuzzleSelector onSelect={() => setShowPuzzles(false)} onClose={() => setShowPuzzles(false)} />}
+        {showTraining && <LazyTrainingGroundsPanel onClose={() => setShowTraining(false)} onStart={() => setShowTraining(false)} />}
+        {showGraveyard && <LazyShipGraveyard onClose={() => setShowGraveyard(false)} />}
+        {showAccessibility && <LazyAccessibilityPanel onClose={() => setShowAccessibility(false)} />}
+        {showBoardSkins && <LazyBoardSkinSelector onClose={() => setShowBoardSkins(false)} />}
+        {showUpgrades && <LazyUpgradeTreePanel onClose={() => setShowUpgrades(false)} availableXP={xpState.totalXP} />}
+        {showDifficultyPresets && <LazyDifficultyPresetsPanel onSelect={() => setShowDifficultyPresets(false)} onClose={() => setShowDifficultyPresets(false)} />}
+        {showCustomRules && <LazyCustomRulesPanel onClose={() => setShowCustomRules(false)} onApply={() => setShowCustomRules(false)} />}
+      </Suspense>
 
       {/* Combo display */}
       {phase === "playing" && comboState.currentStreak >= 2 && <ComboDisplay streak={comboState.currentStreak} multiplier={comboState.multiplier} />}
