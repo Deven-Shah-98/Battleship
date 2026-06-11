@@ -178,7 +178,7 @@ body::after {
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, var(--text) 0%, var(--accent-secondary) 100%);
+  background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -215,7 +215,7 @@ body::after {
 }
 
 .panel:hover {
-  border-color: rgba(158, 174, 233, 0.15);
+  border-color: var(--accent-glow);
 }
 
 .panel__controls {
@@ -588,6 +588,10 @@ button:focus-visible {
   outline-offset: -2px;
   box-shadow: 0 0 16px var(--accent-glow);
   z-index: 3;
+}
+
+.cell--hit.cell--last {
+  box-shadow: 0 0 16px var(--hit-glow);
 }
 
 .cell--radar {
@@ -1553,7 +1557,7 @@ button:focus-visible {
   font-family: var(--font-mono);
   font-weight: 600;
   font-size: 0.85rem;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .achievement-card__desc {
@@ -1584,7 +1588,7 @@ button:focus-visible {
 
 .profile-title {
   font-size: 1.2rem;
-  color: var(--text-primary);
+  color: var(--text);
   margin: 4px 0;
 }
 
@@ -1600,7 +1604,7 @@ button:focus-visible {
 
 .profile-xp-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--text-primary));
+  background: linear-gradient(90deg, var(--accent), var(--text));
   border-radius: 4px;
   transition: width 0.5s ease;
 }
@@ -1620,7 +1624,7 @@ button:focus-visible {
   font-family: var(--font-mono);
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .profile-stat__label {
@@ -1676,7 +1680,7 @@ button:focus-visible {
 
 .mission-card__name {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .mission-card__desc {
@@ -1993,7 +1997,7 @@ button:focus-visible {
 .replay-controls button {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  color: var(--text-primary);
+  color: var(--text);
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -2235,7 +2239,7 @@ button:focus-visible {
   font-family: var(--font-mono);
   font-size: 1.3rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .analysis-stat__label {
