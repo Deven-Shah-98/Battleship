@@ -4324,7 +4324,7 @@ button:focus-visible {
   margin-bottom: 4px;
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .setup-section__toggle {
