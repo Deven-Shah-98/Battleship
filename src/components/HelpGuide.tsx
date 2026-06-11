@@ -159,7 +159,7 @@ export default function HelpGuide({ open, onClose }: HelpGuideProps) {
               className="help-guide__search"
               placeholder="Search for anything..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setExpandedItem(null); }}
               autoFocus
             />
           </div>

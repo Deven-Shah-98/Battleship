@@ -660,6 +660,25 @@ export default function App() {
         setShowExportImport(false);
         setShowLossAnalysis(false);
         setShowSettings(false);
+        setShowStrategyNotes(false);
+        setShowHelpGuide(false);
+        setShowCrew(false);
+        setShowLore(false);
+        setShowMemorial(false);
+        setShowFaction(false);
+        setShowImprovement(false);
+        setShowH2H(false);
+        setShowHeatmap(false);
+        setShowBenchmark(false);
+        setShowExperimental(false);
+        setShowPuzzles(false);
+        setShowTraining(false);
+        setShowGraveyard(false);
+        setShowAccessibility(false);
+        setShowBoardSkins(false);
+        setShowUpgrades(false);
+        setShowDifficultyPresets(false);
+        setShowCustomRules(false);
       }
       if (e.key === "h" || e.key === "H") {
         if (phase === "playing" && turn === "player" && playerMode === "vs-ai" && !(e.target instanceof HTMLInputElement)) {

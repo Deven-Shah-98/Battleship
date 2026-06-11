@@ -57,7 +57,9 @@ export function loadUpgrades(): Record<string, ShipUpgrade[]> {
     const raw = localStorage.getItem(UPGRADES_KEY);
     if (raw) return JSON.parse(raw);
   } catch { /* */ }
-  return { ...UPGRADE_TREES };
+  return Object.fromEntries(
+    Object.entries(UPGRADE_TREES).map(([k, v]) => [k, v.map(u => ({ ...u }))])
+  );
 }
 
 export function purchaseUpgrade(shipType: string, upgradeId: string, availableXP: number): { success: boolean; remainingXP: number; upgrades: Record<string, ShipUpgrade[]> } {
