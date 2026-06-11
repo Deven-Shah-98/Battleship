@@ -114,7 +114,7 @@ export function PlacementHeatmapPanel({ onClose }: { onClose: () => void }) {
                 style={{
                   width: "100%",
                   aspectRatio: "1",
-                  backgroundColor: `rgba(250, 80, 80, ${intensity * 0.8})`,
+                  backgroundColor: `rgba(229, 57, 53, ${intensity * 0.8})`,
                   border: "1px solid var(--glass-border)",
                   borderRadius: "2px",
                 }}
