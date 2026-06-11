@@ -1535,7 +1535,7 @@ button:focus-visible {
 
 .achievement-card--unlocked {
   border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(var(--accent-rgb, 250, 80, 80), 0.2);
+  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .achievement-card--locked {
@@ -2908,7 +2908,7 @@ button:focus-visible {
   background: var(--surface-glass, rgba(0,0,0,0.3));
   border: 1px solid var(--border-subtle, rgba(255,255,255,0.15));
   border-radius: var(--radius-sm);
-  color: var(--text-primary, #fff);
+  color: var(--text);
   font-size: 0.85rem;
 }
 
@@ -2989,7 +2989,7 @@ button:focus-visible {
   background: var(--surface-glass, rgba(0,0,0,0.4));
   border: 1px solid var(--border-subtle, rgba(255,255,255,0.15));
   border-radius: var(--radius-sm);
-  color: var(--text-primary, #fff);
+  color: var(--text);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.72rem;
   padding: 0.5rem;
@@ -3421,7 +3421,7 @@ button:focus-visible {
   background: var(--surface-glass, rgba(0,0,0,0.4));
   border: 1px solid var(--border-subtle, rgba(255,255,255,0.15));
   border-radius: var(--radius-sm);
-  color: var(--text-primary, #fff);
+  color: var(--text);
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.82rem;
   padding: 0.6rem;
@@ -3611,7 +3611,7 @@ button:focus-visible {
 }
 
 .perk-card:hover { background: rgba(255, 255, 255, 0.08); }
-.perk-card--active { border-color: var(--accent); background: rgba(var(--accent-rgb, 250, 80, 80), 0.15); }
+.perk-card--active { border-color: var(--accent); background: var(--accent-glow); }
 .perk-card--locked { opacity: 0.4; cursor: not-allowed; }
 
 /* ─── Batch 4: Battle Pass ─── */
@@ -3711,7 +3711,7 @@ button:focus-visible {
 
 .cell--wrap-edge {
   border-style: dashed !important;
-  border-color: rgba(var(--accent-rgb, 250, 80, 80), 0.4) !important;
+  border-color: var(--accent-glow) !important;
 }
 
 /* Hex grid mode */
@@ -3751,7 +3751,7 @@ button:focus-visible {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: rgba(var(--accent-rgb, 250, 80, 80), 0.15);
+  background: var(--accent-glow);
   border: 1px solid var(--accent);
   border-radius: 8px;
   animation: voicePulse 1.5s ease-in-out infinite;
@@ -4535,7 +4535,7 @@ button:focus-visible {
   height: 100%;
   font-size: 0.7rem;
   font-weight: 700;
-  color: var(--text);
+  color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 

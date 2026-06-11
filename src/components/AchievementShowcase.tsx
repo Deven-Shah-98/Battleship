@@ -78,7 +78,7 @@ export function AchievementShowcase({ open, onClose }: Props) {
                   gap: "0.75rem",
                   padding: "0.75rem",
                   background: pinned.includes(a.id)
-                    ? "rgba(var(--accent-rgb, 250,80,80), 0.2)"
+                    ? "var(--accent-glow)"
                     : "rgba(255,255,255,0.05)",
                   border: pinned.includes(a.id)
                     ? "1px solid var(--accent)"
