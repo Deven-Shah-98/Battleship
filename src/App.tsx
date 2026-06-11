@@ -12,6 +12,8 @@ import AchievementPanel from "./components/AchievementPanel";
 import PlayerProfile from "./components/PlayerProfile";
 import PostGameAnalysis from "./components/PostGameAnalysis";
 import Tutorial from "./components/Tutorial";
+import HelpGuide from "./components/HelpGuide";
+import { InfoTip } from "./components/InfoTip";
 import CampaignPanel from "./components/CampaignPanel";
 import { completeMission } from "./game/campaign";
 import ReplayViewer from "./components/ReplayViewer";
@@ -117,6 +119,51 @@ const DIFFICULTY_INFO: Record<Difficulty, string> = {
   admiral: "Enhanced heatmap with miss analysis \u2014 ruthless.",
 };
 
+const PERSONALITY_INFO: Record<AIPersonality, string> = {
+  balanced: "Well-rounded play \u2014 mixes aggression and patience.",
+  aggressive: "Immediately chases every hit \u2014 relentless but predictable.",
+  cautious: "Spreads shots wide \u2014 slow but covers the board evenly.",
+  chaotic: "Completely unpredictable \u2014 occasional flashes of brilliance.",
+  methodical: "Scans row by row \u2014 systematic and thorough.",
+};
+
+const SPEED_INFO: Record<string, string> = {
+  instant: "No delay \u2014 AI fires immediately.",
+  fast: "300ms delay \u2014 quick pacing.",
+  normal: "700ms delay \u2014 natural rhythm.",
+  slow: "1.5s delay \u2014 time to think.",
+  dramatic: "2.5s delay \u2014 suspenseful pauses.",
+};
+
+const HEADER_TOOLTIPS: Record<string, string> = {
+  Profile: "View your level, rank, lifetime stats, and accuracy trends.",
+  Achievements: "Browse 50+ unlockable achievements and track your progress.",
+  Stats: "Match history log of your last 50 games with full details.",
+  Campaign: "10 story missions with unique objectives and escalating difficulty.",
+  Replays: "Watch any past game move-by-move with playback controls.",
+  Prestige: "Reset your level for a prestige star and exclusive rewards.",
+  Loadouts: "Save and load your favorite settings combinations.",
+  Milestones: "Track lifetime stat badges (shots, sinks, wins, streaks).",
+  Save: "Export/import all progress as a JSON file for backup.",
+  Settings: "Board variants, accessibility, assists, and platform options.",
+  Crew: "Hire and level crew members for passive gameplay bonuses.",
+  Lore: "Collectible backstory cards for each ship type.",
+  Memorial: "Honor roll of your most heroic ships.",
+  Faction: "Choose Navy, Pirates, or Aliens for unique visual themes.",
+  Progress: "Graphs showing accuracy, win rate, and speed trends.",
+  H2H: "Head-to-head record against each AI personality.",
+  Heatmap: "Visualize where you most commonly place your ships.",
+  Modes: "9 experimental variants: Fog, Minehunter, Roguelike, and more.",
+  Puzzles: "Find the fleet in the fewest shots \u2014 like chess puzzles.",
+  Training: "Isolated drills for targeting, patterns, and speed.",
+  Graveyard: "Visual collection of every ship you\u2019ve ever sunk.",
+  A11y: "Screen reader narration, color-blind mode, and more.",
+  Skins: "6 board visual themes: Classic, Tropical, Arctic, Space, Lava, Steampunk.",
+  Upgrades: "Spend XP to permanently upgrade ship abilities.",
+  Benchmark: "Run 100 AI-vs-AI simulations to test strategies.",
+  Notes: "Strategy notepad for tracking patterns during play.",
+};
+
 const coordLabel = (c: Coord): string => `${COLUMN_LABELS[c.col]}${c.row + 1}`;
 
 function loadRecord(): GameRecord {
@@ -214,6 +261,7 @@ export default function App() {
   const [showLossAnalysis, setShowLossAnalysis] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showStrategyNotes, setShowStrategyNotes] = useState(false);
+  const [showHelpGuide, setShowHelpGuide] = useState(false);
 
   /* ─── Game Settings (accessibility, board variants) ─── */
   const [gameSettings, setGameSettings] = useState<GameSettings>(() => loadSettings());
@@ -612,6 +660,25 @@ export default function App() {
         setShowExportImport(false);
         setShowLossAnalysis(false);
         setShowSettings(false);
+        setShowStrategyNotes(false);
+        setShowHelpGuide(false);
+        setShowCrew(false);
+        setShowLore(false);
+        setShowMemorial(false);
+        setShowFaction(false);
+        setShowImprovement(false);
+        setShowH2H(false);
+        setShowHeatmap(false);
+        setShowBenchmark(false);
+        setShowExperimental(false);
+        setShowPuzzles(false);
+        setShowTraining(false);
+        setShowGraveyard(false);
+        setShowAccessibility(false);
+        setShowBoardSkins(false);
+        setShowUpgrades(false);
+        setShowDifficultyPresets(false);
+        setShowCustomRules(false);
       }
       if (e.key === "h" || e.key === "H") {
         if (phase === "playing" && turn === "player" && playerMode === "vs-ai" && !(e.target instanceof HTMLInputElement)) {
@@ -1437,85 +1504,88 @@ export default function App() {
           {playerMode === "vs-ai" && (
             <span className="record" title="Wins\u2013Losses">W {record.wins} \u00B7 L {record.losses}</span>
           )}
-          <button type="button" className="icon-btn" onClick={() => setShowProfile(true)} title="Profile">
+          <button type="button" className="icon-btn icon-btn--help" onClick={() => setShowHelpGuide(true)} title="Help & Guide — learn about every feature">
+            Help
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowProfile(true)} title={HEADER_TOOLTIPS.Profile}>
             Profile
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowAchievements(true)} title="Achievements">
+          <button type="button" className="icon-btn" onClick={() => setShowAchievements(true)} title={HEADER_TOOLTIPS.Achievements}>
             Achievements
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowHistory(true)} title="Stats">
+          <button type="button" className="icon-btn" onClick={() => setShowHistory(true)} title={HEADER_TOOLTIPS.Stats}>
             Stats
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowCampaign(true)} title="Campaign">
+          <button type="button" className="icon-btn" onClick={() => setShowCampaign(true)} title={HEADER_TOOLTIPS.Campaign}>
             Campaign
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowReplays(true)} title="Replays">
+          <button type="button" className="icon-btn" onClick={() => setShowReplays(true)} title={HEADER_TOOLTIPS.Replays}>
             Replays
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowPrestige(true)} title="Prestige">
+          <button type="button" className="icon-btn" onClick={() => setShowPrestige(true)} title={HEADER_TOOLTIPS.Prestige}>
             Prestige
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowLoadouts(true)} title="Loadouts">
+          <button type="button" className="icon-btn" onClick={() => setShowLoadouts(true)} title={HEADER_TOOLTIPS.Loadouts}>
             Loadouts
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowMilestones(true)} title="Milestones">
+          <button type="button" className="icon-btn" onClick={() => setShowMilestones(true)} title={HEADER_TOOLTIPS.Milestones}>
             Milestones
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowExportImport(true)} title="Export/Import">
+          <button type="button" className="icon-btn" onClick={() => setShowExportImport(true)} title={HEADER_TOOLTIPS.Save}>
             Save
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowSettings(true)} title="Settings">
+          <button type="button" className="icon-btn" onClick={() => setShowSettings(true)} title={HEADER_TOOLTIPS.Settings}>
             Settings
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowCrew(true)} title="Crew">
+          <button type="button" className="icon-btn" onClick={() => setShowCrew(true)} title={HEADER_TOOLTIPS.Crew}>
             Crew
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowLore(true)} title="Fleet Lore">
+          <button type="button" className="icon-btn" onClick={() => setShowLore(true)} title={HEADER_TOOLTIPS.Lore}>
             Lore
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowMemorial(true)} title="Memorial Wall">
+          <button type="button" className="icon-btn" onClick={() => setShowMemorial(true)} title={HEADER_TOOLTIPS.Memorial}>
             Memorial
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowFaction(true)} title="Factions">
+          <button type="button" className="icon-btn" onClick={() => setShowFaction(true)} title={HEADER_TOOLTIPS.Faction}>
             Faction
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowImprovement(true)} title="Improvement Tracker">
+          <button type="button" className="icon-btn" onClick={() => setShowImprovement(true)} title={HEADER_TOOLTIPS.Progress}>
             Progress
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowH2H(true)} title="Head-to-Head">
+          <button type="button" className="icon-btn" onClick={() => setShowH2H(true)} title={HEADER_TOOLTIPS.H2H}>
             H2H
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowHeatmap(true)} title="Placement Heatmap">
+          <button type="button" className="icon-btn" onClick={() => setShowHeatmap(true)} title={HEADER_TOOLTIPS.Heatmap}>
             Heatmap
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowExperimental(true)} title="Experimental Modes">
+          <button type="button" className="icon-btn" onClick={() => setShowExperimental(true)} title={HEADER_TOOLTIPS.Modes}>
             Modes
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowPuzzles(true)} title="Puzzles">
+          <button type="button" className="icon-btn" onClick={() => setShowPuzzles(true)} title={HEADER_TOOLTIPS.Puzzles}>
             Puzzles
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowTraining(true)} title="Training">
+          <button type="button" className="icon-btn" onClick={() => setShowTraining(true)} title={HEADER_TOOLTIPS.Training}>
             Training
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowGraveyard(true)} title="Ship Graveyard">
+          <button type="button" className="icon-btn" onClick={() => setShowGraveyard(true)} title={HEADER_TOOLTIPS.Graveyard}>
             Graveyard
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowAccessibility(true)} title="Accessibility">
+          <button type="button" className="icon-btn" onClick={() => setShowAccessibility(true)} title={HEADER_TOOLTIPS.A11y}>
             A11y
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowBoardSkins(true)} title="Board Skins">
+          <button type="button" className="icon-btn" onClick={() => setShowBoardSkins(true)} title={HEADER_TOOLTIPS.Skins}>
             Skins
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowUpgrades(true)} title="Ship Upgrades">
+          <button type="button" className="icon-btn" onClick={() => setShowUpgrades(true)} title={HEADER_TOOLTIPS.Upgrades}>
             Upgrades
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowBenchmark(true)} title="Benchmarks">
+          <button type="button" className="icon-btn" onClick={() => setShowBenchmark(true)} title={HEADER_TOOLTIPS.Benchmark}>
             Benchmark
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowStrategyNotes(true)} title="Strategy Notes">
+          <button type="button" className="icon-btn" onClick={() => setShowStrategyNotes(true)} title={HEADER_TOOLTIPS.Notes}>
             Notes
           </button>
-          <button type="button" className="icon-btn" onClick={() => setShowShortcuts(true)} title="Shortcuts (?)">
+          <button type="button" className="icon-btn" onClick={() => setShowShortcuts(true)} title="View all keyboard shortcuts">
             ?
           </button>
           <button
@@ -1523,7 +1593,7 @@ export default function App() {
             className="icon-btn"
             aria-pressed={muted}
             onClick={() => setMutedState((m) => !m)}
-            title={muted ? "Unmute" : "Mute"}
+            title={muted ? "Unmute sound effects and music" : "Mute all sound effects and music"}
           >
             {muted ? "Muted" : "Sound"}
           </button>
@@ -1550,7 +1620,7 @@ export default function App() {
                 <>
                   {/* Board size */}
                   <div className="settings-row">
-                    <span className="settings-label">Board:</span>
+                    <span className="settings-label">Board: <InfoTip text="Larger boards have more ships and take longer. 6×6 is great for quick games; 15×15 is for epic battles." /></span>
                     <div className="settings-options" role="radiogroup" aria-label="Board size">
                       {BOARD_SIZES.map((b) => (
                         <button
@@ -1569,7 +1639,7 @@ export default function App() {
 
                   {/* Game mode */}
                   <div className="settings-row">
-                    <span className="settings-label">Mode:</span>
+                    <span className="settings-label">Mode: <InfoTip text="Classic: one shot per turn. Salvo: fire one shot per surviving ship each turn — faster and more strategic!" /></span>
                     <div className="settings-options" role="radiogroup" aria-label="Game mode">
                       {(["classic", "salvo"] as GameMode[]).map((m) => (
                         <button
@@ -1591,7 +1661,7 @@ export default function App() {
 
                   {/* Player mode */}
                   <div className="settings-row">
-                    <span className="settings-label">Players:</span>
+                    <span className="settings-label">Players: <InfoTip text="vs AI: play against the computer. 2-Player: pass the device between two human players (hotseat mode)." /></span>
                     <div className="settings-options" role="radiogroup" aria-label="Player mode">
                       <button
                         type="button"
@@ -1617,7 +1687,7 @@ export default function App() {
                   {/* Difficulty */}
                   {playerMode === "vs-ai" && (
                     <div className="settings-row">
-                      <span className="settings-label">AI difficulty:</span>
+                      <span className="settings-label">AI difficulty: <InfoTip text="Easy: random shots. Medium: hunts hits. Hard: probability targeting. Admiral: enhanced heatmap — the toughest." /></span>
                       <div className="settings-options" role="radiogroup" aria-label="AI difficulty">
                         {(["easy", "medium", "hard", "admiral"] as Difficulty[]).map((d) => (
                           <button
@@ -1639,7 +1709,7 @@ export default function App() {
                   {/* AI Personality */}
                   {playerMode === "vs-ai" && (
                     <div className="settings-row">
-                      <span className="settings-label">AI style:</span>
+                      <span className="settings-label">AI style: <InfoTip text={PERSONALITY_INFO[aiPersonality]} /></span>
                       <div className="settings-options" role="radiogroup" aria-label="AI personality">
                         {(["balanced", "aggressive", "cautious", "chaotic", "methodical"] as AIPersonality[]).map((p) => (
                           <button
@@ -1660,7 +1730,7 @@ export default function App() {
                   {/* AI Speed */}
                   {playerMode === "vs-ai" && (
                     <div className="settings-row">
-                      <span className="settings-label">Speed:</span>
+                      <span className="settings-label">Speed: <InfoTip text={SPEED_INFO[aiSpeed] || "Controls how fast the AI takes its turn."} /></span>
                       <div className="settings-options" role="radiogroup" aria-label="AI speed">
                         {Object.keys(AI_SPEEDS).map((s) => (
                           <button
@@ -1681,24 +1751,24 @@ export default function App() {
                   {/* Toggles */}
                   <div className="settings-row settings-toggles">
                     {playerMode === "vs-ai" && (
-                      <label className="toggle-label">
+                      <label className="toggle-label" title="Enable Radar, Sonar, and Airstrike abilities during gameplay">
                         <input type="checkbox" checked={enablePowerUps} onChange={(e) => setEnablePowerUps(e.target.checked)} />
-                        Power-ups
+                        Power-ups <InfoTip text="Grants special abilities: Radar (reveal 3×3 area), Sonar (count ships in area), Airstrike (bomb entire row/column). Limited uses each game." />
                       </label>
                     )}
-                    <label className="toggle-label">
+                    <label className="toggle-label" title="Random weather events that affect gameplay">
                       <input type="checkbox" checked={enableWeather} onChange={(e) => setEnableWeather(e.target.checked)} />
-                      Weather
+                      Weather <InfoTip text="Randomly triggers Storm (power-ups disabled, shots scatter), Fog (reduced visibility), or Calm (bonus shot). Changes every few turns." />
                     </label>
-                    <label className="toggle-label">
+                    <label className="toggle-label" title="AI narrator provides commentary on game events">
                       <input type="checkbox" checked={enableNarrator} onChange={(e) => setEnableNarrator(e.target.checked)} />
-                      Narrator
+                      Narrator <InfoTip text="An AI narrator comments on game events: hits, misses, sinks, and dramatic moments. Uses text-to-speech when available." />
                     </label>
                   </div>
 
                   {/* Timed turns */}
                   <div className="settings-row">
-                    <span className="settings-label">Timer:</span>
+                    <span className="settings-label">Timer: <InfoTip text="Set a countdown per turn. If time runs out, a random cell is auto-fired. Off = unlimited time to think." /></span>
                     <div className="settings-options" role="radiogroup" aria-label="Turn timer">
                       {[0, 10, 30, 60].map((t) => (
                         <button
@@ -1720,7 +1790,7 @@ export default function App() {
                     <div className="settings-row">
                       <label className="toggle-label">
                         <input type="checkbox" checked={useSeed} onChange={(e) => setUseSeed(e.target.checked)} />
-                        Use game seed
+                        Use game seed <InfoTip text="A seed is a code that generates the same board layout every time. Share seeds with friends to play the exact same game and compare scores!" />
                       </label>
                       {useSeed && (
                         <input
@@ -1738,7 +1808,7 @@ export default function App() {
 
                   {/* Theme */}
                   <div className="settings-row">
-                    <span className="settings-label">Theme:</span>
+                    <span className="settings-label">Theme: <InfoTip text="Visual color theme for the entire game. Cognition (dark coral), Midnight (purple), Arctic (light), Ember (orange), Ocean (teal), Sunset (warm)." /></span>
                     <ThemeSwitcher current={theme} onChange={changeTheme} />
                   </div>
                 </>
@@ -1901,7 +1971,8 @@ export default function App() {
         <a href="https://github.com/Deven-Shah-98/battleship" target="_blank" rel="noreferrer">
           Source on GitHub
         </a>
-        <button type="button" className="icon-btn" onClick={() => setShowTutorial(true)}>Tutorial</button>
+        <button type="button" className="icon-btn" onClick={() => setShowTutorial(true)} title="Walk through all features step by step">Tutorial</button>
+        <button type="button" className="icon-btn icon-btn--help" onClick={() => setShowHelpGuide(true)} title="Searchable guide to every feature">Help</button>
       </footer>
 
       {/* Modals */}
@@ -1950,6 +2021,7 @@ export default function App() {
       <ReplayViewer open={showReplays} onClose={() => { setShowReplays(false); unlockAchievement("replay_watched"); }} />
       <KeyboardShortcuts open={showShortcuts} onClose={() => setShowShortcuts(false)} />
       <StrategyNotes open={showStrategyNotes} onClose={() => setShowStrategyNotes(false)} />
+      <HelpGuide open={showHelpGuide} onClose={() => setShowHelpGuide(false)} />
       {showPrestige && (
         <PrestigePanel
           onPrestige={() => { setShowPrestige(false); newGame(); }}

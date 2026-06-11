@@ -181,7 +181,7 @@ export function WinProbabilityBar({ probability }: { probability: number }) {
   const pct = Math.round(probability * 100);
   const color = pct >= 60 ? "#4caf50" : pct >= 40 ? "#ff9800" : "#f44336";
   return (
-    <div className="glass" style={{ padding: "0.3rem 0.6rem", borderRadius: "6px", fontSize: "0.75rem" }}>
+    <div className="glass" style={{ padding: "0.3rem 0.6rem", borderRadius: "6px", fontSize: "0.75rem" }} title="Your estimated chance of winning based on ships remaining, accuracy, and board state. Green = favorable, orange = even, red = losing.">
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.2rem" }}>
         <span>Win Probability</span>
         <span style={{ fontWeight: 700, color }}>{pct}%</span>
@@ -198,7 +198,7 @@ export function MoraleIndicator({ morale }: { morale: number }) {
   const emoji = morale >= 80 ? "😄" : morale >= 60 ? "😊" : morale >= 40 ? "😐" : morale >= 20 ? "😟" : "😰";
   const color = morale >= 60 ? "#4caf50" : morale >= 40 ? "#ff9800" : "#f44336";
   return (
-    <div className="glass" style={{ padding: "0.3rem 0.6rem", borderRadius: "6px", fontSize: "0.75rem", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+    <div className="glass" style={{ padding: "0.3rem 0.6rem", borderRadius: "6px", fontSize: "0.75rem", display: "inline-flex", alignItems: "center", gap: "0.3rem" }} title="Your fleet's morale. Rises with hits and sinks, drops on misses. High morale boosts XP earned!">
       <span>{emoji}</span>
       <span>Morale: </span>
       <span style={{ fontWeight: 700, color }}>{morale}%</span>
