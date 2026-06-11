@@ -3421,3 +3421,199 @@ button:focus-visible {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.3); }
 }
+
+/* ═══════════════════════════════════════════════════
+   NEW FEATURES (100 More) — Additional Styles
+   ═══════════════════════════════════════════════════ */
+
+/* ─── Dyslexia Font ─── */
+.dyslexia-font, .dyslexia-font * {
+  font-family: "OpenDyslexic", "Comic Sans MS", sans-serif !important;
+}
+
+/* ─── High Contrast Tactical ─── */
+.high-contrast-tactical {
+  --bg: #000000;
+  --bg-secondary: #111111;
+  --panel: rgba(0, 0, 0, 0.95);
+  --sea: #000000;
+  --text: #ffffff;
+  --hit: #ff0000;
+  --miss: #ffffff;
+  --ship: #ffffff;
+  --accent: #ff0000;
+}
+.high-contrast-tactical .cell { border: 2px solid #ffffff !important; }
+.high-contrast-tactical .cell.hit::after { content: "X"; font-size: 1.2rem; font-weight: 900; color: #ff0000; }
+.high-contrast-tactical .cell.miss::after { content: "O"; font-size: 1rem; font-weight: 700; color: #ffffff; }
+
+/* ─── Simplified Mode ─── */
+.simplified-mode .achievement-toast,
+.simplified-mode .xp-toast,
+.simplified-mode .combo-display,
+.simplified-mode .bounty-display,
+.simplified-mode .morale-indicator,
+.simplified-mode .day-night-indicator { display: none !important; }
+
+/* ─── Reduce Motion ─── */
+.reduce-motion, .reduce-motion * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* ─── One-Switch Mode ─── */
+.one-switch-mode .cell.scan-highlight {
+  outline: 4px solid #ffff00 !important;
+  outline-offset: -2px;
+  z-index: 100;
+}
+
+/* ─── Combo Display Animation ─── */
+@keyframes comboSlide {
+  from { transform: translateX(100px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.combo-display { animation: comboSlide 0.3s ease-out; }
+
+/* ─── Ship Damage States ─── */
+.ship-damage-light { opacity: 0.9; }
+.ship-damage-moderate { opacity: 0.8; filter: saturate(0.7); }
+.ship-damage-heavy { opacity: 0.7; filter: saturate(0.5) brightness(0.9); }
+.ship-damage-critical {
+  opacity: 0.6;
+  filter: saturate(0.3) brightness(0.8);
+  animation: criticalFlicker 1s ease-in-out infinite;
+}
+.ship-damage-sinking {
+  opacity: 0.4;
+  filter: grayscale(1) brightness(0.6);
+  animation: sinkingRotate 2s ease-in-out;
+}
+
+@keyframes criticalFlicker {
+  0%, 100% { filter: saturate(0.3) brightness(0.8); }
+  50% { filter: saturate(0.3) brightness(1.1); }
+}
+@keyframes sinkingRotate {
+  0% { transform: rotate(0deg) translateY(0); }
+  100% { transform: rotate(5deg) translateY(10px); }
+}
+
+/* ─── Weather Particles ─── */
+.weather-rain {
+  position: absolute;
+  width: 2px;
+  height: 10px;
+  background: rgba(144, 202, 249, 0.6);
+  animation: rainFall 0.8s linear infinite;
+}
+@keyframes rainFall {
+  from { transform: translateY(-20px); }
+  to { transform: translateY(100%); }
+}
+
+.weather-snow {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  animation: snowFall 3s linear infinite;
+}
+@keyframes snowFall {
+  from { transform: translateY(-20px) rotate(0deg); }
+  to { transform: translateY(100%) rotate(360deg); }
+}
+
+/* ─── Board Skin Overrides ─── */
+[data-board-skin="tropical"] .cell { background: rgba(0, 150, 136, 0.2); }
+[data-board-skin="arctic"] .cell { background: rgba(144, 202, 249, 0.15); }
+[data-board-skin="deep_space"] .cell { background: rgba(124, 77, 255, 0.1); }
+[data-board-skin="lava"] .cell { background: rgba(255, 99, 0, 0.1); }
+[data-board-skin="void"] .cell { background: rgba(74, 20, 140, 0.15); }
+
+/* ─── Day/Night Cycle ─── */
+[data-time="dawn"] { --bg: #1a1a2e; }
+[data-time="morning"] { --sea: rgba(30, 95, 143, 0.6); }
+[data-time="midday"] { --sea: rgba(21, 101, 192, 0.6); }
+[data-time="dusk"] { --bg: #1a1a2e; --accent: #ff7043; }
+[data-time="night"] { --bg: #0a0a1a; --sea: rgba(10, 10, 46, 0.8); }
+
+/* ─── Tactical Overlay ─── */
+.tactical-overlay .cell.probability-high { box-shadow: inset 0 0 8px rgba(255, 0, 0, 0.4); }
+.tactical-overlay .cell.probability-medium { box-shadow: inset 0 0 5px rgba(255, 165, 0, 0.3); }
+.tactical-overlay .cell.probability-low { box-shadow: inset 0 0 3px rgba(76, 175, 80, 0.2); }
+
+/* ─── Camera Shake ─── */
+@keyframes cameraShake {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-2px, -1px); }
+  20% { transform: translate(3px, 1px); }
+  30% { transform: translate(-1px, 2px); }
+  40% { transform: translate(2px, -2px); }
+  50% { transform: translate(-3px, 1px); }
+  60% { transform: translate(1px, -1px); }
+  70% { transform: translate(-2px, 2px); }
+  80% { transform: translate(3px, -1px); }
+  90% { transform: translate(-1px, 1px); }
+}
+.shake { animation: cameraShake 0.4s ease-in-out; }
+
+/* ─── Fog Exploration ─── */
+.fog-cell {
+  background: #0a0a0a !important;
+  border-color: rgba(50, 50, 50, 0.3) !important;
+}
+.fog-cell::before { content: "?"; font-size: 0.7rem; color: rgba(255, 255, 255, 0.1); }
+
+/* ─── Artillery Mode ─── */
+.artillery-target {
+  outline: 2px dashed rgba(255, 152, 0, 0.6);
+  outline-offset: -2px;
+}
+
+/* ─── Blind Mode ─── */
+.blind-mode .cell.hit, .blind-mode .cell.miss {
+  background: var(--cell-bg) !important;
+}
+.blind-mode .cell.hit::after, .blind-mode .cell.miss::after { display: none; }
+
+/* ─── Streamer Mode ─── */
+.streamer-mode .player-board .cell.ship { background: var(--cell-bg) !important; }
+.streamer-mode { border: 3px solid transparent; border-image: linear-gradient(135deg, var(--accent), #7c4dff) 1; }
+
+/* ─── Reaction Animations ─── */
+@keyframes reactionPop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.reaction-emoji {
+  animation: reactionPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  font-size: 2rem;
+  position: fixed;
+  z-index: 10000;
+}
+
+/* ─── Nemesis Grudge Glow ─── */
+.nemesis-active {
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.3), inset 0 0 10px rgba(255, 0, 0, 0.1);
+}
+
+/* ─── Crew Level Up ─── */
+@keyframes levelUpGlow {
+  0% { box-shadow: 0 0 0 rgba(76, 175, 80, 0); }
+  50% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.5); }
+  100% { box-shadow: 0 0 0 rgba(76, 175, 80, 0); }
+}
+.crew-levelup { animation: levelUpGlow 1s ease-out; }
+
+/* ─── Puzzle Stars ─── */
+.puzzle-stars { color: #ffd700; font-size: 1.1rem; letter-spacing: 2px; }
+
+/* ─── Boarding Action Flash ─── */
+@keyframes boardingFlash {
+  0%, 100% { background: transparent; }
+  50% { background: rgba(76, 175, 80, 0.2); }
+}
+.boarding-action { animation: boardingFlash 0.6s ease-in-out 3; }
