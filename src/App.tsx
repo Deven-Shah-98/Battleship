@@ -2030,6 +2030,8 @@ export default function App() {
         const diffMap: Record<number, Difficulty> = { 1: "easy", 2: "medium", 3: "hard", 4: "admiral", 5: "admiral" };
         const diff = diffMap[mission.difficulty] ?? "medium";
         handleBoardSizeChange(mission.boardSize);
+        setAiBoard(createEmptyBoard(mission.boardSize));
+        setPhase("setup");
         setFleet([...mission.fleet]);
         setEnemyFleetOverride(mission.enemyFleet ? [...mission.enemyFleet] : null);
         setDifficulty(diff);
