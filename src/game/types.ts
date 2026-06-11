@@ -80,7 +80,7 @@ export interface SonarResult {
 
 /* ─── Themes ─── */
 
-export type ThemeName = "cognition" | "midnight" | "arctic" | "ember" | "ocean" | "neon";
+export type ThemeName = "midnight" | "arctic" | "ember" | "ocean" | "neon";
 
 /* ─── Match history ─── */
 

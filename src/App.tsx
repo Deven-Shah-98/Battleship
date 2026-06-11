@@ -1837,7 +1837,7 @@ export default function App() {
 
                   {/* Theme */}
                   <div className="settings-row">
-                    <span className="settings-label">Theme: <InfoTip text="Visual color theme for the entire game. Cognition (dark coral), Midnight (purple), Arctic (light), Ember (orange), Ocean (teal), Sunset (warm)." /></span>
+                    <span className="settings-label">Theme: <InfoTip text="Visual color theme for the entire game. Midnight (purple), Arctic (light), Ember (orange), Ocean (teal), Neon (green/black)." /></span>
                     <ThemeSwitcher current={theme} onChange={changeTheme} />
                   </div>
                 </>
@@ -2073,7 +2073,7 @@ export default function App() {
               setEnableWeather(loadout.enableWeather);
               setTimedTurns(loadout.timedTurns);
               setAiSpeed(loadout.aiSpeed);
-              if (loadout.theme) changeTheme(loadout.theme);
+              if (loadout.theme && loadout.theme in THEMES) changeTheme(loadout.theme);
               setShowLoadouts(false);
             }}
             onClose={() => setShowLoadouts(false)}

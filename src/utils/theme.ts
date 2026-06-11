@@ -6,44 +6,6 @@ export const THEMES: Record<
   ThemeName,
   { label: string; vars: Record<string, string> }
 > = {
-  cognition: {
-    label: "Cognition",
-    vars: {
-      "--bg": "#f7f6f5",
-      "--bg-secondary": "#eeedeb",
-      "--panel": "rgba(255, 255, 255, 0.85)",
-      "--panel-solid": "#ffffff",
-      "--panel-border": "rgba(0, 0, 0, 0.06)",
-      "--sea": "rgba(230, 228, 225, 0.5)",
-      "--sea-line": "rgba(0, 0, 0, 0.06)",
-      "--accent": "#2200ff",
-      "--accent-glow": "rgba(34, 0, 255, 0.15)",
-      "--accent-secondary": "#191919",
-      "--accent-secondary-glow": "rgba(25, 25, 25, 0.1)",
-      "--hit": "#e53935",
-      "--hit-glow": "rgba(229, 57, 53, 0.25)",
-      "--miss": "#90a4ae",
-      "--ok-glow": "rgba(46, 125, 50, 0.2)",
-      "--ship": "rgba(34, 0, 255, 0.12)",
-      "--ship-stroke": "rgba(34, 0, 255, 0.25)",
-      "--sunk": "#c62828",
-      "--ok": "#2e7d32",
-      "--text": "#000000",
-      "--text-secondary": "#555555",
-      "--text-muted": "rgba(0, 0, 0, 0.4)",
-      "--gradient-start": "#f7f6f5",
-      "--gradient-mid": "#eeedeb",
-      "--gradient-end": "#f7f6f5",
-      "--glass-bg": "rgba(255, 255, 255, 0.7)",
-      "--glass-border": "rgba(0, 0, 0, 0.06)",
-      "--glass-highlight": "rgba(255, 255, 255, 0.9)",
-      "--cell-bg": "rgba(230, 228, 225, 0.3)",
-      "--cell-hover": "rgba(34, 0, 255, 0.1)",
-      "--cell-border": "rgba(0, 0, 0, 0.06)",
-      "--border-subtle": "rgba(0, 0, 0, 0.08)",
-      "--surface-glass": "rgba(0, 0, 0, 0.03)",
-    },
-  },
   midnight: {
     label: "Midnight",
     vars: {
@@ -240,6 +202,7 @@ export function loadTheme(): ThemeName {
   try {
     const raw = localStorage.getItem(THEME_KEY);
     if (raw && raw in THEMES) return raw as ThemeName;
+    if (raw === "cognition") localStorage.setItem(THEME_KEY, "midnight");
   } catch {
     /* ignore */
   }
@@ -256,8 +219,12 @@ export function saveTheme(theme: ThemeName): void {
 
 export function applyTheme(theme: ThemeName): void {
   const root = document.documentElement;
-  const vars = THEMES[theme].vars;
-  for (const [key, value] of Object.entries(vars)) {
+  const themeEntry = THEMES[theme];
+  if (!themeEntry) {
+    applyTheme("midnight");
+    return;
+  }
+  for (const [key, value] of Object.entries(themeEntry.vars)) {
     root.style.setProperty(key, value);
   }
   root.setAttribute("data-theme", theme);
@@ -269,7 +236,8 @@ export function recordThemeUsed(theme: ThemeName): Set<string> {
   try {
     const raw = localStorage.getItem(THEMES_USED_KEY);
     const used = raw ? new Set(JSON.parse(raw) as string[]) : new Set<string>();
-    used.add(theme);
+    if (theme in THEMES) used.add(theme);
+    used.delete("cognition");
     localStorage.setItem(THEMES_USED_KEY, JSON.stringify([...used]));
     return used;
   } catch {
