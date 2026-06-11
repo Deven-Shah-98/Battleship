@@ -223,6 +223,7 @@ export default function App() {
   const [enableWeather, setEnableWeather] = useState(false);
   const [timedTurns, setTimedTurns] = useState(0); // 0 = unlimited
   const [enableNarrator, setEnableNarrator] = useState(false);
+  const [activePreset, setActivePreset] = useState<"quick" | "standard" | "advanced" | null>("standard");
 
   /* ─── Game state ─── */
   const [phase, setPhase] = useState<Phase>("setup");
@@ -1669,24 +1670,24 @@ export default function App() {
                   <div className="setup-presets">
                     <button
                       type="button"
-                      className="preset-btn"
-                      onClick={() => { handleBoardSizeChange(8); setGameMode("classic"); setDifficulty("easy"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
+                      className={`preset-btn${activePreset === "quick" ? " preset-btn--active" : ""}`}
+                      onClick={() => { setActivePreset("quick"); handleBoardSizeChange(8); setGameMode("classic"); setDifficulty("easy"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
                       title="8x8, Classic, Easy AI, no extras"
                     >
                       Quick Play
                     </button>
                     <button
                       type="button"
-                      className="preset-btn preset-btn--active"
-                      onClick={() => { handleBoardSizeChange(10); setGameMode("classic"); setDifficulty("medium"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
+                      className={`preset-btn${activePreset === "standard" ? " preset-btn--active" : ""}`}
+                      onClick={() => { setActivePreset("standard"); handleBoardSizeChange(10); setGameMode("classic"); setDifficulty("medium"); setEnablePowerUps(false); setEnableWeather(false); setTimedTurns(0); }}
                       title="10x10, Classic, Medium AI"
                     >
                       Standard
                     </button>
                     <button
                       type="button"
-                      className="preset-btn"
-                      onClick={() => { handleBoardSizeChange(12); setGameMode("salvo"); setDifficulty("hard"); setEnablePowerUps(true); setEnableWeather(true); setTimedTurns(30); }}
+                      className={`preset-btn${activePreset === "advanced" ? " preset-btn--active" : ""}`}
+                      onClick={() => { setActivePreset("advanced"); handleBoardSizeChange(12); setGameMode("salvo"); setDifficulty("hard"); setEnablePowerUps(true); setEnableWeather(true); setTimedTurns(30); }}
                       title="12x12, Salvo, Hard AI, power-ups, weather, 30s timer"
                     >
                       Advanced
@@ -1710,7 +1711,7 @@ export default function App() {
                           <span className="settings-label">Board: <InfoTip text={"Larger boards have more ships and take longer. 6\u00d76 is great for quick games; 15\u00d715 is for epic battles."} /></span>
                           <div className="settings-options" role="radiogroup" aria-label="Board size">
                             {BOARD_SIZES.map((b) => (
-                              <button key={b.size} type="button" role="radio" aria-checked={boardSize === b.size} className={`chip${boardSize === b.size ? " chip--active" : ""}`} onClick={() => handleBoardSizeChange(b.size)}>{b.label}</button>
+                              <button key={b.size} type="button" role="radio" aria-checked={boardSize === b.size} className={`chip${boardSize === b.size ? " chip--active" : ""}`} onClick={() => { setActivePreset(null); handleBoardSizeChange(b.size); }}>{b.label}</button>
                             ))}
                           </div>
                         </div>
@@ -1718,7 +1719,7 @@ export default function App() {
                           <span className="settings-label">Mode: <InfoTip text={"Classic: one shot per turn. Salvo: fire one shot per surviving ship each turn \u2014 faster and more strategic!"} /></span>
                           <div className="settings-options" role="radiogroup" aria-label="Game mode">
                             {(["classic", "salvo"] as GameMode[]).map((m) => (
-                              <button key={m} type="button" role="radio" aria-checked={gameMode === m} className={`chip${gameMode === m ? " chip--active" : ""}`} onClick={() => setGameMode(m)}>{m === "classic" ? "Classic" : "Salvo"}</button>
+                              <button key={m} type="button" role="radio" aria-checked={gameMode === m} className={`chip${gameMode === m ? " chip--active" : ""}`} onClick={() => { setActivePreset(null); setGameMode(m); }}>{m === "classic" ? "Classic" : "Salvo"}</button>
                             ))}
                           </div>
                           <span className="hint">{gameMode === "salvo" ? "Fire one shot per surviving ship each turn." : "One shot per turn."}</span>
@@ -1753,7 +1754,7 @@ export default function App() {
                             <span className="settings-label">AI difficulty: <InfoTip text={"Easy: random shots. Medium: hunts hits. Hard: probability targeting. Admiral: enhanced heatmap \u2014 the toughest."} /></span>
                             <div className="settings-options" role="radiogroup" aria-label="AI difficulty">
                               {(["easy", "medium", "hard", "admiral"] as Difficulty[]).map((d) => (
-                                <button key={d} type="button" role="radio" aria-checked={difficulty === d} className={`chip${difficulty === d ? " chip--active" : ""}`} onClick={() => setDifficulty(d)}>{d}</button>
+                                <button key={d} type="button" role="radio" aria-checked={difficulty === d} className={`chip${difficulty === d ? " chip--active" : ""}`} onClick={() => { setActivePreset(null); setDifficulty(d); }}>{d}</button>
                               ))}
                             </div>
                             <span className="hint">{DIFFICULTY_INFO[difficulty]}</span>
@@ -1798,12 +1799,12 @@ export default function App() {
                         <div className="settings-row settings-toggles">
                           {playerMode === "vs-ai" && (
                             <label className="toggle-label" title="Enable Radar, Sonar, and Airstrike abilities during gameplay">
-                              <input type="checkbox" checked={enablePowerUps} onChange={(e) => setEnablePowerUps(e.target.checked)} />
+                              <input type="checkbox" checked={enablePowerUps} onChange={(e) => { setActivePreset(null); setEnablePowerUps(e.target.checked); }} />
                               Power-ups <InfoTip text={"Grants special abilities: Radar (reveal 3\u00d73 area), Sonar (count ships in area), Airstrike (bomb entire row/column). Limited uses each game."} />
                             </label>
                           )}
                           <label className="toggle-label" title="Random weather events that affect gameplay">
-                            <input type="checkbox" checked={enableWeather} onChange={(e) => setEnableWeather(e.target.checked)} />
+                            <input type="checkbox" checked={enableWeather} onChange={(e) => { setActivePreset(null); setEnableWeather(e.target.checked); }} />
                             Weather <InfoTip text="Randomly triggers Storm (power-ups disabled, shots scatter), Fog (reduced visibility), or Calm (bonus shot). Changes every few turns." />
                           </label>
                           <label className="toggle-label" title="AI narrator provides commentary on game events">
@@ -1815,7 +1816,7 @@ export default function App() {
                           <span className="settings-label">Timer: <InfoTip text="Set a countdown per turn. If time runs out, a random cell is auto-fired. Off = unlimited time to think." /></span>
                           <div className="settings-options" role="radiogroup" aria-label="Turn timer">
                             {[0, 10, 30, 60].map((t) => (
-                              <button key={t} type="button" role="radio" aria-checked={timedTurns === t} className={`chip${timedTurns === t ? " chip--active" : ""}`} onClick={() => setTimedTurns(t)}>{t === 0 ? "Off" : `${t}s`}</button>
+                              <button key={t} type="button" role="radio" aria-checked={timedTurns === t} className={`chip${timedTurns === t ? " chip--active" : ""}`} onClick={() => { setActivePreset(null); setTimedTurns(t); }}>{t === 0 ? "Off" : `${t}s`}</button>
                             ))}
                           </div>
                         </div>
