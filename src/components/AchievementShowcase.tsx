@@ -78,11 +78,11 @@ export function AchievementShowcase({ open, onClose }: Props) {
                   gap: "0.75rem",
                   padding: "0.75rem",
                   background: pinned.includes(a.id)
-                    ? "rgba(var(--accent-rgb, 250,80,80), 0.2)"
-                    : "rgba(255,255,255,0.05)",
+                    ? "var(--accent-glow)"
+                    : "var(--surface-glass)",
                   border: pinned.includes(a.id)
                     ? "1px solid var(--accent)"
-                    : "1px solid rgba(255,255,255,0.1)",
+                    : "1px solid var(--border-subtle)",
                   borderRadius: "8px",
                   cursor: "pointer",
                   color: "inherit",

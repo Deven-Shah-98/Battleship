@@ -97,7 +97,7 @@ export function AccessibilityPanel({ onClose }: { onClose: () => void }) {
             <select
               value={settings.colorBlindMode}
               onChange={e => update({ colorBlindMode: e.target.value as AccessibilitySettings["colorBlindMode"] })}
-              style={{ width: "100%", padding: "0.4rem", borderRadius: "4px", background: "var(--bg-secondary)", color: "var(--text-primary)", border: "1px solid var(--glass-border)" }}
+              style={{ width: "100%", padding: "0.4rem", borderRadius: "4px", background: "var(--bg-secondary)", color: "var(--text)", border: "1px solid var(--glass-border)" }}
             >
               <option value="none">None</option>
               <option value="protanopia">Protanopia (Red-blind)</option>
