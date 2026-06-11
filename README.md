@@ -1,97 +1,196 @@
-# Battleship
+# ⚓ Battleship
 
-A web-based [Battleship](https://en.wikipedia.org/wiki/Battleship_(game)) game
-where a human player competes against an AI opponent. Built with **React +
-TypeScript + Vite**, with the game logic kept framework-agnostic and unit
-tested with **Vitest**.
+A feature-rich, web-based [Battleship](https://en.wikipedia.org/wiki/Battleship_(game))
+game playable in the browser against an AI opponent. Built with **React**, **TypeScript**,
+and **Vite**.
+
+## 🎮 Play Now
+
+**[Play Battleship →](https://dist-iqfiorvc.devinapps.com)**
+
+No install, no signup — just open the link and play.
+
+## 🐛 Bug Report
+
+See **[DEBUGGING.md](./DEBUGGING.md)** for a detailed log of every bug found
+during development and how each was resolved (43 bugs documented).
+
+## 📖 Source Code
+
+This repository: **[github.com/Deven-Shah-98/Battleship](https://github.com/Deven-Shah-98/Battleship)**
+
+---
 
 ## Features
 
-- **Ship placement** — place your fleet manually (click + rotate with `R`) or
-  with one-click **Random** placement, with a live, colour-coded validity
-  preview.
-- **Turn-based gameplay** — you and the AI alternate single shots on a 10×10
-  grid, with hit/miss detection and a running battle log.
-- **Three AI difficulty levels:**
-  - **Easy** — fires at random.
-  - **Medium** — classic "hunt & target": searches on a checkerboard parity
-    and chases adjacent cells after a hit.
-  - **Hard** — a **probability-density** solver that ranks every cell by how
-    many ways the remaining fleet could still be arranged over it, strongly
-    favouring cells in line with a wounded ship. It plays fair (never reads
-    un-hit ship positions).
-- **Sound & animation** — synthesised hit/miss/sink/win sounds via the Web Audio
-  API (no asset files), a mute toggle, splash/explosion cell animations, and a
-  highlighted last-shot marker. Respects `prefers-reduced-motion`.
-- **Fleet status & stats** — per-ship sunk/afloat panels for both sides, plus a
-  live shots/hits/accuracy readout and a win–loss record persisted in
-  `localStorage`.
-- **Win/loss detection** — the game ends when one side's entire fleet is sunk,
-  and reveals the enemy fleet on game over.
-- **Responsive** — usable layout down to small phone screens.
-- **Unit tests** for the core logic (placement validation, hit/miss/sink, win
-  conditions, and AI behaviour including the probability heatmap).
+### Core Gameplay
+- **Ship placement** — click to place, press `R` to rotate, or use **Random** for instant setup
+- **Turn-based combat** — fire on the enemy grid, see hits (✶) and misses (•)
+- **Salvo mode** — fire multiple shots per turn equal to your surviving ships
+- **Custom board sizes** — 6×6 (Blitz) through 15×15 (Epic)
+- **Hotseat 2-player** — pass-and-play local multiplayer
 
-## Fleet
+### AI Opponents
+- **Easy** — fires at random
+- **Medium** — hunt & target with checkerboard parity
+- **Hard** — probability-density heatmap solver (plays fair — never reads ship positions)
+- **Admiral** — enhanced heatmap with extension scoring for wounded ships
+- **5 AI personalities** — Aggressive, Methodical, Chaotic, Balanced, Defensive
 
-| Ship       | Size |
-| ---------- | ---- |
-| Carrier    | 5    |
-| Battleship | 4    |
-| Cruiser    | 3    |
-| Submarine  | 3    |
-| Destroyer  | 2    |
+### Power-ups & Abilities
+- **Radar scan** — reveal a 3×3 area
+- **Sonar ping** — reveal ships in a column
+- **Airstrike** — bomb an entire row
+- **EMP blast** — disable AI targeting for 3 turns
+- **Scout plane** — periodic reconnaissance
+- **Ship shields** — absorb one hit per ship
 
-## Getting started
+### Weather System
+- **Storm** — disables power-ups, adds shot scatter
+- **Fog** — reduces visibility
+- **Calm** — grants bonus shot (skip AI turn)
+- Dynamic weather changes throughout the game
+
+### Campaign Mode
+- **10 story missions** with increasing difficulty
+- Custom fleet compositions, board sizes, and weather per mission
+- Campaign-specific briefings and objectives
+
+### Board Variants
+- **Islands** — impassable terrain blocks shots and placement
+- **Hidden reefs** — shots landing on reefs always miss (revealed on fire)
+- **Minefields** — place mines during setup; enemy hits lose their turn
+- **Shrinking board** — outer ring becomes impassable every N turns
+
+### Progression & Meta
+- **XP & leveling** — earn XP for shots, sinks, and victories
+- **45+ achievements** — from "First Blood" to "Perfectionist"
+- **Prestige system** — reset for permanent XP multipliers
+- **Battle Pass** — weekly missions for bonus XP
+- **Mastery tiers** — Bronze through Platinum per difficulty
+- **Commander perks** — passive bonuses unlocked at level milestones
+- **Loadout presets** — save fleet + settings combos
+
+### Analytics & Social
+- **Post-game heatmap** — shot accuracy analysis
+- **Win probability** — live prediction during gameplay
+- **Strategy fingerprint** — categorises your playstyle
+- **Match history** — detailed per-game records
+- **Share card** — screenshot your results
+- **Replay system** — record and replay matches
+
+### Accessibility
+- **Keyboard navigation** — full game playable without mouse
+- **Screen reader support** — ARIA labels on all interactive elements
+- **Reduce motion** — respects `prefers-reduced-motion`
+- **Color-blind mode** — patterns in addition to colors
+- **Font size controls** — adjustable text sizing
+- **One-switch mode** — auto-scanning grid with single-button confirm
+
+### Technical
+- **PWA / offline support** — service worker caches assets
+- **Auto-save** — game state persists across browser sessions
+- **Procedural audio** — Web Audio API synthesis, no asset files
+- **6 themes** — Cognition, Midnight, Arctic, Ember, Ocean, Neon
+- **Gamepad support** — play with a controller via Gamepad API
+- **Voice commands** — "Fire B4" via Web Speech API
+- **IndexedDB storage** — replays and match history
+- **Lazy-loaded panels** — code-split for fast initial load
+
+---
+
+## Getting Started
 
 ```bash
+git clone https://github.com/Deven-Shah-98/Battleship.git
+cd Battleship
 npm install
-npm run dev      # start the dev server (http://localhost:5173)
+npm run dev        # start dev server (http://localhost:5173)
 ```
 
-### Other scripts
+### Other Scripts
 
 ```bash
-npm run build    # type-check and build for production (outputs to dist/)
-npm run preview  # preview the production build
-npm run test     # run the unit tests once
-npm run lint     # run ESLint
+npm run build      # type-check + production build → dist/
+npm run preview    # preview the production build locally
+npm run test       # run unit tests (Vitest)
+npm run lint       # run ESLint
 ```
 
-## How to play
+---
 
-1. **Choose a difficulty** (Easy / Medium / Hard) in the setup panel.
-2. **Place your ships.** Each ship is placed in turn. Hover your grid to preview,
-   press `R` (or the **Rotate** button) to change orientation, and click to
-   place. Or hit **Random** to auto-place the whole fleet. **Reset** clears the
-   board.
-3. **Start the game** once all five ships are placed.
-4. **Fire** by clicking a cell on the **Enemy waters** grid. Hits are marked with
-   `✶`, misses with `•`, and your most recent shot is ringed.
-5. The AI fires back automatically. Sink the enemy's entire fleet before it sinks
-   yours. Use the **🔊/🔇** button to toggle sound.
+## How to Play
 
-## Project structure
+1. **Choose your settings** — pick a board size, difficulty, and mode using the
+   setup presets (Quick Play / Standard / Advanced) or customise individually
+2. **Place your ships** — click cells to place each ship, press `R` to rotate,
+   or hit **Random** for auto-placement
+3. **Start the game** — click "Start game" once all ships are placed
+4. **Fire** — click a cell on the Enemy Waters grid. Hits show ✶, misses show •
+5. **Win** — sink the enemy's entire fleet before they sink yours
+
+**Keyboard shortcuts:** `R` to rotate ships, `U` to undo placement,
+`N` for new game, `?` for help.
+
+---
+
+## Project Structure
 
 ```
 src/
-  game/                 # framework-agnostic game logic (unit tested)
-    types.ts            # shared types (Board, Ship, Coord, ...)
-    constants.ts        # board size and fleet definition
-    board.ts            # placement, attacks, sink/win detection
-    ai.ts               # easy / medium / hard AI + probability heatmap
-    board.test.ts       # tests for board logic
-    ai.test.ts          # tests for the AI
+  App.tsx                  # Game state machine and main UI
+  sound.ts                 # Web Audio sound engine
+  main.tsx                 # React entry point
+  styles.css               # Global styles and theme system
   components/
-    BoardGrid.tsx       # renders a 10×10 board (own or tracking view)
-    FleetStatus.tsx     # per-ship sunk/afloat panel
-  sound.ts              # Web Audio sound engine (no asset files)
-  App.tsx               # game state machine and UI
-  main.tsx              # React entry point
-  styles.css            # styling
+    BoardGrid.tsx           # Renders NxN game board
+    FleetStatus.tsx         # Ship status panels
+    Sidebar.tsx             # Navigation sidebar
+    CampaignPanel.tsx       # Campaign mission selector
+    HelpGuide.tsx           # In-game help system
+    Tutorial.tsx            # 16-step interactive tutorial
+    SettingsPanel.tsx        # Full settings with toggles
+    GameOverOverlay.tsx     # End-game stats and actions
+    PostGameAnalysis.tsx    # Shot heatmap analysis
+    PlayerProfile.tsx       # Level, rank, lifetime stats
+    ReplayViewer.tsx        # Match replay player
+    ... (30+ component files)
+  game/
+    types.ts               # Shared types (Board, Ship, Coord)
+    constants.ts           # Board sizes, fleet definitions
+    board.ts               # Placement, attacks, win detection
+    ai.ts                  # AI logic (Easy → Admiral)
+    weather.ts             # Weather effects system
+    campaign.ts            # Campaign missions and progress
+    achievements.ts        # Achievement definitions and checks
+    xp.ts                  # XP and leveling
+    powerups.ts            # Power-up mechanics
+    ... (25+ logic files)
+  utils/
+    theme.ts               # Theme switching
+    matchHistory.ts        # Match persistence
 ```
+
+---
+
+## Tech Stack
+
+| Layer       | Technology               |
+| ----------- | ------------------------ |
+| Framework   | React 18                 |
+| Language    | TypeScript 5             |
+| Build       | Vite 5                   |
+| Testing     | Vitest                   |
+| Audio       | Web Audio API            |
+| Storage     | localStorage + IndexedDB |
+| Offline     | Service Worker (PWA)     |
+| Deployment  | Static hosting           |
+
+---
 
 ## Notes
 
-See [`DEBUGGING.md`](./DEBUGGING.md) for significant bugs encountered during
-development and how they were resolved.
+- See **[DEBUGGING.md](./DEBUGGING.md)** for the full bug log (43 bugs found and fixed)
+- All 56 unit tests pass (`npm test`)
+- Zero lint errors (`npm run lint`)
+- Zero type errors (`npm run build`)

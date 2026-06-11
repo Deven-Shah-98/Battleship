@@ -24,3 +24,7 @@ dist-ssr
 
 # TS build info
 *.tsbuildinfo
+
+# Test artifacts (internal QA only)
+TEST_PLAN*.md
+test-report*.md
