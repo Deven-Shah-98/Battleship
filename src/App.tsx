@@ -23,6 +23,17 @@ import { ExportImportPanel } from "./components/ExportImportPanel";
 import { LossAnalysis } from "./components/LossAnalysis";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { StrategyNotes } from "./components/StrategyNotes";
+import { CrewPanel, LoreCardsPanel, MemorialWall, FactionSelector, NemesisDisplay } from "./components/NarrativePanel";
+import { ImprovementTracker, H2HPanel, PlacementHeatmapPanel, BenchmarkPanel } from "./components/AnalyticsPanel";
+import { ExperimentalModeSelector, PuzzleSelector, TrainingGroundsPanel, ShipGraveyard, ComboDisplay } from "./components/ExperimentalModesPanel";
+import { AccessibilityPanel } from "./components/AccessibilityPanel";
+import { BoardSkinSelector, SeasonalBanner, UpgradeTreePanel, DifficultyPresetsPanel, CustomRulesPanel, WinProbabilityBar, MoraleIndicator } from "./components/VisualPanel";
+import { createComboState, updateCombo, type ComboState } from "./game/experimental";
+import { predictWinProbability } from "./game/analytics";
+import { getAIDialogue, type CoachSuggestion } from "./game/aiEnhancements";
+import { createDayNightState, advanceDayNight, type DayNightState } from "./game/visual";
+import { createMoraleState, updateMorale, type MoraleState } from "./game/advancedGameplay";
+import { generateBounties, type Bounty } from "./game/advancedGameplay";
 import { addMatch, loadHistory } from "./utils/matchHistory";
 import { applyTheme, loadTheme, saveTheme, recordThemeUsed, THEMES } from "./utils/theme";
 import {
@@ -254,6 +265,35 @@ export default function App() {
 
   /* ─── Board setup tracking ─── */
   const [placementHistory, setPlacementHistory] = useState<Board[]>([]);
+
+  /* ─── New Feature State (100 More) ─── */
+  const [_captainsLog, _setCaptainsLog] = useState<{turn:number;text:string;mood:string}[]>([]);
+  const [comboState, setComboState] = useState<ComboState>(() => createComboState());
+  const [_dayNightState, setDayNightState] = useState<DayNightState>(() => createDayNightState());
+  const [moraleState, setMoraleState] = useState<MoraleState>(() => createMoraleState());
+  const [_bounties, setBounties] = useState<Bounty[]>([]);
+  const [_coachSuggestions, setCoachSuggestions] = useState<CoachSuggestion[]>([]);
+  const [aiDialogue, setAiDialogue] = useState<string | null>(null);
+  const [winProbability, setWinProbability] = useState(0.5);
+
+  /* ─── New Feature Modals ─── */
+  const [showCrew, setShowCrew] = useState(false);
+  const [showLore, setShowLore] = useState(false);
+  const [showMemorial, setShowMemorial] = useState(false);
+  const [showFaction, setShowFaction] = useState(false);
+  const [showImprovement, setShowImprovement] = useState(false);
+  const [showH2H, setShowH2H] = useState(false);
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [showBenchmark, setShowBenchmark] = useState(false);
+  const [showExperimental, setShowExperimental] = useState(false);
+  const [showPuzzles, setShowPuzzles] = useState(false);
+  const [showTraining, setShowTraining] = useState(false);
+  const [showGraveyard, setShowGraveyard] = useState(false);
+  const [showAccessibility, setShowAccessibility] = useState(false);
+  const [showBoardSkins, setShowBoardSkins] = useState(false);
+  const [showUpgrades, setShowUpgrades] = useState(false);
+  const [showDifficultyPresets, setShowDifficultyPresets] = useState(false);
+  const [showCustomRules, setShowCustomRules] = useState(false);
 
   const currentFleet = fleet;
   const nextDef = currentFleet[playerBoard.ships.length] ?? null;
@@ -785,6 +825,15 @@ export default function App() {
     );
     replayRef.current = recorder;
 
+    // New feature resets
+    setComboState(createComboState());
+    setDayNightState(createDayNightState());
+    setMoraleState(createMoraleState());
+    setBounties(generateBounties());
+    setWinProbability(0.5);
+    setAiDialogue(null);
+    setCoachSuggestions([]);
+
     setLog([
       `Game on! ${gameMode === "salvo" ? "Salvo" : "Classic"} mode, ${difficulty} AI${aiPersonality !== "balanced" ? ` (${aiPersonality})` : ""}. Board: ${boardSize}x${boardSize}.${useSeed && seedInput ? ` Seed: ${seed}` : ""}`,
     ]);
@@ -1002,6 +1051,24 @@ export default function App() {
       playSound("miss", columnToPan(targetCoord.col, boardSize));
       narratorSpeak("miss");
       addLog(`You missed at ${coordLabel(targetCoord)}.`);
+    }
+
+    // Combo tracking
+    setComboState(prev => updateCombo(prev, result === "hit"));
+
+    // Morale update
+    setMoraleState(prev => updateMorale(prev, result === "hit" ? (sunkShip ? "sink_enemy" : "hit_enemy") : "miss"));
+
+    // Day/night cycle advancement
+    setDayNightState(prev => advanceDayNight(prev));
+
+    // Win probability update
+    setWinProbability(predictWinProbability(remainingShips(playerBoard), board.ships.filter(s => !s.hits.every(Boolean)).length, accuracy, playerStats.shots, boardSize));
+
+    // AI dialogue on significant events
+    if (sunkShip && aiPersonality) {
+      const dialogue = getAIDialogue(aiPersonality, "onSink");
+      if (dialogue) setAiDialogue(dialogue);
     }
 
     // Music intensity
@@ -1399,6 +1466,51 @@ export default function App() {
           </button>
           <button type="button" className="icon-btn" onClick={() => setShowSettings(true)} title="Settings">
             Settings
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowCrew(true)} title="Crew">
+            Crew
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowLore(true)} title="Fleet Lore">
+            Lore
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowMemorial(true)} title="Memorial Wall">
+            Memorial
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowFaction(true)} title="Factions">
+            Faction
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowImprovement(true)} title="Improvement Tracker">
+            Progress
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowH2H(true)} title="Head-to-Head">
+            H2H
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowHeatmap(true)} title="Placement Heatmap">
+            Heatmap
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowExperimental(true)} title="Experimental Modes">
+            Modes
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowPuzzles(true)} title="Puzzles">
+            Puzzles
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowTraining(true)} title="Training">
+            Training
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowGraveyard(true)} title="Ship Graveyard">
+            Graveyard
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowAccessibility(true)} title="Accessibility">
+            A11y
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowBoardSkins(true)} title="Board Skins">
+            Skins
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowUpgrades(true)} title="Ship Upgrades">
+            Upgrades
+          </button>
+          <button type="button" className="icon-btn" onClick={() => setShowBenchmark(true)} title="Benchmarks">
+            Benchmark
           </button>
           <button type="button" className="icon-btn" onClick={() => setShowStrategyNotes(true)} title="Strategy Notes">
             Notes
@@ -1888,6 +2000,50 @@ export default function App() {
           onChange={handleSettingsChange}
           onClose={() => setShowSettings(false)}
         />
+      )}
+
+      {/* ─── New Feature Modals (100 More) ─── */}
+      {showCrew && <CrewPanel onClose={() => setShowCrew(false)} />}
+      {showLore && <LoreCardsPanel onClose={() => setShowLore(false)} />}
+      {showMemorial && <MemorialWall onClose={() => setShowMemorial(false)} />}
+      {showFaction && <FactionSelector onClose={() => setShowFaction(false)} />}
+      {showImprovement && <ImprovementTracker onClose={() => setShowImprovement(false)} />}
+      {showH2H && <H2HPanel onClose={() => setShowH2H(false)} />}
+      {showHeatmap && <PlacementHeatmapPanel onClose={() => setShowHeatmap(false)} />}
+      {showBenchmark && <BenchmarkPanel onClose={() => setShowBenchmark(false)} onStart={() => setShowBenchmark(false)} />}
+      {showExperimental && <ExperimentalModeSelector onSelect={() => setShowExperimental(false)} onClose={() => setShowExperimental(false)} />}
+      {showPuzzles && <PuzzleSelector onSelect={() => setShowPuzzles(false)} onClose={() => setShowPuzzles(false)} />}
+      {showTraining && <TrainingGroundsPanel onClose={() => setShowTraining(false)} onStart={() => setShowTraining(false)} />}
+      {showGraveyard && <ShipGraveyard onClose={() => setShowGraveyard(false)} />}
+      {showAccessibility && <AccessibilityPanel onClose={() => setShowAccessibility(false)} />}
+      {showBoardSkins && <BoardSkinSelector onClose={() => setShowBoardSkins(false)} />}
+      {showUpgrades && <UpgradeTreePanel onClose={() => setShowUpgrades(false)} availableXP={0} />}
+      {showDifficultyPresets && <DifficultyPresetsPanel onSelect={() => setShowDifficultyPresets(false)} onClose={() => setShowDifficultyPresets(false)} />}
+      {showCustomRules && <CustomRulesPanel onClose={() => setShowCustomRules(false)} onApply={() => setShowCustomRules(false)} />}
+
+      {/* Combo display */}
+      {comboState.currentStreak >= 2 && <ComboDisplay streak={comboState.currentStreak} multiplier={comboState.multiplier} />}
+
+      {/* Seasonal banner */}
+      <SeasonalBanner />
+
+      {/* Nemesis display */}
+      {phase === "playing" && <NemesisDisplay />}
+
+      {/* Win probability bar */}
+      {phase === "playing" && <WinProbabilityBar probability={winProbability} />}
+
+      {/* Morale indicator */}
+      {phase === "playing" && <MoraleIndicator morale={moraleState.morale} />}
+
+      {/* AI Dialogue bubble */}
+      {aiDialogue && (
+        <div style={{ position: "fixed", bottom: "2rem", left: "2rem", zIndex: 1000, maxWidth: "280px" }} className="glass" onClick={() => setAiDialogue(null)}>
+          <div style={{ padding: "0.5rem 0.75rem", borderRadius: "12px", fontSize: "0.8rem" }}>
+            <div style={{ fontWeight: 600, fontSize: "0.7rem", opacity: 0.5, marginBottom: "0.2rem" }}>AI Admiral</div>
+            <div style={{ fontStyle: "italic" }}>{aiDialogue}</div>
+          </div>
+        </div>
       )}
     </div>
   );
