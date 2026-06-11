@@ -91,7 +91,7 @@ This repository: **[github.com/Deven-Shah-98/Battleship](https://github.com/Deve
 - **PWA / offline support** — service worker caches assets
 - **Auto-save** — game state persists across browser sessions
 - **Procedural audio** — Web Audio API synthesis, no asset files
-- **6 themes** — Cognition, Midnight, Arctic, Ember, Ocean, Neon
+- **5 themes** — Midnight, Arctic, Ember, Ocean, Neon
 - **Gamepad support** — play with a controller via Gamepad API
 - **Voice commands** — "Fire B4" via Web Speech API
 - **IndexedDB storage** — replays and match history
