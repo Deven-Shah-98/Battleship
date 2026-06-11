@@ -534,6 +534,153 @@ boards.
 
 ---
 
+## 44. Hit/miss glow used accent colour instead of semantic colours
+
+**Symptom**  
+Hit cells glowed blue (the accent colour) on all themes instead of red, and
+miss cells lacked a distinct glow. Game-over icons were also blue.
+
+**Cause**  
+Hardcoded `rgba(var(--accent-rgb), 0.25)` box-shadows throughout `styles.css`.
+The `--accent-rgb` variable was also not consistently defined.
+
+**Fix**  
+Replaced all hit-related glows with `var(--hit-glow)` (red) and win icons with
+`var(--ok-glow)` (green). Removed all `--accent-rgb` references in favour of
+the pre-composed glow variables.
+
+---
+
+## 45. Cognition theme colours didn't match cognition.ai
+
+**Symptom**  
+The "Cognition" theme used a dark navy palette (`#0B0E14` background, `#FA5050`
+red accent) that bore no resemblance to cognition.ai's actual brand.
+
+**Fix**  
+Extracted the real cognition.ai palette: light cream background (`#f7f6f5`),
+blue accent (`#2200ff`), dark text (`#000000`). Updated all 30 CSS variables
+in `theme.ts` and `:root` defaults in `styles.css`.
+
+---
+
+## 46. `--text-primary` referenced but never defined
+
+**Symptom**  
+Three CSS rules referenced `var(--text-primary)`, which doesn't exist. Text
+colour fell back to `inherit`, producing invisible or wrong-colour text.
+
+**Fix**  
+Replaced `var(--text-primary)` with `var(--text)` (the actual variable name) in
+all three locations.
+
+---
+
+## 47. `--border-subtle` and `--surface-glass` undefined on light themes
+
+**Symptom**  
+13 CSS rules used `var(--border-subtle)` and `var(--surface-glass)` with
+fallbacks like `rgba(255,255,255,0.1)` — white overlays designed for dark
+backgrounds. On light themes these were invisible.
+
+**Fix**  
+Defined both variables in all 6 theme configs (`theme.ts`) with appropriate
+light/dark values, and added them to the CSS `:root` defaults.
+
+---
+
+## 48. `lastStandGlow` animation lost its pulse
+
+**Symptom**  
+The Last Stand glow animation (triggered when the player has one ship left)
+used the same `var(--accent-glow)` at 0% and 50% keyframes, producing a
+static glow instead of a visible pulse.
+
+**Fix**  
+Restored the pulse by using stacked box-shadows (8px + 20px + 40px spread) at
+the 50% keyframe and adding an opacity animation (0.7 → 1.0).
+
+---
+
+## 49. XP bar label invisible on light themes
+
+**Symptom**  
+The XP bar label colour was changed from `var(--text)` to `#fff` for
+readability over the gradient fill. But on light themes at low XP fill, the
+white label sat on a near-white `var(--glass-bg)` background.
+
+**Fix**  
+Changed `.xp-bar-header` background from `var(--glass-bg)` (translucent white)
+to `var(--bg-secondary)` (solid darker colour). Strengthened the text-shadow
+to `0 0 4px rgba(0,0,0,0.8), 0 1px 2px rgba(0,0,0,0.6)`.
+
+---
+
+## 50. Strategy textarea placeholder invisible on light themes
+
+**Symptom**  
+The `.strategy-textarea::placeholder` used hardcoded `rgba(255,255,255,0.25)`,
+invisible on light-background themes.
+
+**Fix**  
+Replaced with `var(--text-muted)`, which resolves to an appropriate muted
+colour on both light and dark themes.
+
+---
+
+## 51. `--bg-primary` referenced but never defined (hint button text invisible)
+
+**Symptom**  
+`.hint-btn:hover` set `color: var(--bg-primary)`, but `--bg-primary` was never
+defined. On hover the text colour became invalid and inherited `var(--accent)` —
+the same as the hover background, making text invisible.
+
+**Fix**  
+Replaced with `color: #fff` since the hover background is `var(--accent)`.
+
+---
+
+## 52. Hardcoded `rgba(255,255,255,…)` in multiple components
+
+**Symptom**  
+`.perk-card`, `.battle-pass-mission`, `.battle-pass-progress`, `.journal-entry`,
+`.loadout-card__details`, and `AchievementShowcase` used hardcoded white RGBA
+values designed for dark backgrounds — invisible on the new light default theme.
+
+**Fix**  
+Replaced all with theme-aware CSS variables: `var(--surface-glass)` for
+backgrounds, `var(--border-subtle)` for borders, `var(--cell-hover)` for
+hover states.
+
+---
+
+## 53. Old accent colour `#FA5050` hardcoded in Confetti and AnalyticsPanel
+
+**Symptom**  
+`Confetti.tsx` and `AnalyticsPanel.tsx` hardcoded the old cognition red accent
+(`#FA5050` / `rgba(250,80,80,...)`), appearing visually mismatched after the
+theme change to blue (`#2200ff`).
+
+**Fix**  
+Confetti: `#FA5050` → `#2200ff` (new accent), `#9EAEE9` → `#e53935` (hit red).
+AnalyticsPanel heatmap: `rgba(250,80,80,…)` → `rgba(229,57,53,…)` matching
+`--hit`.
+
+---
+
+## 54. Campaign cards and Profile panel completely unstyled
+
+**Symptom**  
+Campaign mission cards and the Player Profile panel had no dedicated CSS.
+Text ran together, cards had no borders or padding, and star ratings were
+unformatted.
+
+**Fix**  
+Added full CSS for `.mission-card`, `.profile-header`, `.profile-stats`, etc.
+with proper grid layouts, borders, padding, and theme-aware colours.
+
+---
+
 ## Known Issue (Not Yet Fixed)
 
 **Campaign weather overridden by `startGame()` roll**  
