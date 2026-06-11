@@ -223,7 +223,7 @@ export default function App() {
   const [enableWeather, setEnableWeather] = useState(false);
   const [timedTurns, setTimedTurns] = useState(0); // 0 = unlimited
   const [enableNarrator, setEnableNarrator] = useState(false);
-  const [activePreset, setActivePreset] = useState<"quick" | "standard" | "advanced" | null>("standard");
+  const [activePreset, setActivePreset] = useState<"quick" | "standard" | "advanced" | null>(null);
 
   /* ─── Game state ─── */
   const [phase, setPhase] = useState<Phase>("setup");
@@ -1754,7 +1754,7 @@ export default function App() {
                             <span className="settings-label">AI difficulty: <InfoTip text={"Easy: random shots. Medium: hunts hits. Hard: probability targeting. Admiral: enhanced heatmap \u2014 the toughest."} /></span>
                             <div className="settings-options" role="radiogroup" aria-label="AI difficulty">
                               {(["easy", "medium", "hard", "admiral"] as Difficulty[]).map((d) => (
-                                <button key={d} type="button" role="radio" aria-checked={difficulty === d} className={`chip${difficulty === d ? " chip--active" : ""}`} onClick={() => setDifficulty(d)}>{d}</button>
+                                <button key={d} type="button" role="radio" aria-checked={difficulty === d} className={`chip${difficulty === d ? " chip--active" : ""}`} onClick={() => { setActivePreset(null); setDifficulty(d); }}>{d}</button>
                               ))}
                             </div>
                             <span className="hint">{DIFFICULTY_INFO[difficulty]}</span>
@@ -1799,12 +1799,12 @@ export default function App() {
                         <div className="settings-row settings-toggles">
                           {playerMode === "vs-ai" && (
                             <label className="toggle-label" title="Enable Radar, Sonar, and Airstrike abilities during gameplay">
-                              <input type="checkbox" checked={enablePowerUps} onChange={(e) => setEnablePowerUps(e.target.checked)} />
+                              <input type="checkbox" checked={enablePowerUps} onChange={(e) => { setActivePreset(null); setEnablePowerUps(e.target.checked); }} />
                               Power-ups <InfoTip text={"Grants special abilities: Radar (reveal 3\u00d73 area), Sonar (count ships in area), Airstrike (bomb entire row/column). Limited uses each game."} />
                             </label>
                           )}
                           <label className="toggle-label" title="Random weather events that affect gameplay">
-                            <input type="checkbox" checked={enableWeather} onChange={(e) => setEnableWeather(e.target.checked)} />
+                            <input type="checkbox" checked={enableWeather} onChange={(e) => { setActivePreset(null); setEnableWeather(e.target.checked); }} />
                             Weather <InfoTip text="Randomly triggers Storm (power-ups disabled, shots scatter), Fog (reduced visibility), or Calm (bonus shot). Changes every few turns." />
                           </label>
                           <label className="toggle-label" title="AI narrator provides commentary on game events">
@@ -1816,7 +1816,7 @@ export default function App() {
                           <span className="settings-label">Timer: <InfoTip text="Set a countdown per turn. If time runs out, a random cell is auto-fired. Off = unlimited time to think." /></span>
                           <div className="settings-options" role="radiogroup" aria-label="Turn timer">
                             {[0, 10, 30, 60].map((t) => (
-                              <button key={t} type="button" role="radio" aria-checked={timedTurns === t} className={`chip${timedTurns === t ? " chip--active" : ""}`} onClick={() => setTimedTurns(t)}>{t === 0 ? "Off" : `${t}s`}</button>
+                              <button key={t} type="button" role="radio" aria-checked={timedTurns === t} className={`chip${timedTurns === t ? " chip--active" : ""}`} onClick={() => { setActivePreset(null); setTimedTurns(t); }}>{t === 0 ? "Off" : `${t}s`}</button>
                             ))}
                           </div>
                         </div>
