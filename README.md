@@ -13,7 +13,7 @@ No install, no signup — just open the link and play.
 ## 🐛 Bug Report
 
 See **[DEBUGGING.md](./DEBUGGING.md)** for a detailed log of every bug found
-during development and how each was resolved (43 bugs documented).
+during development and how each was resolved (54 bugs documented).
 
 ## 📖 Source Code
 
@@ -190,7 +190,7 @@ src/
 
 ## Notes
 
-- See **[DEBUGGING.md](./DEBUGGING.md)** for the full bug log (43 bugs found and fixed)
+- See **[DEBUGGING.md](./DEBUGGING.md)** for the full bug log (54 bugs found and fixed)
 - All 56 unit tests pass (`npm test`)
 - Zero lint errors (`npm run lint`)
 - Zero type errors (`npm run build`)
