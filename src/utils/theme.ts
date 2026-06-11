@@ -236,8 +236,8 @@ export function recordThemeUsed(theme: ThemeName): Set<string> {
   try {
     const raw = localStorage.getItem(THEMES_USED_KEY);
     const used = raw ? new Set(JSON.parse(raw) as string[]) : new Set<string>();
+    if (theme in THEMES) used.add(theme);
     used.delete("cognition");
-    used.add(theme);
     localStorage.setItem(THEMES_USED_KEY, JSON.stringify([...used]));
     return used;
   } catch {

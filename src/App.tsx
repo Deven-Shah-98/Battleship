@@ -2073,7 +2073,7 @@ export default function App() {
               setEnableWeather(loadout.enableWeather);
               setTimedTurns(loadout.timedTurns);
               setAiSpeed(loadout.aiSpeed);
-              if (loadout.theme) changeTheme(loadout.theme);
+              if (loadout.theme && loadout.theme in THEMES) changeTheme(loadout.theme);
               setShowLoadouts(false);
             }}
             onClose={() => setShowLoadouts(false)}
