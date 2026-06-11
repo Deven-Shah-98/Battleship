@@ -839,6 +839,7 @@ export default function App() {
     const preset = BOARD_SIZES.find((b) => b.size === newSize);
     if (preset) setFleet([...preset.fleet]);
     setPlayerBoard(createEmptyBoard(newSize));
+    setAiBoard(createEmptyBoard(newSize));
     setP2Board(createEmptyBoard(newSize));
     setPlacementHistory([]);
   };
@@ -2029,7 +2030,9 @@ export default function App() {
         setShowCampaign(false);
         const diffMap: Record<number, Difficulty> = { 1: "easy", 2: "medium", 3: "hard", 4: "admiral", 5: "admiral" };
         const diff = diffMap[mission.difficulty] ?? "medium";
+        newGame();
         handleBoardSizeChange(mission.boardSize);
+        setAiBoard(createEmptyBoard(mission.boardSize));
         setFleet([...mission.fleet]);
         setEnemyFleetOverride(mission.enemyFleet ? [...mission.enemyFleet] : null);
         setDifficulty(diff);
@@ -2037,6 +2040,8 @@ export default function App() {
           setCurrentWeather(mission.weather);
           setWeatherTurnsLeft(99);
           setEnableWeather(true);
+        } else {
+          setEnableWeather(false);
         }
         setActiveCampaignMissionId(mission.id);
         addLog(`Campaign mission: ${mission.name} — ${mission.briefing}`);
@@ -2058,7 +2063,7 @@ export default function App() {
               enablePowerUps, enableWeather, timedTurns, aiSpeed, theme,
             }}
             onApply={(loadout) => {
-              setBoardSize(loadout.boardSize);
+              handleBoardSizeChange(loadout.boardSize);
               setFleet([...loadout.fleet]);
               setDifficulty(loadout.difficulty as Difficulty);
               setGameMode(loadout.gameMode);
@@ -2068,9 +2073,6 @@ export default function App() {
               setTimedTurns(loadout.timedTurns);
               setAiSpeed(loadout.aiSpeed);
               if (loadout.theme) changeTheme(loadout.theme);
-              setPlayerBoard(createEmptyBoard(loadout.boardSize));
-              setP2Board(createEmptyBoard(loadout.boardSize));
-              setPlacementHistory([]);
               setShowLoadouts(false);
             }}
             onClose={() => setShowLoadouts(false)}
