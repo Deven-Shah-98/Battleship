@@ -955,7 +955,7 @@ button:focus-visible {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 800;
+  z-index: 1100;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
   display: flex;
@@ -1318,6 +1318,75 @@ button:focus-visible {
   padding: 14px 48px;
   font-size: 1rem;
   border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.gameover-btn--secondary {
+  background: var(--glass-bg);
+  color: var(--text);
+  border-color: var(--glass-border);
+}
+
+.gameover-btn--secondary:hover {
+  background: var(--cell-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.gameover-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.gameover-rating {
+  margin: 12px 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.gameover-rating__grade {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.gameover-rating__label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.gameover-xp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0 4px;
+}
+
+.gameover-xp__value {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.gameover-xp__level {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ok);
 }
 
 /* ─── Accessibility: focus indicators ─── */
@@ -2286,28 +2355,7 @@ button:focus-visible {
   margin-top: 2px;
 }
 
-/* ─── GameOver overlay updates ─── */
-.gameover__xp {
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  color: var(--accent);
-  margin: 8px 0;
-}
 
-.gameover__rating {
-  font-family: var(--font-mono);
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 8px 0;
-}
-
-.gameover__actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 12px;
-}
 
 /* ─── Icon buttons in header ─── */
 .icon-btn {
