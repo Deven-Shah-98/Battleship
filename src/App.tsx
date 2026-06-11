@@ -2031,6 +2031,7 @@ export default function App() {
         const diff = diffMap[mission.difficulty] ?? "medium";
         newGame();
         handleBoardSizeChange(mission.boardSize);
+        setAiBoard(createEmptyBoard(mission.boardSize));
         setFleet([...mission.fleet]);
         setEnemyFleetOverride(mission.enemyFleet ? [...mission.enemyFleet] : null);
         setDifficulty(diff);
@@ -2038,6 +2039,8 @@ export default function App() {
           setCurrentWeather(mission.weather);
           setWeatherTurnsLeft(99);
           setEnableWeather(true);
+        } else {
+          setEnableWeather(false);
         }
         setActiveCampaignMissionId(mission.id);
         addLog(`Campaign mission: ${mission.name} — ${mission.briefing}`);
