@@ -72,7 +72,7 @@ export function applyA11yToDOM(settings: AccessibilitySettings): void {
 
 /* ─── Screen Reader Narration ─── */
 
-let narrationQueue: string[] = [];
+const narrationQueue: string[] = [];
 let narrating = false;
 
 export function announceToScreenReader(message: string): void {

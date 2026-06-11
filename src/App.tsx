@@ -2017,12 +2017,12 @@ export default function App() {
       {showGraveyard && <ShipGraveyard onClose={() => setShowGraveyard(false)} />}
       {showAccessibility && <AccessibilityPanel onClose={() => setShowAccessibility(false)} />}
       {showBoardSkins && <BoardSkinSelector onClose={() => setShowBoardSkins(false)} />}
-      {showUpgrades && <UpgradeTreePanel onClose={() => setShowUpgrades(false)} availableXP={0} />}
+      {showUpgrades && <UpgradeTreePanel onClose={() => setShowUpgrades(false)} availableXP={xpState.totalXP} />}
       {showDifficultyPresets && <DifficultyPresetsPanel onSelect={() => setShowDifficultyPresets(false)} onClose={() => setShowDifficultyPresets(false)} />}
       {showCustomRules && <CustomRulesPanel onClose={() => setShowCustomRules(false)} onApply={() => setShowCustomRules(false)} />}
 
       {/* Combo display */}
-      {comboState.currentStreak >= 2 && <ComboDisplay streak={comboState.currentStreak} multiplier={comboState.multiplier} />}
+      {phase === "playing" && comboState.currentStreak >= 2 && <ComboDisplay streak={comboState.currentStreak} multiplier={comboState.multiplier} />}
 
       {/* Seasonal banner */}
       <SeasonalBanner />
@@ -2037,7 +2037,7 @@ export default function App() {
       {phase === "playing" && <MoraleIndicator morale={moraleState.morale} />}
 
       {/* AI Dialogue bubble */}
-      {aiDialogue && (
+      {phase === "playing" && aiDialogue && (
         <div style={{ position: "fixed", bottom: "2rem", left: "2rem", zIndex: 1000, maxWidth: "280px" }} className="glass" onClick={() => setAiDialogue(null)}>
           <div style={{ padding: "0.5rem 0.75rem", borderRadius: "12px", fontSize: "0.8rem" }}>
             <div style={{ fontWeight: 600, fontSize: "0.7rem", opacity: 0.5, marginBottom: "0.2rem" }}>AI Admiral</div>
