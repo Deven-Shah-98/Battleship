@@ -216,7 +216,7 @@ export function ComboDisplay({ streak, multiplier }: { streak: number; multiplie
       color: "#fff", fontWeight: 900, fontSize: "1.2rem",
       animation: "pulse 0.5s ease-in-out",
       boxShadow: "0 4px 20px rgba(255,102,0,0.5)",
-    }}>
+    }} title={`Consecutive hit streak! ${streak} hits in a row = ${multiplier}x XP multiplier. Resets on a miss.`}>
       🔥 {streak}x COMBO ({multiplier}x XP)
     </div>
   );
