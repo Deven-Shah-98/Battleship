@@ -41,6 +41,8 @@
   --cell-bg: rgba(230, 228, 225, 0.3);
   --cell-hover: rgba(34, 0, 255, 0.1);
   --cell-border: rgba(0, 0, 0, 0.06);
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --surface-glass: rgba(0, 0, 0, 0.03);
 }
 
 * {
