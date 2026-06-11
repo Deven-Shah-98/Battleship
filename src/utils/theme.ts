@@ -40,6 +40,8 @@ export const THEMES: Record<
       "--cell-bg": "rgba(230, 228, 225, 0.3)",
       "--cell-hover": "rgba(34, 0, 255, 0.1)",
       "--cell-border": "rgba(0, 0, 0, 0.06)",
+      "--border-subtle": "rgba(0, 0, 0, 0.08)",
+      "--surface-glass": "rgba(0, 0, 0, 0.03)",
     },
   },
   midnight: {
@@ -76,6 +78,8 @@ export const THEMES: Record<
       "--cell-bg": "rgba(26, 26, 50, 0.4)",
       "--cell-hover": "rgba(124, 77, 255, 0.15)",
       "--cell-border": "rgba(124, 77, 255, 0.06)",
+      "--border-subtle": "rgba(255, 255, 255, 0.1)",
+      "--surface-glass": "rgba(255, 255, 255, 0.05)",
     },
   },
   arctic: {
@@ -112,6 +116,8 @@ export const THEMES: Record<
       "--cell-bg": "rgba(200, 218, 240, 0.3)",
       "--cell-hover": "rgba(229, 57, 53, 0.1)",
       "--cell-border": "rgba(0, 0, 0, 0.04)",
+      "--border-subtle": "rgba(0, 0, 0, 0.08)",
+      "--surface-glass": "rgba(0, 0, 0, 0.03)",
     },
   },
   ember: {
@@ -148,6 +154,8 @@ export const THEMES: Record<
       "--cell-bg": "rgba(40, 22, 16, 0.4)",
       "--cell-hover": "rgba(255, 152, 0, 0.12)",
       "--cell-border": "rgba(255, 152, 0, 0.06)",
+      "--border-subtle": "rgba(255, 255, 255, 0.1)",
+      "--surface-glass": "rgba(255, 255, 255, 0.05)",
     },
   },
   ocean: {
@@ -184,6 +192,8 @@ export const THEMES: Record<
       "--cell-bg": "rgba(10, 40, 70, 0.4)",
       "--cell-hover": "rgba(0, 188, 212, 0.15)",
       "--cell-border": "rgba(0, 188, 212, 0.06)",
+      "--border-subtle": "rgba(255, 255, 255, 0.1)",
+      "--surface-glass": "rgba(255, 255, 255, 0.05)",
     },
   },
   neon: {
@@ -220,6 +230,8 @@ export const THEMES: Record<
       "--cell-bg": "rgba(20, 20, 20, 0.5)",
       "--cell-hover": "rgba(0, 255, 136, 0.15)",
       "--cell-border": "rgba(0, 255, 136, 0.08)",
+      "--border-subtle": "rgba(255, 255, 255, 0.1)",
+      "--surface-glass": "rgba(255, 255, 255, 0.05)",
     },
   },
 };

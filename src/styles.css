@@ -2770,8 +2770,8 @@ button:focus-visible {
 }
 
 @keyframes lastStandGlow {
-  0%, 100% { box-shadow: 0 0 8px var(--accent-glow); }
-  50% { box-shadow: 0 0 16px var(--accent-glow); }
+  0%, 100% { box-shadow: 0 0 8px var(--accent-glow); opacity: 0.7; }
+  50% { box-shadow: 0 0 20px var(--accent-glow), 0 0 40px var(--accent-glow); opacity: 1; }
 }
 
 /* ─── Dynamic skybox background shift (#30) ─── */
