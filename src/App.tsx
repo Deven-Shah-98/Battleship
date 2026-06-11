@@ -2063,7 +2063,7 @@ export default function App() {
               enablePowerUps, enableWeather, timedTurns, aiSpeed, theme,
             }}
             onApply={(loadout) => {
-              setBoardSize(loadout.boardSize);
+              handleBoardSizeChange(loadout.boardSize);
               setFleet([...loadout.fleet]);
               setDifficulty(loadout.difficulty as Difficulty);
               setGameMode(loadout.gameMode);
@@ -2073,9 +2073,6 @@ export default function App() {
               setTimedTurns(loadout.timedTurns);
               setAiSpeed(loadout.aiSpeed);
               if (loadout.theme) changeTheme(loadout.theme);
-              setPlayerBoard(createEmptyBoard(loadout.boardSize));
-              setP2Board(createEmptyBoard(loadout.boardSize));
-              setPlacementHistory([]);
               setShowLoadouts(false);
             }}
             onClose={() => setShowLoadouts(false)}
