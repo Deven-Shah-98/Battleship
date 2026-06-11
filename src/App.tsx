@@ -839,6 +839,7 @@ export default function App() {
     const preset = BOARD_SIZES.find((b) => b.size === newSize);
     if (preset) setFleet([...preset.fleet]);
     setPlayerBoard(createEmptyBoard(newSize));
+    setAiBoard(createEmptyBoard(newSize));
     setP2Board(createEmptyBoard(newSize));
     setPlacementHistory([]);
   };
