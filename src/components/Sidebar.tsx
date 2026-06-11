@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface SidebarItem {
   label: string;
@@ -21,10 +21,41 @@ interface SidebarProps {
 
 export default function Sidebar({ open, onClose, categories }: SidebarProps) {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   const toggleCategory = (name: string) => {
     setExpandedCategory((prev) => (prev === name ? null : name));
   };
+
+  // Focus trap: when open, focus the close button and trap Tab within sidebar
+  useEffect(() => {
+    if (!open) return;
+    closeRef.current?.focus();
+
+    const sidebar = sidebarRef.current;
+    if (!sidebar) return;
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const focusable = sidebar.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleTab);
+    return () => document.removeEventListener("keydown", handleTab);
+  }, [open]);
 
   return (
     <>
@@ -36,13 +67,15 @@ export default function Sidebar({ open, onClose, categories }: SidebarProps) {
         />
       )}
       <nav
+        ref={sidebarRef}
         className={`sidebar${open ? " sidebar--open" : ""}`}
         aria-label="Main navigation"
-        role="navigation"
+        aria-hidden={!open}
       >
         <div className="sidebar__header">
           <span className="sidebar__title">Menu</span>
           <button
+            ref={closeRef}
             type="button"
             className="sidebar__close"
             onClick={onClose}

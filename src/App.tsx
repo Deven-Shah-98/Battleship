@@ -1,36 +1,54 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import BoardGrid from "./components/BoardGrid";
 import FleetStatus from "./components/FleetStatus";
 import Confetti from "./components/Confetti";
 import PassDevice from "./components/PassDevice";
 import PowerUpBar from "./components/PowerUpBar";
-import MatchHistoryPanel from "./components/MatchHistory";
 import ThemeSwitcher from "./components/ThemeSwitcher";
 import GameOverOverlay from "./components/GameOverOverlay";
 import ShipDock from "./components/ShipDock";
-import AchievementPanel from "./components/AchievementPanel";
-import PlayerProfile from "./components/PlayerProfile";
-import PostGameAnalysis from "./components/PostGameAnalysis";
-import Tutorial from "./components/Tutorial";
-import HelpGuide from "./components/HelpGuide";
 import { InfoTip } from "./components/InfoTip";
-import CampaignPanel from "./components/CampaignPanel";
 import { completeMission } from "./game/campaign";
-import ReplayViewer from "./components/ReplayViewer";
-import KeyboardShortcuts from "./components/KeyboardShortcuts";
-import { PrestigePanel } from "./components/PrestigePanel";
-import { LoadoutPanel } from "./components/LoadoutPanel";
-import { MilestonePanel } from "./components/MilestonePanel";
-import { ExportImportPanel } from "./components/ExportImportPanel";
-import { LossAnalysis } from "./components/LossAnalysis";
-import { SettingsPanel } from "./components/SettingsPanel";
-import { StrategyNotes } from "./components/StrategyNotes";
-import { CrewPanel, LoreCardsPanel, MemorialWall, FactionSelector, NemesisDisplay } from "./components/NarrativePanel";
-import { ImprovementTracker, H2HPanel, PlacementHeatmapPanel, BenchmarkPanel } from "./components/AnalyticsPanel";
-import { ExperimentalModeSelector, PuzzleSelector, TrainingGroundsPanel, ShipGraveyard, ComboDisplay } from "./components/ExperimentalModesPanel";
-import { AccessibilityPanel } from "./components/AccessibilityPanel";
-import { BoardSkinSelector, SeasonalBanner, UpgradeTreePanel, DifficultyPresetsPanel, CustomRulesPanel, WinProbabilityBar, MoraleIndicator } from "./components/VisualPanel";
 import Sidebar from "./components/Sidebar";
+/* Gameplay HUD elements (always loaded — small components used during play phase) */
+import { NemesisDisplay } from "./components/NarrativePanel";
+import { ComboDisplay } from "./components/ExperimentalModesPanel";
+import { SeasonalBanner, WinProbabilityBar, MoraleIndicator } from "./components/VisualPanel";
+
+/* Lazy-loaded panels (only loaded when opened) */
+const MatchHistoryPanel = lazy(() => import("./components/MatchHistory"));
+const AchievementPanel = lazy(() => import("./components/AchievementPanel"));
+const PlayerProfile = lazy(() => import("./components/PlayerProfile"));
+const PostGameAnalysis = lazy(() => import("./components/PostGameAnalysis"));
+const Tutorial = lazy(() => import("./components/Tutorial"));
+const HelpGuide = lazy(() => import("./components/HelpGuide"));
+const CampaignPanel = lazy(() => import("./components/CampaignPanel"));
+const ReplayViewer = lazy(() => import("./components/ReplayViewer"));
+const KeyboardShortcuts = lazy(() => import("./components/KeyboardShortcuts"));
+const LazyPrestigePanel = lazy(() => import("./components/PrestigePanel").then(m => ({ default: m.PrestigePanel })));
+const LazyLoadoutPanel = lazy(() => import("./components/LoadoutPanel").then(m => ({ default: m.LoadoutPanel })));
+const LazyMilestonePanel = lazy(() => import("./components/MilestonePanel").then(m => ({ default: m.MilestonePanel })));
+const LazyExportImportPanel = lazy(() => import("./components/ExportImportPanel").then(m => ({ default: m.ExportImportPanel })));
+const LazyLossAnalysis = lazy(() => import("./components/LossAnalysis").then(m => ({ default: m.LossAnalysis })));
+const LazySettingsPanel = lazy(() => import("./components/SettingsPanel").then(m => ({ default: m.SettingsPanel })));
+const LazyStrategyNotes = lazy(() => import("./components/StrategyNotes").then(m => ({ default: m.StrategyNotes })));
+const LazyCrewPanel = lazy(() => import("./components/NarrativePanel").then(m => ({ default: m.CrewPanel })));
+const LazyLoreCardsPanel = lazy(() => import("./components/NarrativePanel").then(m => ({ default: m.LoreCardsPanel })));
+const LazyMemorialWall = lazy(() => import("./components/NarrativePanel").then(m => ({ default: m.MemorialWall })));
+const LazyFactionSelector = lazy(() => import("./components/NarrativePanel").then(m => ({ default: m.FactionSelector })));
+const LazyImprovementTracker = lazy(() => import("./components/AnalyticsPanel").then(m => ({ default: m.ImprovementTracker })));
+const LazyH2HPanel = lazy(() => import("./components/AnalyticsPanel").then(m => ({ default: m.H2HPanel })));
+const LazyPlacementHeatmapPanel = lazy(() => import("./components/AnalyticsPanel").then(m => ({ default: m.PlacementHeatmapPanel })));
+const LazyBenchmarkPanel = lazy(() => import("./components/AnalyticsPanel").then(m => ({ default: m.BenchmarkPanel })));
+const LazyExperimentalModeSelector = lazy(() => import("./components/ExperimentalModesPanel").then(m => ({ default: m.ExperimentalModeSelector })));
+const LazyPuzzleSelector = lazy(() => import("./components/ExperimentalModesPanel").then(m => ({ default: m.PuzzleSelector })));
+const LazyTrainingGroundsPanel = lazy(() => import("./components/ExperimentalModesPanel").then(m => ({ default: m.TrainingGroundsPanel })));
+const LazyShipGraveyard = lazy(() => import("./components/ExperimentalModesPanel").then(m => ({ default: m.ShipGraveyard })));
+const LazyAccessibilityPanel = lazy(() => import("./components/AccessibilityPanel").then(m => ({ default: m.AccessibilityPanel })));
+const LazyBoardSkinSelector = lazy(() => import("./components/VisualPanel").then(m => ({ default: m.BoardSkinSelector })));
+const LazyUpgradeTreePanel = lazy(() => import("./components/VisualPanel").then(m => ({ default: m.UpgradeTreePanel })));
+const LazyDifficultyPresetsPanel = lazy(() => import("./components/VisualPanel").then(m => ({ default: m.DifficultyPresetsPanel })));
+const LazyCustomRulesPanel = lazy(() => import("./components/VisualPanel").then(m => ({ default: m.CustomRulesPanel })));
 import { createComboState, updateCombo, type ComboState } from "./game/experimental";
 import { predictWinProbability } from "./game/analytics";
 import { getAIDialogue, type CoachSuggestion } from "./game/aiEnhancements";
@@ -2027,80 +2045,68 @@ export default function App() {
         setActiveCampaignMissionId(mission.id);
         addLog(`Campaign mission: ${mission.name} — ${mission.briefing}`);
       }} />
-      <ReplayViewer open={showReplays} onClose={() => { setShowReplays(false); unlockAchievement("replay_watched"); }} />
-      <KeyboardShortcuts open={showShortcuts} onClose={() => setShowShortcuts(false)} />
-      <StrategyNotes open={showStrategyNotes} onClose={() => setShowStrategyNotes(false)} />
-      <HelpGuide open={showHelpGuide} onClose={() => setShowHelpGuide(false)} />
-      {showPrestige && (
-        <PrestigePanel
-          onPrestige={() => { setShowPrestige(false); newGame(); }}
-          onClose={() => setShowPrestige(false)}
-        />
-      )}
-      {showLoadouts && (
-        <LoadoutPanel
-          currentSettings={{
-            boardSize, fleet, difficulty, gameMode, aiPersonality,
-            enablePowerUps, enableWeather, timedTurns, aiSpeed, theme,
-          }}
-          onApply={(loadout) => {
-            setBoardSize(loadout.boardSize);
-            setFleet([...loadout.fleet]);
-            setDifficulty(loadout.difficulty as Difficulty);
-            setGameMode(loadout.gameMode);
-            setAiPersonality(loadout.aiPersonality);
-            setEnablePowerUps(loadout.enablePowerUps);
-            setEnableWeather(loadout.enableWeather);
-            setTimedTurns(loadout.timedTurns);
-            setAiSpeed(loadout.aiSpeed);
-            if (loadout.theme) changeTheme(loadout.theme);
-            setPlayerBoard(createEmptyBoard(loadout.boardSize));
-            setP2Board(createEmptyBoard(loadout.boardSize));
-            setPlacementHistory([]);
-            setShowLoadouts(false);
-          }}
-          onClose={() => setShowLoadouts(false)}
-        />
-      )}
-      {showMilestones && (
-        <MilestonePanel onClose={() => setShowMilestones(false)} />
-      )}
-      {showExportImport && (
-        <ExportImportPanel onClose={() => setShowExportImport(false)} onImport={() => setShowExportImport(false)} />
-      )}
-      {showLossAnalysis && phase === "gameover" && (
-        <LossAnalysis
-          aiBoard={aiBoard}
-          won={winner === "player"}
-          onClose={() => setShowLossAnalysis(false)}
-        />
-      )}
-      {showSettings && (
-        <SettingsPanel
-          settings={gameSettings}
-          onChange={handleSettingsChange}
-          onClose={() => setShowSettings(false)}
-        />
-      )}
-
-      {/* ─── New Feature Modals (100 More) ─── */}
-      {showCrew && <CrewPanel onClose={() => setShowCrew(false)} />}
-      {showLore && <LoreCardsPanel onClose={() => setShowLore(false)} />}
-      {showMemorial && <MemorialWall onClose={() => setShowMemorial(false)} />}
-      {showFaction && <FactionSelector onClose={() => setShowFaction(false)} />}
-      {showImprovement && <ImprovementTracker onClose={() => setShowImprovement(false)} />}
-      {showH2H && <H2HPanel onClose={() => setShowH2H(false)} />}
-      {showHeatmap && <PlacementHeatmapPanel onClose={() => setShowHeatmap(false)} />}
-      {showBenchmark && <BenchmarkPanel onClose={() => setShowBenchmark(false)} onStart={() => setShowBenchmark(false)} />}
-      {showExperimental && <ExperimentalModeSelector onSelect={() => setShowExperimental(false)} onClose={() => setShowExperimental(false)} />}
-      {showPuzzles && <PuzzleSelector onSelect={() => setShowPuzzles(false)} onClose={() => setShowPuzzles(false)} />}
-      {showTraining && <TrainingGroundsPanel onClose={() => setShowTraining(false)} onStart={() => setShowTraining(false)} />}
-      {showGraveyard && <ShipGraveyard onClose={() => setShowGraveyard(false)} />}
-      {showAccessibility && <AccessibilityPanel onClose={() => setShowAccessibility(false)} />}
-      {showBoardSkins && <BoardSkinSelector onClose={() => setShowBoardSkins(false)} />}
-      {showUpgrades && <UpgradeTreePanel onClose={() => setShowUpgrades(false)} availableXP={xpState.totalXP} />}
-      {showDifficultyPresets && <DifficultyPresetsPanel onSelect={() => setShowDifficultyPresets(false)} onClose={() => setShowDifficultyPresets(false)} />}
-      {showCustomRules && <CustomRulesPanel onClose={() => setShowCustomRules(false)} onApply={() => setShowCustomRules(false)} />}
+      <Suspense fallback={null}>
+        <ReplayViewer open={showReplays} onClose={() => { setShowReplays(false); unlockAchievement("replay_watched"); }} />
+        <KeyboardShortcuts open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+        {showStrategyNotes && <LazyStrategyNotes open={showStrategyNotes} onClose={() => setShowStrategyNotes(false)} />}
+        <HelpGuide open={showHelpGuide} onClose={() => setShowHelpGuide(false)} />
+        {showPrestige && (
+          <LazyPrestigePanel
+            onPrestige={() => { setShowPrestige(false); newGame(); }}
+            onClose={() => setShowPrestige(false)}
+          />
+        )}
+        {showLoadouts && (
+          <LazyLoadoutPanel
+            currentSettings={{
+              boardSize, fleet, difficulty, gameMode, aiPersonality,
+              enablePowerUps, enableWeather, timedTurns, aiSpeed, theme,
+            }}
+            onApply={(loadout) => {
+              setBoardSize(loadout.boardSize);
+              setFleet([...loadout.fleet]);
+              setDifficulty(loadout.difficulty as Difficulty);
+              setGameMode(loadout.gameMode);
+              setAiPersonality(loadout.aiPersonality);
+              setEnablePowerUps(loadout.enablePowerUps);
+              setEnableWeather(loadout.enableWeather);
+              setTimedTurns(loadout.timedTurns);
+              setAiSpeed(loadout.aiSpeed);
+              if (loadout.theme) changeTheme(loadout.theme);
+              setPlayerBoard(createEmptyBoard(loadout.boardSize));
+              setP2Board(createEmptyBoard(loadout.boardSize));
+              setPlacementHistory([]);
+              setShowLoadouts(false);
+            }}
+            onClose={() => setShowLoadouts(false)}
+          />
+        )}
+        {showMilestones && <LazyMilestonePanel onClose={() => setShowMilestones(false)} />}
+        {showExportImport && <LazyExportImportPanel onClose={() => setShowExportImport(false)} onImport={() => setShowExportImport(false)} />}
+        {showLossAnalysis && phase === "gameover" && (
+          <LazyLossAnalysis aiBoard={aiBoard} won={winner === "player"} onClose={() => setShowLossAnalysis(false)} />
+        )}
+        {showSettings && (
+          <LazySettingsPanel settings={gameSettings} onChange={handleSettingsChange} onClose={() => setShowSettings(false)} />
+        )}
+        {showCrew && <LazyCrewPanel onClose={() => setShowCrew(false)} />}
+        {showLore && <LazyLoreCardsPanel onClose={() => setShowLore(false)} />}
+        {showMemorial && <LazyMemorialWall onClose={() => setShowMemorial(false)} />}
+        {showFaction && <LazyFactionSelector onClose={() => setShowFaction(false)} />}
+        {showImprovement && <LazyImprovementTracker onClose={() => setShowImprovement(false)} />}
+        {showH2H && <LazyH2HPanel onClose={() => setShowH2H(false)} />}
+        {showHeatmap && <LazyPlacementHeatmapPanel onClose={() => setShowHeatmap(false)} />}
+        {showBenchmark && <LazyBenchmarkPanel onClose={() => setShowBenchmark(false)} onStart={() => setShowBenchmark(false)} />}
+        {showExperimental && <LazyExperimentalModeSelector onSelect={() => setShowExperimental(false)} onClose={() => setShowExperimental(false)} />}
+        {showPuzzles && <LazyPuzzleSelector onSelect={() => setShowPuzzles(false)} onClose={() => setShowPuzzles(false)} />}
+        {showTraining && <LazyTrainingGroundsPanel onClose={() => setShowTraining(false)} onStart={() => setShowTraining(false)} />}
+        {showGraveyard && <LazyShipGraveyard onClose={() => setShowGraveyard(false)} />}
+        {showAccessibility && <LazyAccessibilityPanel onClose={() => setShowAccessibility(false)} />}
+        {showBoardSkins && <LazyBoardSkinSelector onClose={() => setShowBoardSkins(false)} />}
+        {showUpgrades && <LazyUpgradeTreePanel onClose={() => setShowUpgrades(false)} availableXP={xpState.totalXP} />}
+        {showDifficultyPresets && <LazyDifficultyPresetsPanel onSelect={() => setShowDifficultyPresets(false)} onClose={() => setShowDifficultyPresets(false)} />}
+        {showCustomRules && <LazyCustomRulesPanel onClose={() => setShowCustomRules(false)} onApply={() => setShowCustomRules(false)} />}
+      </Suspense>
 
       {/* Combo display */}
       {phase === "playing" && comboState.currentStreak >= 2 && <ComboDisplay streak={comboState.currentStreak} multiplier={comboState.multiplier} />}

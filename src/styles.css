@@ -147,23 +147,21 @@ body::after {
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-secondary);
-  background: var(--glass-bg);
+  background: var(--panel-solid);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   padding: 8px 14px;
   white-space: nowrap;
-  backdrop-filter: blur(12px);
   letter-spacing: 0.02em;
 }
 
 .icon-btn {
   font-size: 0.82rem;
   padding: 8px 14px;
-  background: var(--glass-bg);
+  background: var(--panel-solid);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   color: var(--text-secondary);
-  backdrop-filter: blur(12px);
   transition: all var(--transition-fast);
 }
 
@@ -200,12 +198,18 @@ body::after {
   border-radius: var(--radius-xl);
   padding: 24px;
   margin-bottom: 24px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.25),
     inset 0 1px 0 var(--glass-highlight);
-  transition: border-color var(--transition-med);
+  transition: border-color var(--transition-med), opacity var(--transition-med);
+  animation: panelEnter 0.3s ease-out;
+}
+
+@keyframes panelEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .panel:hover {
@@ -453,7 +457,6 @@ button:focus-visible {
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 var(--glass-highlight);
-  backdrop-filter: blur(12px);
 }
 
 .board__corner,
@@ -673,11 +676,10 @@ button:focus-visible {
 /* ─── Fleet status ─── */
 .fleet {
   margin-top: 14px;
-  background: var(--glass-bg);
+  background: var(--panel-solid);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   padding: 12px 14px;
-  backdrop-filter: blur(12px);
 }
 
 .fleet__title {
@@ -1414,7 +1416,6 @@ button:focus-visible {
   font-family: var(--font-mono);
   font-size: 0.85rem;
   font-weight: 600;
-  backdrop-filter: blur(12px);
   animation: toastSlideIn 0.3s ease-out, toastFadeOut 0.5s ease-in 2.5s forwards;
   pointer-events: none;
   white-space: nowrap;
