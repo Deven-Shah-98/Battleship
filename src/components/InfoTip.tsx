@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 interface InfoTipProps {
   text: string;
@@ -8,6 +8,7 @@ interface InfoTipProps {
 
 export function InfoTip({ text, direction = "top", inline = false }: InfoTipProps) {
   const [visible, setVisible] = useState(false);
+  const wrapperRef = useRef<HTMLSpanElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -20,12 +21,25 @@ export function InfoTip({ text, direction = "top", inline = false }: InfoTipProp
     timeoutRef.current = setTimeout(() => setVisible(false), 150);
   };
 
-  useEffect(() => {
-    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
+  const handleClickOutside = useCallback((e: MouseEvent) => {
+    if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      setVisible(false);
+    }
   }, []);
+
+  useEffect(() => {
+    if (visible) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [visible, handleClickOutside]);
 
   return (
     <span
+      ref={wrapperRef}
       className={`infotip-wrapper${inline ? " infotip-wrapper--inline" : ""}`}
       onMouseEnter={show}
       onMouseLeave={hide}

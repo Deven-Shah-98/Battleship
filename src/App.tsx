@@ -1608,7 +1608,7 @@ export default function App() {
         </div>
         <div className="app__meta">
           {playerMode === "vs-ai" && (
-            <span className="record" title="Wins\u2013Losses">W {record.wins} \u00B7 L {record.losses}</span>
+            <span className="record" title="Wins–Losses">W {record.wins} {"\u00B7"} L {record.losses}</span>
           )}
           {xpState.level > 0 && (
             <div className="xp-bar-header" title={`${xpState.totalXP} XP total`}>
@@ -1647,7 +1647,7 @@ export default function App() {
                   : "All ships placed. Ready to start!"}
               </p>
               <p className="hint">
-                Orientation: <strong>{orientation}</strong> \u2014 press <kbd>R</kbd> or tap Rotate. <kbd>U</kbd> to undo.
+                Orientation: <strong>{orientation}</strong> {"\u2014"} press <kbd>R</kbd> or tap Rotate. <kbd>U</kbd> to undo.
               </p>
 
               {/* Ship placement progress */}
@@ -1707,7 +1707,7 @@ export default function App() {
                     {setupExpanded === "core" && (
                       <div className="setup-section__body">
                         <div className="settings-row">
-                          <span className="settings-label">Board: <InfoTip text="Larger boards have more ships and take longer. 6\u00d76 is great for quick games; 15\u00d715 is for epic battles." /></span>
+                          <span className="settings-label">Board: <InfoTip text={"Larger boards have more ships and take longer. 6\u00d76 is great for quick games; 15\u00d715 is for epic battles."} /></span>
                           <div className="settings-options" role="radiogroup" aria-label="Board size">
                             {BOARD_SIZES.map((b) => (
                               <button key={b.size} type="button" role="radio" aria-checked={boardSize === b.size} className={`chip${boardSize === b.size ? " chip--active" : ""}`} onClick={() => handleBoardSizeChange(b.size)}>{b.label}</button>
@@ -1715,7 +1715,7 @@ export default function App() {
                           </div>
                         </div>
                         <div className="settings-row">
-                          <span className="settings-label">Mode: <InfoTip text="Classic: one shot per turn. Salvo: fire one shot per surviving ship each turn \u2014 faster and more strategic!" /></span>
+                          <span className="settings-label">Mode: <InfoTip text={"Classic: one shot per turn. Salvo: fire one shot per surviving ship each turn \u2014 faster and more strategic!"} /></span>
                           <div className="settings-options" role="radiogroup" aria-label="Game mode">
                             {(["classic", "salvo"] as GameMode[]).map((m) => (
                               <button key={m} type="button" role="radio" aria-checked={gameMode === m} className={`chip${gameMode === m ? " chip--active" : ""}`} onClick={() => setGameMode(m)}>{m === "classic" ? "Classic" : "Salvo"}</button>
@@ -1750,7 +1750,7 @@ export default function App() {
                       {setupExpanded === "ai" && (
                         <div className="setup-section__body">
                           <div className="settings-row">
-                            <span className="settings-label">AI difficulty: <InfoTip text="Easy: random shots. Medium: hunts hits. Hard: probability targeting. Admiral: enhanced heatmap \u2014 the toughest." /></span>
+                            <span className="settings-label">AI difficulty: <InfoTip text={"Easy: random shots. Medium: hunts hits. Hard: probability targeting. Admiral: enhanced heatmap \u2014 the toughest."} /></span>
                             <div className="settings-options" role="radiogroup" aria-label="AI difficulty">
                               {(["easy", "medium", "hard", "admiral"] as Difficulty[]).map((d) => (
                                 <button key={d} type="button" role="radio" aria-checked={difficulty === d} className={`chip${difficulty === d ? " chip--active" : ""}`} onClick={() => setDifficulty(d)}>{d}</button>
@@ -1799,7 +1799,7 @@ export default function App() {
                           {playerMode === "vs-ai" && (
                             <label className="toggle-label" title="Enable Radar, Sonar, and Airstrike abilities during gameplay">
                               <input type="checkbox" checked={enablePowerUps} onChange={(e) => setEnablePowerUps(e.target.checked)} />
-                              Power-ups <InfoTip text="Grants special abilities: Radar (reveal 3\u00d73 area), Sonar (count ships in area), Airstrike (bomb entire row/column). Limited uses each game." />
+                              Power-ups <InfoTip text={"Grants special abilities: Radar (reveal 3\u00d73 area), Sonar (count ships in area), Airstrike (bomb entire row/column). Limited uses each game."} />
                             </label>
                           )}
                           <label className="toggle-label" title="Random weather events that affect gameplay">
@@ -1878,14 +1878,14 @@ export default function App() {
             </span>
             {playerMode === "vs-ai" && (
               <span className="status__stats">
-                Shots {playerStats.shots} \u00B7 Hits {playerStats.hits} \u00B7 Accuracy {accuracy}%
+                Shots {playerStats.shots} {"\u00B7"} Hits {playerStats.hits} {"\u00B7"} Accuracy {accuracy}%
               </span>
             )}
             <span className="status__ships">
               {playerMode === "hotseat" ? (
-                <>P1: {remainingShips(playerBoard)} left \u00B7 P2: {remainingShips(p2Board)} left</>
+                <>P1: {remainingShips(playerBoard)} left {"\u00B7"} P2: {remainingShips(p2Board)} left</>
               ) : (
-                <>You: {remainingShips(playerBoard)} left \u00B7 Enemy: {remainingShips(aiBoard)} left</>
+                <>You: {remainingShips(playerBoard)} left {"\u00B7"} Enemy: {remainingShips(aiBoard)} left</>
               )}
             </span>
             {activeSeed && playerMode === "vs-ai" && (
