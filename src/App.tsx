@@ -370,6 +370,11 @@ export default function App() {
   // Apply game settings to DOM
   useEffect(() => { applySettingsToDOM(gameSettings); }, [gameSettings]);
 
+  // Expose board column count (cells + label column) for responsive cell sizing
+  useEffect(() => {
+    document.documentElement.style.setProperty("--board-cols", String(boardSize + 1));
+  }, [boardSize]);
+
   const handleSettingsChange = useCallback((newSettings: GameSettings) => {
     setGameSettings(newSettings);
     saveSettings(newSettings);
