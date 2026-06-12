@@ -1,4 +1,4 @@
-const CACHE_NAME = "battleship-v5";
+const CACHE_NAME = "battleship-v6";
 const ASSETS = [
   "./",
   "./index.html",

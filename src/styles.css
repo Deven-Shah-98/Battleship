@@ -1409,7 +1409,7 @@ button:focus-visible {
 /* ─── Responsive ─── */
 @media (max-width: 720px) {
   :root {
-    --cell: min(32px, calc((100vw - 64px) / 11));
+    --cell: min(32px, calc((100vw - 64px) / var(--board-cols, 11)));
   }
 
   .app {
@@ -1446,7 +1446,7 @@ button:focus-visible {
 
 @media (max-width: 420px) {
   :root {
-    --cell: min(28px, calc((100vw - 50px) / 11));
+    --cell: min(28px, calc((100vw - 50px) / var(--board-cols, 11)));
   }
 
   .app {
