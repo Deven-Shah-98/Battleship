@@ -902,6 +902,42 @@ three clearly distinct visual states.
 
 ---
 
+## 68. vs-AI-only UI leaked into 2-Player hotseat mode
+
+**Symptom**
+During 2-Player pass-and-play games, the Win Probability bar, Morale pill,
+AI Admiral dialogue bubble, and combo badge all rendered — and the game-over
+screen offered a Replay button that opened an empty viewer. None of these
+features make sense without an AI opponent.
+
+**Cause**
+These components were gated only on `phase === "playing"` (or rendered
+unconditionally on game over), with no check on `playerMode`.
+
+**Fix**
+Added `playerMode === "vs-ai"` to each render condition (combo display,
+win-probability bar, morale indicator, AI dialogue) and made
+`onViewReplay` undefined in hotseat so the Replay button doesn't render.
+
+---
+
+## 69. Stale replay recorder carried over from vs-AI into hotseat games
+
+**Symptom**
+Starting a 2-Player game right after a vs-AI game (no page reload) could
+finalize and save a bogus replay for the hotseat match.
+
+**Cause**
+`replayRef.current` was only created for vs-AI games but never cleared when
+a hotseat game started, so a leftover recorder from the previous vs-AI game
+survived and was finalized at game end.
+
+**Fix**
+`startGame()` now sets `replayRef.current = null` when a hotseat game
+begins, so no replay is recorded or saved for 2-Player matches.
+
+---
+
 ## Known Issue (Not Yet Fixed)
 
 **Campaign weather overridden by `startGame()` roll**  
