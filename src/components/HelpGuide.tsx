@@ -5,7 +5,7 @@ interface HelpGuideProps {
   onClose: () => void;
 }
 
-type HelpCategory = "basics" | "modes" | "ai" | "powerups" | "settings" | "progression" | "social" | "advanced";
+type HelpCategory = "basics" | "modes" | "ai" | "powerups" | "settings" | "progression" | "social";
 
 const CATEGORIES: { id: HelpCategory; label: string; icon: string }[] = [
   { id: "basics", label: "Getting Started", icon: "🚀" },
@@ -15,7 +15,6 @@ const CATEGORIES: { id: HelpCategory; label: string; icon: string }[] = [
   { id: "settings", label: "Board & Settings", icon: "⚙️" },
   { id: "progression", label: "Progression & XP", icon: "📈" },
   { id: "social", label: "Social & Stats", icon: "🏆" },
-  { id: "advanced", label: "Advanced Features", icon: "🔬" },
 ];
 
 const HELP_CONTENT: Record<HelpCategory, { title: string; items: { q: string; a: string }[] }> = {
@@ -37,9 +36,6 @@ const HELP_CONTENT: Record<HelpCategory, { title: string; items: { q: string; a:
       { q: "What is Salvo mode?", a: "You fire one shot per surviving ship each turn. Start with 5 shots, lose one each time a ship sinks. More strategic and faster-paced!" },
       { q: "What is 2-Player (Hotseat)?", a: "Two players share one device, passing back and forth. A 'Pass Device' screen appears between turns so the next player can't see the other's board." },
       { q: "What is Campaign mode?", a: "10 story missions with unique objectives, varying board sizes, and special conditions. Complete missions to earn bonus XP and achievements." },
-      { q: "What are Experimental Modes?", a: "Click 'Modes' in the header to access unique variants: Fog Exploration, Minehunter, Reverse Battleship, Battleship Poker, Speed Chess, Ironman, Roguelike, Mirror Match, and Chaos mode." },
-      { q: "What are Puzzles?", a: "Pre-set boards where you must find the fleet in the fewest shots possible — like chess puzzles but for Battleship!" },
-      { q: "What is Training?", a: "Isolated drills to practice specific skills: targeting, pattern recognition, and speed accuracy." },
     ],
   },
   ai: {
@@ -74,11 +70,7 @@ const HELP_CONTENT: Record<HelpCategory, { title: string; items: { q: string; a:
       { q: "What is Shrinking Board?", a: "Every 10 turns, the outermost ring of the board becomes blocked. Forces action to the center — like a battle royale!" },
       { q: "What is Weather?", a: "Random weather events: Storm (power-ups disabled, shots scatter), Fog (reduced visibility), Calm (bonus accuracy). Changes every few turns." },
       { q: "What is a Timer?", a: "Set a countdown per turn (10s/30s/60s). If time expires, a random cell is auto-fired. Adds pressure and speeds up games!" },
-      { q: "What is Fog of War Decay?", a: "Your hit/miss markers fade after 8 turns unless the area is re-scouted. Forces you to remember or re-explore!" },
-      { q: "What is Chain Reaction?", a: "When a ship sinks, it damages all cells adjacent to it. Can trigger chain sinks if another ship is nearby!" },
-      { q: "What is Night Mode?", a: "You can only see a 3-cell radius around your last shot. Everything else is dark — tests your memory!" },
       { q: "What is the Scout Plane?", a: "Every 3 turns, automatically reveals whether a random row or column contains ships." },
-      { q: "What are Moving Ships?", a: "After each turn, you can move one un-hit ship one cell in any direction. Adds a whole new strategic layer!" },
     ],
   },
   progression: {
@@ -90,8 +82,6 @@ const HELP_CONTENT: Record<HelpCategory, { title: string; items: { q: string; a:
       { q: "What is the Battle Pass?", a: "Weekly missions (like 'Win 3 games on Hard' or 'Sink 10 ships') that award bonus XP. Resets each week." },
       { q: "What is Mastery?", a: "Per-difficulty skill tracks: Bronze → Silver → Gold → Platinum. Win consistently on a difficulty to advance." },
       { q: "What are Milestones?", a: "Lifetime stat badges: 100/500/1000 shots fired, ships sunk, games played, etc. Track your overall career." },
-      { q: "What are Commander Perks?", a: "At level milestones, choose 1 of 3 passive perks (e.g., +1 radar charge, +10% XP, or extra ship shield)." },
-      { q: "What is the Ship Upgrade Tree?", a: "Spend XP to permanently upgrade ships: extend radar range, add armor, reduce ability cooldowns, or gain extra shots." },
     ],
   },
   social: {
@@ -101,28 +91,8 @@ const HELP_CONTENT: Record<HelpCategory, { title: string; items: { q: string; a:
       { q: "What is Match History?", a: "A log of your last 50 games with details: difficulty, shots, accuracy, duration, and result." },
       { q: "What are Replays?", a: "Every game is automatically recorded. Watch replays move-by-move with playback controls!" },
       { q: "What are Loadouts?", a: "Save your favorite settings combinations (board size, difficulty, mode, etc.) as named presets for quick access." },
-      { q: "What is the Memorial Wall?", a: "An honor roll of your most heroic ships — the ones with the most kills before sinking or the longest survivors." },
-      { q: "What is Head-to-Head?", a: "Track your win/loss record against each AI personality and difficulty level." },
-      { q: "What is the Placement Heatmap?", a: "Visualize where you most commonly place your ships, so you can identify and break predictable patterns." },
-      { q: "What is Export/Import?", a: "Export all your progress (stats, achievements, replays, settings) as a JSON file. Import to restore on a new device." },
-    ],
-  },
-  advanced: {
-    title: "Advanced Features",
-    items: [
-      { q: "What is the Crew System?", a: "Hire and level crew members that give passive bonuses. Navigator gives +1 move range, Gunner improves accuracy, Medic enables repairs." },
-      { q: "What are Fleet Lore Cards?", a: "Collectible backstory cards for each ship type, unlocked through gameplay. Build your collection!" },
-      { q: "What are Factions?", a: "Choose Navy, Pirates, or Aliens — each has unique visual themes and potential future gameplay differences." },
-      { q: "What is the Nemesis System?", a: "The AI remembers past games and develops grudges. It may comment on your previous strategies!" },
-      { q: "What is the Improvement Tracker?", a: "Graphs showing your accuracy, win rate, and speed trends over time. See if you're getting better!" },
-      { q: "What is Board Skins?", a: "Change the visual appearance of the game board: Classic Blue, Tropical Lagoon, Arctic Ice, Deep Space, Lava Sea, or Steampunk Brass." },
       { q: "What is the Strategy Notes pad?", a: "A text pad beside the board for writing notes during play. Track patterns, mark suspicious areas, plan your next moves." },
-      { q: "What are Board Annotations?", a: "Right-click cells to mark them as 'maybe' (yellow) or 'unlikely' (grey). Helps you track your deductions visually." },
-      { q: "What is Smart Assist?", a: "Highlights cells that are guaranteed misses (e.g., corners adjacent to sunk ships). Reduces wasted shots for newer players." },
-      { q: "What is the Probability Overlay?", a: "Toggle an overlay showing AI-computed hit probability for each cell. See exactly where ships are most likely hiding!" },
-      { q: "What is Voice Commands?", a: "Say 'Fire B4' or any coordinate to fire using your microphone (Web Speech API). Enable in Settings." },
-      { q: "What is Gamepad Support?", a: "Play with an Xbox/PlayStation controller. D-pad to navigate cells, A/X to fire. Enable in Settings." },
-      { q: "What is the Benchmark?", a: "Run 100 simulated AI-vs-AI games to test strategies and measure average performance metrics." },
+      { q: "What is Export/Import?", a: "Export all your progress (stats, achievements, replays, settings) as a JSON file. Import to restore on a new device." },
     ],
   },
 };

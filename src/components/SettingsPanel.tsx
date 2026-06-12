@@ -51,46 +51,6 @@ export function SettingsPanel({ settings, onChange, onClose }: Props) {
         </div>
 
         <div className="settings-section">
-          <h3>Gameplay Assists</h3>
-          <p className="settings-section-desc">Tools to help you play smarter. Great for learning or when you want a more guided experience.</p>
-          <label className="settings-toggle" title="Dims cells that cannot possibly contain a ship based on sunk ship positions and board constraints. Reduces wasted shots, especially helpful for newer players.">
-            <input type="checkbox" checked={settings.smartAssist} onChange={() => toggle("smartAssist")} />
-            <span>Smart Assist</span>
-            <span className="settings-desc">Highlight cells that are guaranteed misses</span>
-          </label>
-          <label className="settings-toggle" title="Shows a color-coded overlay on each enemy cell indicating the AI-computed probability of a ship being there. Brighter = more likely. Uses the same logic as the Hard AI difficulty.">
-            <input type="checkbox" checked={settings.showProbability} onChange={() => toggle("showProbability")} />
-            <span>Probability Overlay</span>
-            <span className="settings-desc">Show hit probability per cell (uses AI heatmap)</span>
-          </label>
-          <label className="settings-toggle" title="Right-click any cell to mark it with a colored tag: yellow for 'maybe ship here' or grey for 'unlikely'. Helps you track your deductions visually during gameplay.">
-            <input type="checkbox" checked={settings.boardAnnotations} onChange={() => toggle("boardAnnotations")} />
-            <span>Board Annotations</span>
-            <span className="settings-desc">Right-click cells to mark as &quot;maybe&quot; or &quot;unlikely&quot;</span>
-          </label>
-          <label className="settings-toggle" title="Adds a brief screen shake effect when you land a critical hit (sinking a ship). Purely cosmetic — creates dramatic emphasis.">
-            <input type="checkbox" checked={settings.screenShake} onChange={() => toggle("screenShake")} />
-            <span>Screen Shake</span>
-            <span className="settings-desc">Shake screen on critical hits (ship sinks)</span>
-          </label>
-        </div>
-
-        <div className="settings-section">
-          <h3>Notifications</h3>
-          <p className="settings-section-desc">Stay informed when the game needs your attention, even in a background tab.</p>
-          <label className="settings-toggle" title="Sends a browser notification when the AI finishes its turn, useful when you've tabbed away. Requires browser notification permission.">
-            <input type="checkbox" checked={settings.desktopNotifications} onChange={() => toggle("desktopNotifications")} />
-            <span>Desktop Notifications</span>
-            <span className="settings-desc">Notify when AI finishes its turn (background tab)</span>
-          </label>
-          <label className="settings-toggle" title="Plays an audible tick-tick-tick sound when your turn timer drops below 5 seconds. Helps you notice when time is running out.">
-            <input type="checkbox" checked={settings.countdownTick} onChange={() => toggle("countdownTick")} />
-            <span>Countdown Tick</span>
-            <span className="settings-desc">Audible tick when timer is below 5 seconds</span>
-          </label>
-        </div>
-
-        <div className="settings-section">
           <h3>Board Variants</h3>
           <p className="settings-section-desc">Modify the game board with terrain and environmental hazards. These add strategic depth and variety to every match.</p>
           <label className="settings-toggle" title="Places random impassable island cells on both boards. Ships cannot be placed on islands, and shots fired at them always miss. Visible to both players.">
@@ -118,55 +78,15 @@ export function SettingsPanel({ settings, onChange, onClose }: Props) {
             <span>Ship Shields</span>
             <span className="settings-desc">Each ship absorbs its first hit with a shield</span>
           </label>
-          <label className="settings-toggle" title="During setup, place 2-3 defensive mines on your board. If the enemy fires at a mined cell, the shot is negated and they lose their next turn. Strategic area denial!">
-            <input type="checkbox" checked={settings.enableMines} onChange={() => toggle("enableMines")} />
-            <span>Minefields</span>
-            <span className="settings-desc">Place defensive mines during setup</span>
-          </label>
-          <label className="settings-toggle" title="After each turn, you can optionally move one un-hit ship one cell in any direction (up/down/left/right). Adds a whole new evasion and positioning strategy layer.">
-            <input type="checkbox" checked={settings.enableMovingShips} onChange={() => toggle("enableMovingShips")} />
-            <span>Moving Ships</span>
-            <span className="settings-desc">Move one un-hit ship 1 cell per turn</span>
-          </label>
-          <label className="settings-toggle" title="Your hit and miss markers fade from the tracking board after 8 turns unless the area is re-scouted (by firing near it again). Tests your memory and map awareness!">
-            <input type="checkbox" checked={settings.enableFogDecay} onChange={() => toggle("enableFogDecay")} />
-            <span>Fog of War Decay</span>
-            <span className="settings-desc">Hits/misses fade after 8 turns</span>
-          </label>
-          <label className="settings-toggle" title="When a ship sinks, all cells immediately adjacent to it (8 surrounding cells) are automatically hit. Can trigger chain sinks if another ship is nearby — devastating!">
-            <input type="checkbox" checked={settings.enableChainReaction} onChange={() => toggle("enableChainReaction")} />
-            <span>Chain Reaction</span>
-            <span className="settings-desc">Sinking a ship damages adjacent cells</span>
-          </label>
           <label className="settings-toggle" title="Every 3 turns, a scout plane automatically reveals whether a random row or column contains any ships. The result appears briefly as an announcement in the battle log.">
             <input type="checkbox" checked={settings.enableScoutPlane} onChange={() => toggle("enableScoutPlane")} />
             <span>Scout Plane</span>
             <span className="settings-desc">Every 3 turns, reveal if a row/col has ships</span>
           </label>
-          <label className="settings-toggle" title="The board is darkened and you can only see a 3-cell radius around your last shot. Everything else is hidden in darkness. Tests memory and spatial awareness!">
-            <input type="checkbox" checked={settings.nightMode} onChange={() => toggle("nightMode")} />
-            <span>Night Mode Battle</span>
-            <span className="settings-desc">Limited visibility — 3-cell radius around last shot</span>
-          </label>
-        </div>
-
-        <div className="settings-section">
-          <h3>Platform</h3>
-          <p className="settings-section-desc">Alternative input methods and display options. Enable based on your hardware and preferences.</p>
-          <label className="settings-toggle" title="Play using an Xbox or PlayStation controller via the browser's Gamepad API. D-pad navigates cells, A/X button fires, triggers for power-ups.">
-            <input type="checkbox" checked={settings.gamepadEnabled} onChange={() => toggle("gamepadEnabled")} />
-            <span>Gamepad Support</span>
-            <span className="settings-desc">Play with Xbox/PlayStation controller</span>
-          </label>
-          <label className="settings-toggle" title="Say 'Fire B4' or any coordinate to fire using your microphone (Web Speech API). The game listens for 'Fire' followed by a column letter and row number.">
-            <input type="checkbox" checked={settings.voiceCommands} onChange={() => toggle("voiceCommands")} />
-            <span>Voice Commands</span>
-            <span className="settings-desc">&quot;Fire B4&quot; — speak coordinates to fire</span>
-          </label>
-          <label className="settings-toggle" title="Opens the enemy board in a Picture-in-Picture floating window. Useful for keeping the enemy board visible while scrolling your own board on smaller screens.">
-            <input type="checkbox" checked={settings.pipEnabled} onChange={() => toggle("pipEnabled")} />
-            <span>Picture-in-Picture</span>
-            <span className="settings-desc">Pop out enemy board into floating window</span>
+          <label className="settings-toggle" title="When you're down to your last ship, Last Stand activates and grants a free Radar scan — a comeback mechanic that keeps close games exciting.">
+            <input type="checkbox" checked={settings.enableComebackMechanic} onChange={() => toggle("enableComebackMechanic")} />
+            <span>Comeback Mechanic</span>
+            <span className="settings-desc">Free Radar scan when down to your final ship</span>
           </label>
         </div>
       </div>

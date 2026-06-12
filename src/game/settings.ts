@@ -7,30 +7,12 @@ export interface GameSettings {
   colorBlindMode: boolean;
   leftHanded: boolean;
   fontSize: number;
-  smartAssist: boolean;
-  showProbability: boolean;
-  boardAnnotations: boolean;
-  screenShake: boolean;
-  desktopNotifications: boolean;
-  countdownTick: boolean;
   enableIslands: boolean;
   enableReefs: boolean;
   enableShrinking: boolean;
   enableShields: boolean;
-  enableMines: boolean;
-  enableMovingShips: boolean;
-  enableFogDecay: boolean;
-  enableChainReaction: boolean;
   enableScoutPlane: boolean;
-  nightMode: boolean;
-  gamepadEnabled: boolean;
-  voiceCommands: boolean;
-  pipEnabled: boolean;
   enableComebackMechanic: boolean;
-  enableDoubleHull: boolean;
-  enableDecoys: boolean;
-  enableTorpedo: boolean;
-  enableEMP: boolean;
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
@@ -38,30 +20,12 @@ export const DEFAULT_SETTINGS: GameSettings = {
   colorBlindMode: false,
   leftHanded: false,
   fontSize: 100,
-  smartAssist: false,
-  showProbability: false,
-  boardAnnotations: false,
-  screenShake: true,
-  desktopNotifications: false,
-  countdownTick: true,
   enableIslands: false,
   enableReefs: false,
   enableShrinking: false,
   enableShields: false,
-  enableMines: false,
-  enableMovingShips: false,
-  enableFogDecay: false,
-  enableChainReaction: false,
   enableScoutPlane: false,
-  nightMode: false,
-  gamepadEnabled: false,
-  voiceCommands: false,
-  pipEnabled: false,
   enableComebackMechanic: true,
-  enableDoubleHull: false,
-  enableDecoys: false,
-  enableTorpedo: false,
-  enableEMP: false,
 };
 
 export function loadSettings(): GameSettings {
