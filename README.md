@@ -13,7 +13,7 @@ No install, no signup — just open the link and play.
 ## 🐛 Bug Report
 
 See **[DEBUGGING.md](./DEBUGGING.md)** for a detailed log of every bug found
-during development and how each was resolved (61 bugs documented).
+during development and how each was resolved (67 bugs documented).
 
 ## 📖 Source Code
 
@@ -41,7 +41,6 @@ This repository: **[github.com/Deven-Shah-98/Battleship](https://github.com/Deve
 - **Radar scan** — reveal a 3×3 area
 - **Sonar ping** — reveal ships in a column
 - **Airstrike** — bomb an entire row
-- **EMP blast** — disable AI targeting for 3 turns
 - **Scout plane** — periodic reconnaissance
 - **Ship shields** — absorb one hit per ship
 
@@ -59,7 +58,6 @@ This repository: **[github.com/Deven-Shah-98/Battleship](https://github.com/Deve
 ### Board Variants
 - **Islands** — impassable terrain blocks shots and placement
 - **Hidden reefs** — shots landing on reefs always miss (revealed on fire)
-- **Minefields** — place mines during setup; enemy hits lose their turn
 - **Shrinking board** — outer ring becomes impassable every N turns
 
 ### Progression & Meta
@@ -74,7 +72,6 @@ This repository: **[github.com/Deven-Shah-98/Battleship](https://github.com/Deve
 ### Analytics & Social
 - **Post-game heatmap** — shot accuracy analysis
 - **Win probability** — live prediction during gameplay
-- **Strategy fingerprint** — categorises your playstyle
 - **Match history** — detailed per-game records
 - **Share card** — screenshot your results
 - **Replay system** — record and replay matches
@@ -85,15 +82,12 @@ This repository: **[github.com/Deven-Shah-98/Battleship](https://github.com/Deve
 - **Reduce motion** — respects `prefers-reduced-motion`
 - **Color-blind mode** — patterns in addition to colors
 - **Font size controls** — adjustable text sizing
-- **One-switch mode** — auto-scanning grid with single-button confirm
 
 ### Technical
 - **PWA / offline support** — service worker caches assets
 - **Auto-save** — game state persists across browser sessions
 - **Procedural audio** — Web Audio API synthesis, no asset files
 - **5 themes** — Midnight, Arctic, Ember, Ocean, Neon
-- **Gamepad support** — play with a controller via Gamepad API
-- **Voice commands** — "Fire B4" via Web Speech API
 - **IndexedDB storage** — replays and match history
 - **Lazy-loaded panels** — code-split for fast initial load
 
@@ -190,7 +184,7 @@ src/
 
 ## Notes
 
-- See **[DEBUGGING.md](./DEBUGGING.md)** for the full bug log (61 bugs found and fixed)
+- See **[DEBUGGING.md](./DEBUGGING.md)** for the full bug log (67 bugs found and fixed)
 - All 56 unit tests pass (`npm test`)
 - Zero lint errors (`npm run lint`)
 - Zero type errors (`npm run build`)
