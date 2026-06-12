@@ -798,6 +798,110 @@ wrap`, `justify-content: center`; `.gameover-rating` letter sizing and color;
 
 ---
 
+## 62. Dozens of non-functional features cluttering the app
+
+**Symptom**  
+A full audit of every clickable element found 15 sidebar items (Puzzles,
+Training, Benchmark, Crew, Upgrades, Graveyard, Memorial, Skins, Faction,
+Lore, H2H, Heatmap, Accessibility, Modes, Progress) that opened broken or
+empty panels, 18 settings toggles that had no effect, and a "coming soon"
+Custom Rules panel.
+
+**Cause**  
+Features were scaffolded during earlier mega-upgrades but never fully wired
+to game logic; their UI remained even though the underlying functionality was
+incomplete or missing.
+
+**Fix**  
+Removed all non-functional features and ~14 dead code modules (~3,000 lines).
+The sidebar now has exactly 3 categories (Play / Progress / Settings) and
+every remaining item, toggle, and button is verified working.
+
+---
+
+## 63. Stale service worker cache serving old builds
+
+**Symptom**  
+After deploying new builds, users (and testers) still saw old UI — removed
+features reappeared and fixes seemed missing.
+
+**Cause**  
+`public/sw.js` precaches `index.html` and assets under a versioned cache
+name. Without bumping the version, returning visitors kept getting the old
+cached bundle.
+
+**Fix**  
+Bumped the cache version (v4 → v5) so the new service worker installs,
+purges old caches, and serves the new build on next load.
+
+---
+
+## 64. Power-up instruction pill rendered as unstyled plain text
+
+**Symptom**  
+Arming Radar/Sonar/Airstrike showed the instruction text ("Click an enemy
+cell…") as bare text floating in the layout, making power-ups look broken.
+
+**Cause**  
+The component emitted `className="powerup-instruction"`, but no such rule
+existed in the stylesheet.
+
+**Fix**  
+Added `.powerup-instruction` CSS — accent-bordered pill with glass
+background, padding, and centered text.
+
+---
+
+## 65. Board grid misaligned on all non-10×10 board sizes
+
+**Symptom**  
+On 6×6, 8×8, 12×12, and 15×15 boards, row labels drifted diagonally through
+the grid and cells didn't line up with their coordinates, so clicks (and
+armed power-ups) appeared to hit the wrong cells.
+
+**Cause**  
+`.board__grid` hardcoded `grid-template-columns: repeat(11, ...)` — built for
+a 10×10 board plus label column — regardless of the actual board size.
+
+**Fix**  
+`BoardGrid` now sets `gridTemplateColumns: repeat(boardSize + 1, ...)` inline
+from the live board size, so every size renders a correctly aligned grid.
+
+---
+
+## 66. Replay Viewer boards completely invisible
+
+**Symptom**  
+Opening a replay showed playback controls but two empty dark rectangles where
+the move-by-move boards should be.
+
+**Cause**  
+The component rendered cells with `className="mini-cell"` while the
+stylesheet only defined `.mini-board__cell`, so cells had zero size.
+
+**Fix**  
+Aligned the component class names with the stylesheet's `.mini-board__cell`
+BEM convention; both mini-boards now render with hits/misses during playback.
+
+---
+
+## 67. Miss cells nearly indistinguishable from untouched cells
+
+**Symptom**  
+On the tracking board, fired-but-missed cells looked almost identical to
+cells that hadn't been fired at, making it hard to read the board state at a
+glance.
+
+**Cause**  
+Miss styling was only a subtle `rgba(0,0,0,0.2)` background with a faint dot.
+
+**Fix**  
+Darkened the miss background to `rgba(0,0,0,0.45)`, added an inset shadow, a
+brighter/larger miss dot, and a tinted border so untouched / miss / hit form
+three clearly distinct visual states.
+
+---
+
 ## Known Issue (Not Yet Fixed)
 
 **Campaign weather overridden by `startGame()` roll**  
