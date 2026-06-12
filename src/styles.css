@@ -821,6 +821,18 @@ button:focus-visible {
   flex-wrap: wrap;
 }
 
+.powerup-instruction {
+  margin-top: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--glass-bg);
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
 .powerup-btn {
   display: flex;
   align-items: center;
