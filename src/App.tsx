@@ -782,6 +782,7 @@ export default function App() {
         const p1Shots = gameMode === "salvo" ? remainingShips(playerBoard) : 1;
         setSalvoShotsRemaining(p1Shots);
         setSalvoShotsTotal(p1Shots);
+        replayRef.current = null;
         setLog(["Game on! Pass-and-play mode. Player 1 fires first."]);
         setPhase("playing");
         gameStartRef.current = Date.now();
