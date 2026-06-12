@@ -782,6 +782,7 @@ export default function App() {
         const p1Shots = gameMode === "salvo" ? remainingShips(playerBoard) : 1;
         setSalvoShotsRemaining(p1Shots);
         setSalvoShotsTotal(p1Shots);
+        replayRef.current = null;
         setLog(["Game on! Pass-and-play mode. Player 1 fires first."]);
         setPhase("playing");
         gameStartRef.current = Date.now();
@@ -1468,7 +1469,7 @@ export default function App() {
           onShowAnalysis={playerMode === "vs-ai" ? () => setShowAnalysis(true) : undefined}
           onShowLossAnalysis={winner !== "player" && playerMode === "vs-ai" ? () => setShowLossAnalysis(true) : undefined}
           onShare={playerMode === "vs-ai" ? handleShare : undefined}
-          onViewReplay={() => setShowReplays(true)}
+          onViewReplay={playerMode === "vs-ai" ? () => setShowReplays(true) : undefined}
         />
       )}
 
@@ -1996,19 +1997,19 @@ export default function App() {
       </Suspense>
 
       {/* Combo display */}
-      {phase === "playing" && comboState.currentStreak >= 2 && <ComboDisplay streak={comboState.currentStreak} multiplier={comboState.multiplier} />}
+      {phase === "playing" && playerMode === "vs-ai" && comboState.currentStreak >= 2 && <ComboDisplay streak={comboState.currentStreak} multiplier={comboState.multiplier} />}
 
       {/* Seasonal banner */}
       <SeasonalBanner />
 
       {/* Win probability bar */}
-      {phase === "playing" && <WinProbabilityBar probability={winProbability} />}
+      {phase === "playing" && playerMode === "vs-ai" && <WinProbabilityBar probability={winProbability} />}
 
       {/* Morale indicator */}
-      {phase === "playing" && <MoraleIndicator morale={moraleState.morale} />}
+      {phase === "playing" && playerMode === "vs-ai" && <MoraleIndicator morale={moraleState.morale} />}
 
       {/* AI Dialogue bubble */}
-      {phase === "playing" && aiDialogue && (
+      {phase === "playing" && playerMode === "vs-ai" && aiDialogue && (
         <div style={{ position: "fixed", bottom: "2rem", left: "2rem", zIndex: 1000, maxWidth: "280px" }} className="glass" onClick={() => setAiDialogue(null)}>
           <div style={{ padding: "0.5rem 0.75rem", borderRadius: "12px", fontSize: "0.8rem" }}>
             <div style={{ fontWeight: 600, fontSize: "0.7rem", opacity: 0.5, marginBottom: "0.2rem" }}>AI Admiral</div>
