@@ -60,32 +60,9 @@ body {
   overflow-x: hidden;
 }
 
-/* Animated gradient background */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% -20%, var(--accent-glow), transparent),
-    radial-gradient(ellipse 60% 40% at 80% 80%, var(--accent-secondary-glow), transparent),
-    radial-gradient(ellipse 50% 50% at 20% 60%, rgba(162, 209, 206, 0.06), transparent);
-  pointer-events: none;
-  z-index: 0;
-}
+/* Background gradient removed — was causing uneven tinting across boards */
 
-/* Subtle grid pattern overlay */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(var(--sea-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--sea-line) 1px, transparent 1px);
-  background-size: 60px 60px;
-  opacity: 0.3;
-  pointer-events: none;
-  z-index: 0;
-}
+/* Grid pattern overlay removed — was adding visual noise behind boards */
 
 .app {
   max-width: 1120px;
@@ -505,27 +482,7 @@ button:focus-visible {
   transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-/* Subtle water shimmer */
-.cell::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    transparent 40%,
-    var(--glass-highlight) 50%,
-    transparent 60%
-  );
-  animation: shimmer 6s ease-in-out infinite;
-  border-radius: 4px;
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-@keyframes shimmer {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 0.5; }
-}
+/* Water shimmer removed — was causing squares to fade in/out */
 
 .board--tracking .cell:not(:disabled):hover {
   background: var(--cell-hover);
@@ -627,6 +584,19 @@ button:focus-visible {
 @keyframes airstrikeFlash {
   0%, 100% { filter: brightness(1); }
   50% { filter: brightness(2.5); }
+}
+
+/* Hint cell highlight */
+.cell--hint {
+  background: var(--accent-glow) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 16px var(--accent-glow);
+  animation: hintPulse 1s ease-in-out infinite;
+}
+
+@keyframes hintPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--accent-glow); }
+  50% { box-shadow: 0 0 20px var(--accent-glow); }
 }
 
 /* Sonar overlay */
@@ -1296,10 +1266,10 @@ button:focus-visible {
 
 .gameover-stat {
   text-align: center;
-  padding: 8px 4px;
+  padding: 10px 6px;
   background: var(--glass-bg);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--panel-border);
 }
 
 .gameover-stat__value {
@@ -1333,7 +1303,7 @@ button:focus-visible {
 .gameover-btn--secondary {
   background: var(--glass-bg);
   color: var(--text);
-  border-color: var(--glass-border);
+  border: 1px solid var(--panel-border);
 }
 
 .gameover-btn--secondary:hover {
@@ -1355,7 +1325,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .gameover-rating__grade {
@@ -1363,13 +1333,15 @@ button:focus-visible {
   font-size: 2.2rem;
   font-weight: 800;
   line-height: 1;
+  display: block;
 }
 
 .gameover-rating__label {
-  font-size: 0.68rem;
+  display: block;
+  font-size: 0.62rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-secondary);
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
@@ -2522,18 +2494,7 @@ button:focus-visible {
   100% { background-position: 0% 0%; }
 }
 
-.cell:not(.cell--hit):not(.cell--miss):not(.cell--ship):not(.cell--sunk):not(.cell--island):not(.cell--reef-revealed):not(.cell--shrunk) {
-  background-image: linear-gradient(
-    135deg,
-    var(--cell-bg) 0%,
-    rgba(30, 80, 120, 0.15) 25%,
-    var(--cell-bg) 50%,
-    rgba(30, 80, 120, 0.1) 75%,
-    var(--cell-bg) 100%
-  );
-  background-size: 200% 200%;
-  animation: waterWave 8s ease-in-out infinite, shimmer 6s ease-in-out infinite;
-}
+/* Water wave animation removed — was causing distracting cell shimmer */
 
 /* ─── Screen Shake (#23) ─── */
 @keyframes screenShake {

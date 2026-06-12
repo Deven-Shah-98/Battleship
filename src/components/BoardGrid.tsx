@@ -34,6 +34,8 @@ interface BoardGridProps {
   probabilityMap?: Map<string, number>;
   /** Right-click handler for annotations. */
   onCellRightClick?: (coord: Coord) => void;
+  /** Hint cell to highlight on the board. */
+  hintCell?: Coord | null;
 }
 
 function cellClass(
@@ -45,6 +47,7 @@ function cellClass(
   lastShotKey: string | null,
   radarCells?: Set<string>,
   airstrikeCells?: Set<string>,
+  hintKey?: string | null,
 ): string {
   const key = coordKey(coord);
   const shot = board.shots[key];
@@ -62,6 +65,7 @@ function cellClass(
   if (lastShotKey && key === lastShotKey) classes.push("cell--last");
   if (radarCells?.has(key)) classes.push("cell--radar");
   if (airstrikeCells?.has(key)) classes.push("cell--airstrike");
+  if (hintKey && key === hintKey) classes.push("cell--hint");
   return classes.join(" ");
 }
 
@@ -105,6 +109,7 @@ export default function BoardGrid({
   smartAssistCells: _smartAssistCells,
   probabilityMap: _probabilityMap,
   onCellRightClick: _onCellRightClick,
+  hintCell,
 }: BoardGridProps) {
   const previewKeys = new Set(previewCells.map(coordKey));
   const lastShotKey = lastShot ? coordKey(lastShot) : null;
@@ -232,6 +237,7 @@ export default function BoardGrid({
                   lastShotKey,
                   radarCells,
                   airstrikeCells,
+                  hintCell ? coordKey(hintCell) : null,
                 )}
                 disabled={disabled || (mode === "tracking" && fired)}
                 aria-label={cellAriaLabel(board, coord, showShips)}

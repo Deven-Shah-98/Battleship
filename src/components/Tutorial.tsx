@@ -58,13 +58,13 @@ const STEPS = [
     icon: "📊",
   },
   {
-    title: "Campaign & Puzzles",
-    content: "Campaign: 10 story missions with unique objectives. Puzzles: find the fleet in fewest shots. Training: practice specific skills. Access all from the header buttons.",
+    title: "Campaign",
+    content: "Campaign: 10 story missions with unique objectives, varying board sizes, and special conditions. Access it from the menu.",
     icon: "🗺️",
   },
   {
     title: "Replays & Stats",
-    content: "Every game is recorded — watch replays move-by-move! Check your Profile for lifetime stats, Match History for recent games, and the Improvement Tracker for trend graphs.",
+    content: "Every game is recorded — watch replays move-by-move! Check your Profile for lifetime stats and Match History for recent games.",
     icon: "📹",
   },
   {

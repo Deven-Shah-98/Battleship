@@ -11,8 +11,7 @@ import { InfoTip } from "./components/InfoTip";
 import { completeMission } from "./game/campaign";
 import Sidebar from "./components/Sidebar";
 /* Gameplay HUD elements (always loaded — small components used during play phase) */
-import { NemesisDisplay } from "./components/NarrativePanel";
-import { ComboDisplay } from "./components/ExperimentalModesPanel";
+import { ComboDisplay } from "./components/ComboDisplay";
 import { SeasonalBanner, WinProbabilityBar, MoraleIndicator } from "./components/VisualPanel";
 
 /* Lazy-loaded panels (only loaded when opened) */
@@ -32,23 +31,6 @@ const LazyExportImportPanel = lazy(() => import("./components/ExportImportPanel"
 const LazyLossAnalysis = lazy(() => import("./components/LossAnalysis").then(m => ({ default: m.LossAnalysis })));
 const LazySettingsPanel = lazy(() => import("./components/SettingsPanel").then(m => ({ default: m.SettingsPanel })));
 const LazyStrategyNotes = lazy(() => import("./components/StrategyNotes").then(m => ({ default: m.StrategyNotes })));
-const LazyCrewPanel = lazy(() => import("./components/NarrativePanel").then(m => ({ default: m.CrewPanel })));
-const LazyLoreCardsPanel = lazy(() => import("./components/NarrativePanel").then(m => ({ default: m.LoreCardsPanel })));
-const LazyMemorialWall = lazy(() => import("./components/NarrativePanel").then(m => ({ default: m.MemorialWall })));
-const LazyFactionSelector = lazy(() => import("./components/NarrativePanel").then(m => ({ default: m.FactionSelector })));
-const LazyImprovementTracker = lazy(() => import("./components/AnalyticsPanel").then(m => ({ default: m.ImprovementTracker })));
-const LazyH2HPanel = lazy(() => import("./components/AnalyticsPanel").then(m => ({ default: m.H2HPanel })));
-const LazyPlacementHeatmapPanel = lazy(() => import("./components/AnalyticsPanel").then(m => ({ default: m.PlacementHeatmapPanel })));
-const LazyBenchmarkPanel = lazy(() => import("./components/AnalyticsPanel").then(m => ({ default: m.BenchmarkPanel })));
-const LazyExperimentalModeSelector = lazy(() => import("./components/ExperimentalModesPanel").then(m => ({ default: m.ExperimentalModeSelector })));
-const LazyPuzzleSelector = lazy(() => import("./components/ExperimentalModesPanel").then(m => ({ default: m.PuzzleSelector })));
-const LazyTrainingGroundsPanel = lazy(() => import("./components/ExperimentalModesPanel").then(m => ({ default: m.TrainingGroundsPanel })));
-const LazyShipGraveyard = lazy(() => import("./components/ExperimentalModesPanel").then(m => ({ default: m.ShipGraveyard })));
-const LazyAccessibilityPanel = lazy(() => import("./components/AccessibilityPanel").then(m => ({ default: m.AccessibilityPanel })));
-const LazyBoardSkinSelector = lazy(() => import("./components/VisualPanel").then(m => ({ default: m.BoardSkinSelector })));
-const LazyUpgradeTreePanel = lazy(() => import("./components/VisualPanel").then(m => ({ default: m.UpgradeTreePanel })));
-const LazyDifficultyPresetsPanel = lazy(() => import("./components/VisualPanel").then(m => ({ default: m.DifficultyPresetsPanel })));
-const LazyCustomRulesPanel = lazy(() => import("./components/VisualPanel").then(m => ({ default: m.CustomRulesPanel })));
 import { createComboState, updateCombo, type ComboState } from "./game/experimental";
 import { predictWinProbability } from "./game/analytics";
 import { getAIDialogue, type CoachSuggestion } from "./game/aiEnhancements";
@@ -165,21 +147,6 @@ const HEADER_TOOLTIPS: Record<string, string> = {
   Milestones: "Track lifetime stat badges (shots, sinks, wins, streaks).",
   Save: "Export/import all progress as a JSON file for backup.",
   Settings: "Board variants, accessibility, assists, and platform options.",
-  Crew: "Hire and level crew members for passive gameplay bonuses.",
-  Lore: "Collectible backstory cards for each ship type.",
-  Memorial: "Honor roll of your most heroic ships.",
-  Faction: "Choose Navy, Pirates, or Aliens for unique visual themes.",
-  Progress: "Graphs showing accuracy, win rate, and speed trends.",
-  H2H: "Head-to-head record against each AI personality.",
-  Heatmap: "Visualize where you most commonly place your ships.",
-  Modes: "9 experimental variants: Fog, Minehunter, Roguelike, and more.",
-  Puzzles: "Find the fleet in the fewest shots \u2014 like chess puzzles.",
-  Training: "Isolated drills for targeting, patterns, and speed.",
-  Graveyard: "Visual collection of every ship you\u2019ve ever sunk.",
-  A11y: "Screen reader narration, color-blind mode, and more.",
-  Skins: "6 board visual themes: Classic, Tropical, Arctic, Space, Lava, Steampunk.",
-  Upgrades: "Spend XP to permanently upgrade ship abilities.",
-  Benchmark: "Run 100 AI-vs-AI simulations to test strategies.",
   Notes: "Strategy notepad for tracking patterns during play.",
 };
 
@@ -296,7 +263,6 @@ export default function App() {
   const [_divedSubmarine, setDivedSubmarine] = useState(false);
   const [_repairUsed, setRepairUsed] = useState(false);
   const [_mines, setMines] = useState<Set<string>>(new Set());
-  const [empTurnsLeft, setEmpTurnsLeft] = useState(0);
   const [scoutReveal, setScoutReveal] = useState<string | null>(null);
   const [_moveShipUsed, setMoveShipUsed] = useState(false);
   const turnCountRef = useRef(0);
@@ -323,7 +289,7 @@ export default function App() {
   const maxSinksInOneTurnRef = useRef(0);
 
   /* ─── Hint ─── */
-  const [_hintCell, setHintCell] = useState<Coord | null>(null);
+  const [hintCell, setHintCell] = useState<Coord | null>(null);
 
   /* ─── Last game XP for overlay ─── */
   const [lastGameXP, setLastGameXP] = useState(0);
@@ -344,25 +310,6 @@ export default function App() {
   const [aiDialogue, setAiDialogue] = useState<string | null>(null);
   const [winProbability, setWinProbability] = useState(0.5);
 
-  /* ─── New Feature Modals ─── */
-  const [showCrew, setShowCrew] = useState(false);
-  const [showLore, setShowLore] = useState(false);
-  const [showMemorial, setShowMemorial] = useState(false);
-  const [showFaction, setShowFaction] = useState(false);
-  const [showImprovement, setShowImprovement] = useState(false);
-  const [showH2H, setShowH2H] = useState(false);
-  const [showHeatmap, setShowHeatmap] = useState(false);
-  const [showBenchmark, setShowBenchmark] = useState(false);
-  const [showExperimental, setShowExperimental] = useState(false);
-  const [showPuzzles, setShowPuzzles] = useState(false);
-  const [showTraining, setShowTraining] = useState(false);
-  const [showGraveyard, setShowGraveyard] = useState(false);
-  const [showAccessibility, setShowAccessibility] = useState(false);
-  const [showBoardSkins, setShowBoardSkins] = useState(false);
-  const [showUpgrades, setShowUpgrades] = useState(false);
-  const [showDifficultyPresets, setShowDifficultyPresets] = useState(false);
-  const [showCustomRules, setShowCustomRules] = useState(false);
-
   /* ─── Sidebar ─── */
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [setupExpanded, setSetupExpanded] = useState<string | null>("core");
@@ -373,10 +320,6 @@ export default function App() {
       icon: "\u2694",
       items: [
         { label: "Campaign", icon: "\uD83C\uDFAF", onClick: () => setShowCampaign(true) },
-        { label: "Modes", icon: "\uD83C\uDFB2", onClick: () => setShowExperimental(true) },
-        { label: "Puzzles", icon: "\uD83E\udDE9", onClick: () => setShowPuzzles(true) },
-        { label: "Training", icon: "\uD83C\uDFCB", onClick: () => setShowTraining(true) },
-        { label: "Benchmark", icon: "\u26A1", onClick: () => setShowBenchmark(true) },
       ],
     },
     {
@@ -388,29 +331,6 @@ export default function App() {
         { label: "Stats", icon: "\uD83D\uDCCA", onClick: () => setShowHistory(true) },
         { label: "Milestones", icon: "\uD83C\uDFC5", onClick: () => setShowMilestones(true) },
         { label: "Prestige", icon: "\u2B50", onClick: () => setShowPrestige(true) },
-        { label: "Progress", icon: "\uD83D\uDCC8", onClick: () => setShowImprovement(true) },
-      ],
-    },
-    {
-      name: "Fleet",
-      icon: "\u2693",
-      items: [
-        { label: "Loadouts", icon: "\uD83D\uDCE6", onClick: () => setShowLoadouts(true) },
-        { label: "Crew", icon: "\uD83D\uDC65", onClick: () => setShowCrew(true) },
-        { label: "Upgrades", icon: "\u2B06", onClick: () => setShowUpgrades(true) },
-        { label: "Graveyard", icon: "\u2620", onClick: () => setShowGraveyard(true) },
-        { label: "Memorial", icon: "\uD83C\uDF96", onClick: () => setShowMemorial(true) },
-        { label: "Skins", icon: "\uD83C\uDFA8", onClick: () => setShowBoardSkins(true) },
-        { label: "Faction", icon: "\uD83C\uDFF4", onClick: () => setShowFaction(true) },
-        { label: "Lore", icon: "\uD83D\uDCDC", onClick: () => setShowLore(true) },
-      ],
-    },
-    {
-      name: "Analytics",
-      icon: "\uD83D\uDD0D",
-      items: [
-        { label: "H2H Record", icon: "\uD83E\uDD1C", onClick: () => setShowH2H(true) },
-        { label: "Heatmap", icon: "\uD83D\uDDFA", onClick: () => setShowHeatmap(true) },
         { label: "Replays", icon: "\u23EF", onClick: () => setShowReplays(true) },
       ],
     },
@@ -419,7 +339,7 @@ export default function App() {
       icon: "\u2699",
       items: [
         { label: "Settings", icon: "\u2699", onClick: () => setShowSettings(true) },
-        { label: "Accessibility", icon: "\u267F", onClick: () => setShowAccessibility(true) },
+        { label: "Loadouts", icon: "\uD83D\uDCE6", onClick: () => setShowLoadouts(true) },
         { label: "Save / Export", icon: "\uD83D\uDCBE", onClick: () => setShowExportImport(true) },
         { label: "Notes", icon: "\uD83D\uDCDD", onClick: () => setShowStrategyNotes(true) },
         { label: "Shortcuts", icon: "\u2328", onClick: () => setShowShortcuts(true) },
@@ -747,23 +667,6 @@ export default function App() {
         setShowSettings(false);
         setShowStrategyNotes(false);
         setShowHelpGuide(false);
-        setShowCrew(false);
-        setShowLore(false);
-        setShowMemorial(false);
-        setShowFaction(false);
-        setShowImprovement(false);
-        setShowH2H(false);
-        setShowHeatmap(false);
-        setShowBenchmark(false);
-        setShowExperimental(false);
-        setShowPuzzles(false);
-        setShowTraining(false);
-        setShowGraveyard(false);
-        setShowAccessibility(false);
-        setShowBoardSkins(false);
-        setShowUpgrades(false);
-        setShowDifficultyPresets(false);
-        setShowCustomRules(false);
       }
       if (e.key === "h" || e.key === "H") {
         if (phase === "playing" && turn === "player" && playerMode === "vs-ai" && !(e.target instanceof HTMLInputElement)) {
@@ -940,7 +843,6 @@ export default function App() {
     setDivedSubmarine(false);
     setRepairUsed(false);
     setMines(new Set());
-    setEmpTurnsLeft(0);
     setScoutReveal(null);
     setMoveShipUsed(false);
 
@@ -1293,12 +1195,6 @@ export default function App() {
       setScoutReveal(label);
       addLog(`Scout plane reports: ${label} ${hasShip ? "has ship activity!" : "is clear."}`);
       setTimeout(() => setScoutReveal(null), 3000);
-    }
-
-    // EMP countdown
-    if (empTurnsLeft > 0) {
-      setEmpTurnsLeft((e) => e - 1);
-      if (empTurnsLeft === 1) addLog("EMP effect expired. AI targeting restored.");
     }
 
     sinksThisTurnRef.current = 0;
@@ -1898,9 +1794,6 @@ export default function App() {
             {shrinkState && shrinkState.currentRing > 0 && (
               <span className="status__shrink">Board shrunk: ring {shrinkState.currentRing}</span>
             )}
-            {empTurnsLeft > 0 && (
-              <span className="status__emp">EMP active: {empTurnsLeft} turns</span>
-            )}
             {shieldedShips.size > 0 && (
               <span className="status__shields">Shields: {shieldedShips.size} ships</span>
             )}
@@ -1921,6 +1814,13 @@ export default function App() {
               onSelect={setActivePowerUp}
               disabled={turn !== "player"}
             />
+          )}
+          {activePowerUp && phase === "playing" && (
+            <div className="powerup-instruction" role="status" aria-live="polite">
+              {activePowerUp === "radar" && "Click an enemy cell to scan a 3×3 area"}
+              {activePowerUp === "sonar" && "Click an enemy cell to ping nearby ships"}
+              {activePowerUp === "airstrike" && "Click an enemy cell to bomb a row/column"}
+            </div>
           )}
         </section>
       )}
@@ -1972,6 +1872,7 @@ export default function App() {
             radarCells={radarCells.size > 0 ? radarCells : undefined}
             airstrikeCells={airstrikeCells.size > 0 ? airstrikeCells : undefined}
             sonarOverlay={sonarOverlay}
+            hintCell={hintCell}
           />
           {phase !== "setup" && phase !== "setup-p2" && (
             <FleetStatus
@@ -2087,23 +1988,6 @@ export default function App() {
         {showSettings && (
           <LazySettingsPanel settings={gameSettings} onChange={handleSettingsChange} onClose={() => setShowSettings(false)} />
         )}
-        {showCrew && <LazyCrewPanel onClose={() => setShowCrew(false)} />}
-        {showLore && <LazyLoreCardsPanel onClose={() => setShowLore(false)} />}
-        {showMemorial && <LazyMemorialWall onClose={() => setShowMemorial(false)} />}
-        {showFaction && <LazyFactionSelector onClose={() => setShowFaction(false)} />}
-        {showImprovement && <LazyImprovementTracker onClose={() => setShowImprovement(false)} />}
-        {showH2H && <LazyH2HPanel onClose={() => setShowH2H(false)} />}
-        {showHeatmap && <LazyPlacementHeatmapPanel onClose={() => setShowHeatmap(false)} />}
-        {showBenchmark && <LazyBenchmarkPanel onClose={() => setShowBenchmark(false)} onStart={() => setShowBenchmark(false)} />}
-        {showExperimental && <LazyExperimentalModeSelector onSelect={() => setShowExperimental(false)} onClose={() => setShowExperimental(false)} />}
-        {showPuzzles && <LazyPuzzleSelector onSelect={() => setShowPuzzles(false)} onClose={() => setShowPuzzles(false)} />}
-        {showTraining && <LazyTrainingGroundsPanel onClose={() => setShowTraining(false)} onStart={() => setShowTraining(false)} />}
-        {showGraveyard && <LazyShipGraveyard onClose={() => setShowGraveyard(false)} />}
-        {showAccessibility && <LazyAccessibilityPanel onClose={() => setShowAccessibility(false)} />}
-        {showBoardSkins && <LazyBoardSkinSelector onClose={() => setShowBoardSkins(false)} />}
-        {showUpgrades && <LazyUpgradeTreePanel onClose={() => setShowUpgrades(false)} availableXP={xpState.totalXP} />}
-        {showDifficultyPresets && <LazyDifficultyPresetsPanel onSelect={() => setShowDifficultyPresets(false)} onClose={() => setShowDifficultyPresets(false)} />}
-        {showCustomRules && <LazyCustomRulesPanel onClose={() => setShowCustomRules(false)} onApply={() => setShowCustomRules(false)} />}
       </Suspense>
 
       {/* Combo display */}
@@ -2111,9 +1995,6 @@ export default function App() {
 
       {/* Seasonal banner */}
       <SeasonalBanner />
-
-      {/* Nemesis display */}
-      {phase === "playing" && <NemesisDisplay />}
 
       {/* Win probability bar */}
       {phase === "playing" && <WinProbabilityBar probability={winProbability} />}
