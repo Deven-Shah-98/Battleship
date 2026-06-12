@@ -195,6 +195,7 @@ export default function BoardGrid({
     <div
       ref={gridRef}
       className={`board board--${mode}`}
+      style={{ gridTemplateColumns: `repeat(${board.size + 1}, var(--cell))` }}
       onMouseLeave={() => onCellHover?.(null)}
       onKeyDown={handleKeyDown}
       role="grid"
