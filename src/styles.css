@@ -2130,7 +2130,7 @@ button:focus-visible {
 }
 
 .mini-board__cell--empty { background: var(--bg-secondary); }
-.mini-board__cell--hit { background: var(--accent); }
+.mini-board__cell--hit { background: var(--hit); }
 .mini-board__cell--miss { background: var(--text-muted); }
 .mini-board__cell--ship { background: var(--text-secondary); }
 

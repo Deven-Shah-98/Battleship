@@ -233,10 +233,11 @@ function MiniBoard({ board, showShips }: { board: Board; showShips: boolean }) {
           const key = coordKey({ row, col });
           const shot = board.shots[key];
           const isShip = shipCells.has(key);
-          let cls = "mini-cell";
-          if (shot === "hit") cls += " mini-cell--hit";
-          else if (shot === "miss") cls += " mini-cell--miss";
-          else if (isShip) cls += " mini-cell--ship";
+          let cls = "mini-board__cell";
+          if (shot === "hit") cls += " mini-board__cell--hit";
+          else if (shot === "miss") cls += " mini-board__cell--miss";
+          else if (isShip) cls += " mini-board__cell--ship";
+          else cls += " mini-board__cell--empty";
           return <div key={key} className={cls} />;
         }),
       )}
