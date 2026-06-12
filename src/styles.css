@@ -26,7 +26,7 @@
   --accent-secondary-glow: rgba(179, 136, 255, 0.2);
   --hit: #FF5252;
   --hit-glow: rgba(255, 82, 82, 0.3);
-  --miss: #616B80;
+  --miss: #9AA8C7;
   --ok-glow: rgba(105, 240, 174, 0.2);
   --ship: rgba(124, 77, 255, 0.2);
   --ship-stroke: rgba(124, 77, 255, 0.35);
@@ -520,9 +520,11 @@ button:focus-visible {
 }
 
 .cell--miss {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.45);
   color: var(--miss);
-  border-color: var(--cell-border);
+  border-color: var(--miss);
+  font-size: 1.15em;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.5);
   animation: splash 0.3s ease-out;
 }
 
