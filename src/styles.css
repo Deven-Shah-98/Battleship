@@ -955,7 +955,7 @@ button:focus-visible {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 800;
+  z-index: 1100;
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
   display: flex;
@@ -1235,7 +1235,7 @@ button:focus-visible {
 
 .gameover-card {
   text-align: center;
-  padding: 48px 56px;
+  padding: 36px 40px;
   max-width: 420px;
   width: 90%;
   background: var(--panel-solid);
@@ -1246,15 +1246,15 @@ button:focus-visible {
 }
 
 .gameover-icon {
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   font-weight: 900;
-  margin: 0 auto 20px;
+  margin: 0 auto 16px;
   font-family: "JetBrains Mono", monospace;
 }
 
@@ -1273,9 +1273,9 @@ button:focus-visible {
 }
 
 .gameover-title {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: 800;
-  margin: 0 0 24px;
+  margin: 0 0 16px;
   letter-spacing: -0.01em;
 }
 
@@ -1288,25 +1288,84 @@ button:focus-visible {
 }
 
 .gameover-stats {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  margin-bottom: 32px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .gameover-stat {
   text-align: center;
+  padding: 8px 4px;
+  background: var(--glass-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
 }
 
 .gameover-stat__value {
   display: block;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 800;
   font-family: "JetBrains Mono", monospace;
   color: var(--text);
 }
 
 .gameover-stat__label {
+  display: block;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.gameover-btn {
+  padding: 12px 32px;
+  font-size: 0.9rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.gameover-btn--secondary {
+  background: var(--glass-bg);
+  color: var(--text);
+  border-color: var(--glass-border);
+}
+
+.gameover-btn--secondary:hover {
+  background: var(--cell-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.gameover-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.gameover-rating {
+  margin: 12px 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.gameover-rating__grade {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.gameover-rating__label {
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -1314,10 +1373,26 @@ button:focus-visible {
   font-weight: 600;
 }
 
-.gameover-btn {
-  padding: 14px 48px;
+.gameover-xp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0 4px;
+}
+
+.gameover-xp__value {
+  font-family: "JetBrains Mono", monospace;
   font-size: 1rem;
-  border-radius: var(--radius-md);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.gameover-xp__level {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ok);
 }
 
 /* ─── Accessibility: focus indicators ─── */
@@ -2245,6 +2320,90 @@ button:focus-visible {
 }
 
 /* ─── Post-game analysis ─── */
+.analysis-modal {
+  max-width: 520px;
+  width: 90vw;
+}
+
+.analysis-rating {
+  text-align: center;
+  margin: 16px 0 12px;
+}
+
+.analysis-rating__grade {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.analysis-rating__label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.analysis-grid {
+  display: grid;
+  gap: 2px;
+  margin: 12px auto;
+  max-width: 280px;
+}
+
+.analysis-section {
+  margin-top: 20px;
+}
+
+.analysis-section h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+
+.analysis-insights {
+  margin-top: 16px;
+}
+
+.analysis-insights h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: var(--text);
+}
+
+.analysis-insights ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.analysis-insights li {
+  font-size: 0.82rem;
+  padding: 8px 12px;
+  background: var(--glass-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+}
+
+.insight--positive {
+  border-left: 3px solid var(--ok);
+  color: var(--text);
+}
+
+.insight--negative {
+  border-left: 3px solid var(--hit);
+  color: var(--text);
+}
+
 .analysis-heatmap {
   display: inline-grid;
   gap: 2px;
@@ -2260,54 +2419,37 @@ button:focus-visible {
 
 .analysis-stats {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  padding: 16px 0;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 12px 0;
 }
 
 .analysis-stat {
   text-align: center;
-  padding: 12px;
+  padding: 10px 8px;
   background: var(--glass-bg);
   border-radius: var(--radius-md);
   border: 1px solid var(--glass-border);
 }
 
 .analysis-stat__value {
+  display: block;
   font-family: var(--font-mono);
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--text);
 }
 
 .analysis-stat__label {
-  font-size: 0.75rem;
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--text-muted);
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
-/* ─── GameOver overlay updates ─── */
-.gameover__xp {
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  color: var(--accent);
-  margin: 8px 0;
-}
 
-.gameover__rating {
-  font-family: var(--font-mono);
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 8px 0;
-}
-
-.gameover__actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 12px;
-}
 
 /* ─── Icon buttons in header ─── */
 .icon-btn {
@@ -2752,6 +2894,7 @@ button:focus-visible {
 .analysis-cell--hit { background: var(--hit); color: #fff; }
 .analysis-cell--miss { background: rgba(0,0,0,0.2); color: var(--miss); }
 
+.analysis-cell--unshot-ship,
 .analysis-cell--missed-ship {
   background: rgba(255, 200, 0, 0.4);
   color: #FFD700;
